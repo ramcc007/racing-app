@@ -1,0 +1,10 @@
+# Swift / Xcode build output
+.build/
+ios/EchoLapCore/.build/
+ios/*.xcodeproj/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.swiftpm/
+# OS
+.DS_Store

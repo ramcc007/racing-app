@@ -2,6 +2,17 @@
 
 Stage 1 summary · 25 Oct 2026 · details in `research/top10-racing-apps.md` and `concept/concept-brief.md`
 
+## ✅ Decided by the owner (25 Oct 2026)
+| Decision | Choice |
+|---|---|
+| Concept | **Echo Lap** |
+| Name | **Echo Lap**. Searches on 25 Oct 2026 found no App Store app, game or trademark with this name (nearest: "Echo Lab" medical app, "Echo Ball", "EchoSteps"). Do a formal USPTO/EUIPO check before submitting. Register `echolap.com` while it's free. |
+| View | **Top-down 2.5D, SpriteKit** |
+| Orientation | **Portrait** on iPhone (iPad either way) |
+| Repo | **Public** (free Mac build minutes; the idea is visible) |
+
+Stage 2 (browser prototype + screen designs) has started: see `prototype/`.
+
 ## What we learned
 - **Top 10 iPhone racing games** (by ratings and downloads): Race Master 3D, Asphalt Legends, Bike Race, Need for Speed No Limits, CSR Racing 2, Asphalt 8, Hill Climb Racing, Hill Climb Racing 2, Rebel Racing, Drive Ahead!.
 - **Players hate:** pay-to-win walls, fuel timers, forced ads, online-only games that shut down (Real Racing 3 was pulled in Dec 2025), and paid loot boxes.
