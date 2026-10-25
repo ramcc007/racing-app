@@ -135,7 +135,7 @@ jobs:
           }
           run_tests
           # A test whose app never got a process ID died before its body ran: run just those once more.
-          DEAD=$(grep -E "does not have a process ID" "$RUNNER_TEMP/ui-tests.log" | sed -E 's/.*-\[EchoLapUITests\.([A-Za-z]+) ([A-Za-z]+)\].*/\1\/\2/' | sort -u)
+          DEAD=$( (grep -E "does not have a process ID" "$RUNNER_TEMP/ui-tests.log" || true) | sed -E 's/.*-\[EchoLapUITests\.([A-Za-z]+) ([A-Za-z]+)\].*/\1\/\2/' | sort -u)
           if [ -n "$DEAD" ]; then
             echo "Rerunning tests whose app did not launch: $DEAD"
             cp "$RUNNER_TEMP/ui-tests.log" "$RUNNER_TEMP/ui-tests-first.log"
