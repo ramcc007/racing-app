@@ -99,18 +99,18 @@ extension View {
 @MainActor
 enum Haptics {
     static var enabled = true
-    private static let light = UIImpactFeedbackGenerator(style: .light)
-    private static let medium = UIImpactFeedbackGenerator(style: .medium)
-    private static let heavy = UIImpactFeedbackGenerator(style: .heavy)
-    private static let rigid = UIImpactFeedbackGenerator(style: .rigid)
+    private static let lightImpact = UIImpactFeedbackGenerator(style: .light)
+    private static let mediumImpact = UIImpactFeedbackGenerator(style: .medium)
+    private static let heavyImpact = UIImpactFeedbackGenerator(style: .heavy)
+    private static let rigidImpact = UIImpactFeedbackGenerator(style: .rigid)
     private static let notice = UINotificationFeedbackGenerator()
     private static let select = UISelectionFeedbackGenerator()
 
     static func tap() { guard enabled else { return }; select.selectionChanged() }
-    static func light(_ intensity: CGFloat = 1) { guard enabled else { return }; light.impactOccurred(intensity: intensity) }
-    static func medium() { guard enabled else { return }; medium.impactOccurred() }
-    static func heavy() { guard enabled else { return }; heavy.impactOccurred() }
-    static func rigid() { guard enabled else { return }; rigid.impactOccurred() }
+    static func light(_ intensity: CGFloat = 1) { guard enabled else { return }; lightImpact.impactOccurred(intensity: intensity) }
+    static func medium() { guard enabled else { return }; mediumImpact.impactOccurred() }
+    static func heavy() { guard enabled else { return }; heavyImpact.impactOccurred() }
+    static func rigid() { guard enabled else { return }; rigidImpact.impactOccurred() }
     static func success() { guard enabled else { return }; notice.notificationOccurred(.success) }
     static func warning() { guard enabled else { return }; notice.notificationOccurred(.warning) }
 }
