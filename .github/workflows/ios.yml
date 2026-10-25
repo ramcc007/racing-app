@@ -51,6 +51,8 @@ jobs:
     name: App build, UI tests and screenshots
     runs-on: macos-latest
     timeout-minutes: 75
+    permissions:
+      contents: write   # only for the optional [screens] commit of small screenshots
     steps:
       - uses: actions/checkout@v4
 
@@ -68,6 +70,7 @@ jobs:
           xcodegen generate
 
       - name: Build the app for the iOS Simulator
+        id: build
         working-directory: ios
         run: |
           set -o pipefail
@@ -82,6 +85,7 @@ jobs:
           grep -q "TEST BUILD SUCCEEDED\|BUILD SUCCEEDED" "$RUNNER_TEMP/app-build.log" || { grep -E "error:" "$RUNNER_TEMP/app-build.log" | sort -u | head -150; exit 1; }
 
       - name: UI tests on an iPhone simulator
+        id: uitests
         working-directory: ios
         timeout-minutes: 30
         run: |
@@ -95,38 +99,42 @@ jobs:
             -destination "id=$UDID" \
             -derivedDataPath "$RUNNER_TEMP/dd" \
             -resultBundlePath "$RUNNER_TEMP/UITests.xcresult" \
-            2>&1 | tee "$RUNNER_TEMP/ui-tests.log" | grep -E "Test Case|error|failed|passed|TEST" || true
-          grep -q "TEST EXECUTE SUCCEEDED\|\*\* TEST SUCCEEDED \*\*" "$RUNNER_TEMP/ui-tests.log" || { tail -80 "$RUNNER_TEMP/ui-tests.log"; exit 1; }
+            > "$RUNNER_TEMP/ui-tests.log" 2>&1 || true
+          grep -E "Test Case .*(passed|failed)|: error: " "$RUNNER_TEMP/ui-tests.log" || true
+          grep -q "TEST EXECUTE SUCCEEDED\|\*\* TEST SUCCEEDED \*\*" "$RUNNER_TEMP/ui-tests.log"
 
-      - name: Keep the UI test screenshots
-        if: always()
+      - name: Collect the UI test screenshots
+        if: always() && steps.build.outcome == 'success'
         continue-on-error: true
         run: |
           [ -d "$RUNNER_TEMP/UITests.xcresult" ] || exit 0
-          mkdir -p "$RUNNER_TEMP/ui-test-screens"
-          xcrun xcresulttool export attachments --path "$RUNNER_TEMP/UITests.xcresult" --output-path "$RUNNER_TEMP/ui-test-screens" || true
-          ls -la "$RUNNER_TEMP/ui-test-screens"
+          mkdir -p "$RUNNER_TEMP/ui-test-raw" "$RUNNER_TEMP/ui-test-screens"
+          xcrun xcresulttool export attachments --path "$RUNNER_TEMP/UITests.xcresult" --output-path "$RUNNER_TEMP/ui-test-raw" > /dev/null 2>&1 || true
+          python3 tools/ci/pick_attachments.py "$RUNNER_TEMP/ui-test-raw" "$RUNNER_TEMP/ui-test-screens"
 
       - name: Screenshots, iPhone 6.9-inch
+        if: always() && steps.build.outcome == 'success'
         continue-on-error: true
         timeout-minutes: 20
         run: |
           APP=$(find "$RUNNER_TEMP/dd/Build/Products" -name EchoLap.app -path '*Debug-iphonesimulator*' | head -1)
-          bash tools/ci/screenshots.sh "$APP" "$RUNNER_TEMP/screenshots" phone 2>&1 | tee -a "$RUNNER_TEMP/screenshots.log"
+          bash tools/ci/screenshots.sh "$APP" "$RUNNER_TEMP/screenshots" phone > "$RUNNER_TEMP/screenshots-phone.log" 2>&1; tail -15 "$RUNNER_TEMP/screenshots-phone.log"
 
       - name: Screenshots, small iPhone
+        if: always() && steps.build.outcome == 'success'
         continue-on-error: true
         timeout-minutes: 15
         run: |
           APP=$(find "$RUNNER_TEMP/dd/Build/Products" -name EchoLap.app -path '*Debug-iphonesimulator*' | head -1)
-          bash tools/ci/screenshots.sh "$APP" "$RUNNER_TEMP/screenshots" small 2>&1 | tee -a "$RUNNER_TEMP/screenshots.log"
+          bash tools/ci/screenshots.sh "$APP" "$RUNNER_TEMP/screenshots" small > "$RUNNER_TEMP/screenshots-small.log" 2>&1; tail -15 "$RUNNER_TEMP/screenshots-small.log"
 
       - name: Screenshots, iPad 13-inch
+        if: always() && steps.build.outcome == 'success'
         continue-on-error: true
         timeout-minutes: 15
         run: |
           APP=$(find "$RUNNER_TEMP/dd/Build/Products" -name EchoLap.app -path '*Debug-iphonesimulator*' | head -1)
-          bash tools/ci/screenshots.sh "$APP" "$RUNNER_TEMP/screenshots" pad 2>&1 | tee -a "$RUNNER_TEMP/screenshots.log"
+          bash tools/ci/screenshots.sh "$APP" "$RUNNER_TEMP/screenshots" pad > "$RUNNER_TEMP/screenshots-pad.log" 2>&1; tail -15 "$RUNNER_TEMP/screenshots-pad.log"
 
       - name: Keep the screenshots
         if: always()
@@ -146,5 +154,30 @@ jobs:
           path: |
             ${{ runner.temp }}/app-build.log
             ${{ runner.temp }}/ui-tests.log
-            ${{ runner.temp }}/screenshots.log
+            ${{ runner.temp }}/screenshots-*.log
           if-no-files-found: ignore
+
+      # Commits small JPEG copies to ci-screens/ on this branch when the commit message contains [screens] (or the run
+      # was started by hand), so the screens can be reviewed without downloading artifacts. [skip ci] avoids a loop.
+      - name: Share small screenshots in the branch
+        if: always() && steps.build.outcome == 'success' && (contains(github.event.head_commit.message, '[screens]') || github.event_name == 'workflow_dispatch')
+        continue-on-error: true
+        run: |
+          rm -rf ci-screens && mkdir -p ci-screens
+          for f in "$RUNNER_TEMP"/screenshots/*.png "$RUNNER_TEMP"/ui-test-screens/*.png; do
+            [ -f "$f" ] || continue
+            sips -Z 900 -s format jpeg -s formatOptions 55 "$f" --out "ci-screens/$(basename "${f%.png}").jpg" > /dev/null
+          done
+          ls ci-screens
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A ci-screens
+          git commit -q -m "CI screenshots for ${GITHUB_SHA::7} [skip ci]" && git push origin "HEAD:refs/heads/${GITHUB_REF_NAME}"
+
+      - name: Test summary
+        if: always()
+        run: |
+          echo "=== UI tests ==="
+          [ -f "$RUNNER_TEMP/ui-tests.log" ] && grep -E "Test Case .*(passed|failed)|: error: |TEST (EXECUTE )?(SUCCEEDED|FAILED)" "$RUNNER_TEMP/ui-tests.log" | cut -c1-400 | tail -40 || echo "(not run)"
+          echo "=== Screenshots ==="
+          ls "$RUNNER_TEMP/screenshots" "$RUNNER_TEMP/ui-test-screens" 2>/dev/null || true

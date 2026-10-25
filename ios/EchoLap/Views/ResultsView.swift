@@ -41,7 +41,6 @@ struct ResultsView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 24)
         }
-        .accessibilityIdentifier("results")
         .task { await revealStars() }
     }
 
