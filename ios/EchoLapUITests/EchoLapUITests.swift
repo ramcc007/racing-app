@@ -15,7 +15,7 @@ final class EchoLapUITests: XCTestCase {
     private func launch(frozen: Bool = false, manual: Bool = false) {
         app = XCUIApplication()
         app.launchArguments = ["-EchoUITest", "-EchoReset"] + (frozen ? ["-EchoFastForward", "0"] : [])
-            + (manual ? ["-EchoManual", "-EchoFastForward", "2"] : [])
+            + (manual ? ["-EchoManual", "-EchoFastForward", "1"] : [])
         app.launch()
     }
 
@@ -158,21 +158,22 @@ final class EchoLapUITests: XCTestCase {
         waitFor(skip)
         skip.tap()
 
-        let card = app.descendants(matching: .any)["tutorialCard"]
-        waitFor(card, 30)
-        XCTAssertTrue(waitForLabel(card, containing: "STEER", seconds: 15), "first lesson: steer (\(card.label))")
+        XCTAssertTrue(lessonCard(containing: "STEER").waitForExistence(timeout: 40), "first lesson: steer")
         snapshot("11-tutorial-steer")
-        // Drag the thumb to the right and keep it there: that is a steer, then a drift.
+        // Let the car get up to speed, then drag the thumb to the right and keep it there: a steer, then a drift.
+        RunLoop.current.run(until: Date().addingTimeInterval(2.0))
         let scene = app.descendants(matching: .any)["raceScene"]
         let from = scene.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
         let to = scene.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.55))
-        from.press(forDuration: 0.1, thenDragTo: to, withVelocity: .fast, thenHoldForDuration: 3.0)
+        from.press(forDuration: 0.1, thenDragTo: to, withVelocity: .fast, thenHoldForDuration: 2.5)
         snapshot("12-tutorial-drift")
         // Letting go ended the drift with a boost, so the lesson moved on to the nitro.
-        XCTAssertTrue(waitForLabel(card, containing: "swipe up", seconds: 30), "after a drift and release the nitro lesson shows (\(card.label))")
+        let nitroLesson = lessonCard(containing: "swipe up")
+        let shown = nitroLesson.waitForExistence(timeout: 30)
         snapshot("13-tutorial-nitro")
+        XCTAssertTrue(shown, "after a drift and release the nitro lesson shows; card now: \(currentLesson())")
         app.buttons["boost"].tap()
-        XCTAssertTrue(waitForDisappearance(card, seconds: 40), "firing the nitro finishes the lessons")
+        XCTAssertTrue(waitForDisappearance(app.descendants(matching: .any)["tutorialCard"], seconds: 40), "firing the nitro finishes the lessons")
 
         openPauseMenu()
         app.buttons["quit"].tap()
@@ -182,13 +183,14 @@ final class EchoLapUITests: XCTestCase {
         waitFor(app.buttons["continueRace"])
     }
 
-    private func waitForLabel(_ element: XCUIElement, containing text: String, seconds: TimeInterval) -> Bool {
-        let deadline = Date().addingTimeInterval(seconds)
-        while Date() < deadline {
-            if element.exists && element.label.localizedCaseInsensitiveContains(text) { return true }
-            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
-        }
-        return false
+    /// The lesson card only when its text contains `text` (a query, so it never dereferences a card that just vanished).
+    private func lessonCard(containing text: String) -> XCUIElement {
+        app.descendants(matching: .any).matching(NSPredicate(format: "identifier == 'tutorialCard' AND label CONTAINS[c] %@", text)).firstMatch
+    }
+
+    private func currentLesson() -> String {
+        let card = app.descendants(matching: .any).matching(identifier: "tutorialCard").firstMatch
+        return card.exists ? card.label : "(no card)"
     }
 
     private func waitForDisappearance(_ element: XCUIElement, seconds: TimeInterval) -> Bool {
