@@ -18,15 +18,16 @@ final class GameScene: SKScene {
     private var boostFlame: SKShapeNode!
     private var draftLines: SKNode!
     private var echoNodes: [Int: (car: SKSpriteNode, label: SKLabelNode, trail: SKShapeNode)] = [:]
-    private var ghostNode: SKSpriteNode?
     private var rivalNode: SKSpriteNode?
-    private var guide: SKShapeNode?
-    /// Easy controls: fingers down on the left or right half of the screen, and where each one started.
-    private var sideTouches: [UITouch: (side: Double, start: CGPoint, time: TimeInterval)] = [:]
     private var skids: [SKShapeNode] = []
     private var skidIndex = 0
+    private var sparks: [SKShapeNode] = []
+    private var sparkIndex = 0
+    private var speedLines: [SKShapeNode] = []
+    private var flash: SKSpriteNode!
     private var lastTime: TimeInterval?
     private var camAngle: CGFloat = 0
+    private var punch: CGFloat = 0
     private var gateWasOpen = false
     private var celebrated = false
     private let trailStyle: String
@@ -34,7 +35,7 @@ final class GameScene: SKScene {
 
     // Touch state (UIKit points)
     private var steerTouch: UITouch?
-    private var anchorX: CGFloat = 0
+    private var anchor: CGPoint = .zero
     private var swipeStartY: CGFloat = 0
     private var swipeStartTime: TimeInterval = 0
     private var touchStart: (CGPoint, TimeInterval) = (.zero, 0)
@@ -83,13 +84,13 @@ final class GameScene: SKScene {
 
         boostFlame = SKShapeNode(path: {
             let p = CGMutablePath()
-            p.move(to: CGPoint(x: -20, y: -7)); p.addLine(to: CGPoint(x: -46, y: 0)); p.addLine(to: CGPoint(x: -20, y: 7)); p.closeSubpath()
+            p.move(to: CGPoint(x: -20, y: -7)); p.addLine(to: CGPoint(x: -52, y: 0)); p.addLine(to: CGPoint(x: -20, y: 7)); p.closeSubpath()
             return p
         }())
         boostFlame.fillColor = UIColor(hex: 0xFFB547)
         boostFlame.strokeColor = UIColor(hex: 0xFF7A1A)
         boostFlame.lineWidth = 2
-        boostFlame.glowWidth = 4
+        boostFlame.glowWidth = 6
         boostFlame.zPosition = -1
         boostFlame.isHidden = true
         player.addChild(boostFlame)
@@ -107,40 +108,31 @@ final class GameScene: SKScene {
         draftLines.isHidden = true
         player.addChild(draftLines)
 
-        if let ghost = controller.ghost, ghost.frameCount > 1 {
-            let g = SKSpriteNode(texture: CarArt.texture(shape: controller.spec.shape, body: .white, in: view), size: CarArt.spriteSize)
-            g.alpha = 0.3
-            g.zPosition = 12
-            world.addChild(g)
-            ghostNode = g
-        }
         if controller.request.def.mode == .career && !controller.isDemo {
-            // The gold car: drives the racing line at exactly the gold pace. Finish ahead of it for three stars.
-            let r = SKSpriteNode(texture: CarArt.texture(shape: "pod", body: UIColor(hex: 0xF2C94C), stripe: UIColor(hex: 0xFFF3C4), in: view),
+            // The rival: drives the racing line at exactly the gold pace. Finish ahead of them for three stars.
+            let rival = controller.rival
+            let r = SKSpriteNode(texture: CarArt.texture(shape: rival.shape, body: UIColor(hex: rival.color), stripe: UIColor.white.withAlphaComponent(0.5), in: view),
                                  size: CarArt.spriteSize)
-            r.alpha = 0.55
+            r.alpha = 0.6
             r.zPosition = 13
-            let tag = SKLabelNode(text: "GOLD")
+            let tag = SKLabelNode(text: rival.name.uppercased())
             tag.fontName = "AvenirNext-Heavy"
-            tag.fontSize = 13
-            tag.fontColor = UIColor(hex: 0xF2C94C)
+            tag.fontSize = 12
+            tag.fontColor = UIColor(hex: rival.color)
             tag.verticalAlignmentMode = .center
+            tag.position = CGPoint(x: 0, y: 0)
             tag.name = "tag"
+            let plate = SKShapeNode(rectOf: CGSize(width: CGFloat(rival.name.count) * 9 + 14, height: 16), cornerRadius: 8)
+            plate.fillColor = UIColor.black.withAlphaComponent(0.55)
+            plate.strokeColor = .clear
+            plate.zPosition = -0.5
+            tag.addChild(plate)
             r.addChild(tag)
             r.isHidden = true
             world.addChild(r)
             rivalNode = r
         }
-        if settings.showGuide && !controller.isDemo {
-            addDirectionArrows()
-            let g = SKShapeNode()
-            g.strokeColor = UIColor.white.withAlphaComponent(0.55)
-            g.lineWidth = 7
-            g.lineCap = .round
-            g.zPosition = -9.5
-            world.addChild(g)
-            guide = g
-        }
+        if settings.showGuide && !controller.isDemo { addDirectionArrows() }
         for _ in 0..<160 {
             let s = SKShapeNode(rectOf: CGSize(width: 9, height: 4), cornerRadius: 2)
             s.fillColor = UIColor.black.withAlphaComponent(0.28)
@@ -150,6 +142,29 @@ final class GameScene: SKScene {
             world.addChild(s)
             skids.append(s)
         }
+        for _ in 0..<90 {
+            let s = SKShapeNode(rectOf: CGSize(width: 5, height: 2.5), cornerRadius: 1)
+            s.fillColor = .white
+            s.strokeColor = .clear
+            s.zPosition = 19
+            s.alpha = 0
+            world.addChild(s)
+            sparks.append(s)
+        }
+        // Speed lines live on the camera: thin streaks near the edges of the screen at high speed.
+        for k in 0..<14 {
+            let line = SKShapeNode(rectOf: CGSize(width: 2, height: 60 + CGFloat(k % 4) * 30), cornerRadius: 1)
+            line.fillColor = UIColor.white.withAlphaComponent(0.55)
+            line.strokeColor = .clear
+            line.zPosition = 50
+            line.alpha = 0
+            cam.addChild(line)
+            speedLines.append(line)
+        }
+        flash = SKSpriteNode(color: .white, size: CGSize(width: 4000, height: 4000))
+        flash.zPosition = 60
+        flash.alpha = 0
+        cam.addChild(flash)
         sync(immediate: true)
     }
 
@@ -180,7 +195,7 @@ final class GameScene: SKScene {
         playerShadow.position = CGPoint(x: car.position.x + (car.isAirborne ? 16 : 5), y: car.position.y - (car.isAirborne ? 22 : 7))
         playerShadow.zRotation = player.zRotation
         boostFlame.isHidden = car.boostTime <= 0
-        if !boostFlame.isHidden { boostFlame.xScale = 0.8 + 0.4 * CGFloat.random(in: 0...1) }
+        if !boostFlame.isHidden { boostFlame.xScale = 0.8 + 0.5 * CGFloat.random(in: 0...1) }
         draftLines.isHidden = !race.drafting || calm
         player.alpha = car.isSpinning && Int(race.time * 12) % 2 == 0 ? 0.6 : 1
 
@@ -198,29 +213,24 @@ final class GameScene: SKScene {
             camAngle += diff * (follow ? 0.12 : 1)
         }
         cam.zRotation = camAngle
-        let speedZoom = calm ? 1 : 1 + 0.06 * CGFloat(max(0, min(1, car.forwardSpeed / controller.spec.topSpeed)))
+        if controller.punchRequested && !calm { punch = 1 }
+        punch = max(0, punch - 0.06)
+        let speedFraction = CGFloat(max(0, min(1.3, car.forwardSpeed / controller.spec.topSpeed)))
+        let speedZoom = calm ? 1 : 1 + 0.09 * speedFraction - 0.05 * punch
         cam.setScale(zoom * speedZoom)
         if controller.shakeRequested && !calm {
             cam.run(.sequence([.moveBy(x: 7, y: -5, duration: 0.04), .moveBy(x: -12, y: 8, duration: 0.05), .moveBy(x: 5, y: -3, duration: 0.04)]))
         }
+        if controller.flashRequested && !calm {
+            flash.removeAllActions()
+            flash.alpha = 0.35
+            flash.run(.fadeOut(withDuration: 0.25))
+        }
 
         syncEchoes()
-        syncGuide()
-        if let rivalNode, let pose = controller.goldRivalPose {
-            rivalNode.isHidden = false
-            rivalNode.position = CGPoint(x: pose.position.x, y: pose.position.y)
-            rivalNode.zRotation = CGFloat(pose.heading)
-            rivalNode.childNode(withName: "tag")?.zRotation = camAngle - CGFloat(pose.heading)
-        } else {
-            rivalNode?.isHidden = true
-        }
-        if let ghostNode, let pose = controller.ghost?.pose(at: race.time), race.crossedStart {
-            ghostNode.isHidden = false
-            ghostNode.position = CGPoint(x: pose.position.x, y: pose.position.y)
-            ghostNode.zRotation = CGFloat(pose.heading)
-        } else {
-            ghostNode?.isHidden = true
-        }
+        syncRival()
+        syncSpeedLines(speedFraction: speedFraction, boosting: car.boostTime > 0)
+        syncSparks(car: car, race: race)
 
         if race.gateOpen != gateWasOpen || immediate {
             art.setGate(open: race.gateOpen, animated: !immediate)
@@ -229,7 +239,7 @@ final class GameScene: SKScene {
         if !race.iceWear.isEmpty { art.setIce(wear: race.iceWear) }
         art.setPadOccupied(race.gateOpen && race.track.shortcut?.trigger == .pad)
 
-        if car.drifting && !car.isAirborne && Int(race.time * 120) % 3 == 0 {
+        if car.drifting && !car.isAirborne && Int(race.time * 120) % 2 == 0 {
             let back = car.position - car.forward * 14
             for side in [-1.0, 1.0] {
                 let p = back + car.forward.perp * (side * 9)
@@ -246,6 +256,67 @@ final class GameScene: SKScene {
             celebrated = true
             celebrate(at: player.position)
         }
+    }
+
+    private func syncRival() {
+        guard let rivalNode else { return }
+        if let pose = controller.rivalPose {
+            rivalNode.isHidden = false
+            rivalNode.position = CGPoint(x: pose.position.x, y: pose.position.y)
+            rivalNode.zRotation = CGFloat(pose.heading)
+            rivalNode.childNode(withName: "tag")?.zRotation = camAngle - CGFloat(pose.heading)
+        } else {
+            rivalNode.isHidden = true
+        }
+    }
+
+    /// Streaks at the screen edges when going fast, brighter while boosting.
+    private func syncSpeedLines(speedFraction: CGFloat, boosting: Bool) {
+        guard !calm else { return }
+        let strength = boosting ? 1 : max(0, (speedFraction - 0.82) / 0.3)
+        let w = size.width * zoom, h = size.height * zoom
+        for (k, line) in speedLines.enumerated() {
+            guard strength > 0 else { line.alpha = 0; continue }
+            if line.alpha <= 0.01 || Int.random(in: 0..<10) == 0 {
+                let side: CGFloat = k % 2 == 0 ? -1 : 1
+                line.position = CGPoint(x: side * (w * 0.5 - CGFloat.random(in: 6...60)), y: CGFloat.random(in: -h * 0.5 ... h * 0.5))
+            }
+            line.position.y -= 40 * strength
+            if line.position.y < -h * 0.5 { line.position.y = h * 0.5 }
+            line.alpha = 0.25 + 0.5 * strength
+        }
+    }
+
+    /// Drift sparks at the rear wheels (coloured by tier) and small white sparks when riding the edge.
+    private func syncSparks(car: CarState, race: Race) {
+        guard !calm, !car.isAirborne else { return }
+        if car.drifting && Int(race.time * 120) % 2 == 0 {
+            let color = Theme.driftUI[clamp(car.driftTier, 0, 3)]
+            let back = car.position - car.forward * 16
+            for _ in 0..<2 {
+                let side = Double.random(in: 0...1) < 0.5 ? -1.0 : 1.0
+                spark(at: back + car.forward.perp * (side * 10), color: color,
+                      velocity: car.forward * -Double.random(in: 60...160) + car.forward.perp * (side * Double.random(in: 20...80)))
+            }
+        }
+        if race.onEdge && Int(race.time * 120) % 4 == 0 {
+            let outward = race.location.lateral > 0 ? race.track.normal(race.location.index) : race.track.normal(race.location.index) * -1
+            spark(at: car.position + outward * 12 - car.forward * 8, color: .white,
+                  velocity: outward * Double.random(in: 40...90) - car.forward * Double.random(in: 60...120))
+        }
+    }
+
+    private func spark(at p: Vec2, color: UIColor, velocity: Vec2) {
+        let s = sparks[sparkIndex]
+        sparkIndex = (sparkIndex + 1) % sparks.count
+        s.removeAllActions()
+        s.fillColor = color
+        s.position = CGPoint(x: p.x, y: p.y)
+        s.zRotation = CGFloat(velocity.angle)
+        s.alpha = 1
+        s.setScale(CGFloat.random(in: 0.8...1.6))
+        let d = 0.3
+        s.run(.group([.moveBy(x: velocity.x * d, y: velocity.y * d, duration: d), .fadeOut(withDuration: d)]))
     }
 
     /// White chevrons painted on the road, pointing the way round.
@@ -271,31 +342,6 @@ final class GameScene: SKScene {
         }
     }
 
-    /// The glowing line just ahead of the car: where the car is going to drive (easy controls) or the racing line (pro).
-    private func syncGuide() {
-        guard let guide else { return }
-        let race = controller.race
-        if race.isFinished || race.phase == .countdown && race.countdown > 2.5 || race.car.docked
-            || (controller.assist?.mode ?? .line) != .line {
-            guide.isHidden = true
-            return
-        }
-        guide.isHidden = false
-        let track = race.track
-        let start = race.location.index
-        let skip = max(1, Int(26 / track.step))
-        var points: [CGPoint] = []
-        for k in stride(from: Int(60 / track.step), through: Int(420 / track.step), by: skip) {
-            let i = track.wrap(start + k)
-            let lat = controller.assist?.lateral(at: i) ?? controller.racingLine.lateral[i]
-            let v = track.points[i] + track.normal(i) * lat
-            points.append(CGPoint(x: v.x, y: v.y))
-        }
-        let path = CGMutablePath()
-        path.addLines(between: points)
-        guide.path = path.copy(dashingWithPhase: CGFloat(race.time * 60).truncatingRemainder(dividingBy: 30), lengths: [14, 16])
-    }
-
     private func syncEchoes() {
         let race = controller.race
         let poses = race.echoPoses()
@@ -315,7 +361,7 @@ final class GameScene: SKScene {
             nodes.car.zRotation = CGFloat(pose.heading)
             nodes.car.setScale(pose.airborne ? 1.25 : 1)
             let solid = echo.solid && !race.track.def.softEchoes
-            nodes.car.alpha = solid ? 0.92 : 0.55
+            nodes.car.alpha = solid ? 0.92 : 0.5
             nodes.label.zRotation = camAngle - CGFloat(pose.heading)
             let frame = race.lapTick - 1
             let points = echo.trail(from: frame - 70, to: frame, every: 3)
@@ -422,68 +468,46 @@ final class GameScene: SKScene {
         }
     }
 
-    // MARK: - Touches
+    // MARK: - Touches: one thumb anywhere. Drag sideways to steer, pull down to brake, flick up for nitro.
 
     private var fullLock: CGFloat { 70 / CGFloat(settings.steeringSensitivity) }
+    private let brakeLine: CGFloat = 48
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let view else { return }
-        if controller.usesEasyControls {
-            for touch in touches {
-                let p = touch.location(in: view)
-                sideTouches[touch] = (p.x < view.bounds.midX ? -1 : 1, p, touch.timestamp)
-            }
-            updateEasySteer()
-            return
-        }
         for touch in touches {
             let p = touch.location(in: view)
             if steerTouch == nil {
                 steerTouch = touch
-                anchorX = p.x
+                anchor = p
                 swipeStartY = p.y
                 swipeStartTime = touch.timestamp
                 touchStart = (p, touch.timestamp)
                 if touch.timestamp - lastTapEnd < 0.3 { controller.requestSwap() }
                 controller.touchBegan()
             } else {
-                // A second finger boosts (the iPad two-thumb layout, or anyone who prefers tapping).
+                // A second finger fires the nitro (the iPad two-thumb layout, or anyone who prefers tapping).
                 controller.requestBoost()
             }
         }
     }
 
-    /// Easy controls: hold the left or right half to move across the road; both at once cancel out.
-    private func updateEasySteer() {
-        let sum = sideTouches.values.reduce(0) { $0 + $1.side }
-        controller.touchSteered(clamp(sum, -1, 1))
-    }
-
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if controller.usesEasyControls, let view {
-            for touch in touches {
-                guard let start = sideTouches[touch] else { continue }
-                let p = touch.location(in: view)
-                // A quick upward flick boosts (or leaves the bay); that finger then stops steering.
-                if start.start.y - p.y > 55 && touch.timestamp - start.time < 0.35 {
-                    controller.requestBoost()
-                    sideTouches[touch] = nil
-                }
-            }
-            updateEasySteer()
-            return
-        }
         guard let view, let touch = steerTouch, touches.contains(touch) else { return }
         let p = touch.location(in: view)
-        var dx = p.x - anchorX
+        var dx = p.x - anchor.x
         if abs(dx) > fullLock {
             // Drag the anchor along so moving back straightens immediately.
-            anchorX = p.x - (dx > 0 ? fullLock : -fullLock)
+            anchor.x = p.x - (dx > 0 ? fullLock : -fullLock)
             dx = dx > 0 ? fullLock : -fullLock
         }
         let v = Double(dx / fullLock)
         controller.touchSteered(v >= 0 ? pow(v, 1.15) : -pow(-v, 1.15))
-        // Swipe up (quick upward flick) boosts, or leaves the pad bay.
+        // Pull down past the brake line to brake; the anchor follows upward moves so the brake is always a pull.
+        let dy = p.y - anchor.y
+        if dy < 0 { anchor.y = p.y }
+        controller.touchBraked(dy > brakeLine)
+        // Swipe up (quick upward flick) fires the nitro, or leaves the pad bay.
         if swipeStartY - p.y > 55 && touch.timestamp - swipeStartTime < 0.3 {
             controller.requestBoost()
             swipeStartY = p.y
@@ -495,11 +519,6 @@ final class GameScene: SKScene {
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if controller.usesEasyControls {
-            for touch in touches { sideTouches[touch] = nil }
-            updateEasySteer()
-            return
-        }
         guard let view, let touch = steerTouch, touches.contains(touch) else { return }
         let p = touch.location(in: view)
         let moved = hypot(p.x - touchStart.0.x, p.y - touchStart.0.y)
@@ -509,7 +528,6 @@ final class GameScene: SKScene {
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        sideTouches.removeAll()
         steerTouch = nil
         controller.touchEnded()
     }

@@ -1,7 +1,7 @@
 import SwiftUI
 import EchoLapCore
 
-/// A track's card: shape, rules, the three star times, the medal and your best laps.
+/// A track's card: shape, rules, the rival and the star times, the medal, your best and your echo ladder.
 struct TrackDetailView: View {
     let def: TrackDef
     @EnvironmentObject private var app: AppModel
@@ -10,6 +10,7 @@ struct TrackDetailView: View {
 
     var body: some View {
         let record = app.progress.tracks[def.id]
+        let rival = def.world.rival
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
@@ -37,7 +38,7 @@ struct TrackDetailView: View {
                     }
 
                     VStack(spacing: 0) {
-                        TargetRow(stars: 3, title: "Gold", time: built?.targets.gold, achieved: (record?.stars ?? 0) >= 3)
+                        TargetRow(stars: 3, title: "Beat \(rival.name)", time: built?.targets.gold, achieved: (record?.stars ?? 0) >= 3)
                         Divider().overlay(Theme.line)
                         TargetRow(stars: 2, title: "Silver", time: built?.targets.silver, achieved: (record?.stars ?? 0) >= 2)
                         Divider().overlay(Theme.line)
@@ -46,13 +47,27 @@ struct TrackDetailView: View {
                     .padding(.horizontal, 14)
                     .glassCard(cornerRadius: 20)
 
+                    HStack(alignment: .top, spacing: 12) {
+                        LadderDots(rung: record?.rung ?? 0, mastered: record?.mastered ?? false, size: 16)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(record?.mastered == true ? "Track mastered" : "Echo ladder: rung \(record?.rung ?? 0) of \(TrackRecord.topRung)")
+                                .font(Theme.rounded(.headline, .heavy))
+                                .foregroundStyle(record?.mastered == true ? Theme.gold : Theme.text)
+                            Text(ladderText(record)).font(Theme.rounded(.callout, .medium)).foregroundStyle(Theme.muted)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    .padding(14)
+                    .glassCard(cornerRadius: 20)
+                    .accessibilityElement(children: .combine)
+
                     if let medal = def.medal {
                         HStack(alignment: .top, spacing: 12) {
                             Image(systemName: record?.medal == true ? "medal.fill" : "medal")
                                 .font(.title2).foregroundStyle(record?.medal == true ? Theme.good : Theme.muted)
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Medal: \(medal.title)").font(Theme.rounded(.headline, .heavy))
-                                Text(medal.goal(laps: def.laps)).font(Theme.rounded(.callout, .medium)).foregroundStyle(Theme.muted)
+                                Text(medal.detail).font(Theme.rounded(.callout, .medium)).foregroundStyle(Theme.muted)
                                 Text(record?.medal == true ? "Earned" : "+\(Economy.medalSparks) Sparks the first time")
                                     .font(Theme.rounded(.caption, .bold)).foregroundStyle(record?.medal == true ? Theme.good : Theme.spark)
                             }
@@ -72,17 +87,16 @@ struct TrackDetailView: View {
                             }
                             .accessibilityElement(children: .ignore)
                             .accessibilityLabel("Your best, \(TimeFormat.spoken(record.bestTime))")
-                            ForEach(Array(record.bestLapTimes.enumerated()), id: \.offset) { i, t in
+                            let runs = app.savedRuns(for: def.id)
+                            ForEach(Array(runs.enumerated()), id: \.offset) { i, run in
                                 HStack {
                                     Circle().fill(Theme.echoColor(lap: i + 1)).frame(width: 10, height: 10)
-                                    Text("Lap \(i + 1)").font(Theme.rounded(.callout, .semibold)).foregroundStyle(Theme.muted)
+                                    Text("Echo \(i + 1)").font(Theme.rounded(.callout, .semibold)).foregroundStyle(Theme.muted)
                                     Spacer()
-                                    Text(TimeFormat.race(t)).font(Theme.rounded(.callout, .bold)).monospacedDigit()
+                                    Text(TimeFormat.race(run.totalTime)).font(Theme.rounded(.callout, .bold)).monospacedDigit()
                                 }
                                 .accessibilityElement(children: .combine)
                             }
-                            Text(app.progress.settings.showGhost ? "Your best run races with you as a white ghost." : "Ghost is off in Settings.")
-                                .font(Theme.rounded(.footnote, .medium)).foregroundStyle(Theme.muted)
                             Text("Played \(record.plays) \(record.plays == 1 ? "time" : "times")")
                                 .font(Theme.rounded(.footnote, .medium)).foregroundStyle(Theme.muted)
                         }
@@ -121,11 +135,19 @@ struct TrackDetailView: View {
     }
 
     private var subtitle: String {
-        var parts = ["\(def.laps) laps"]
+        var parts = ["one sprint"]
         if def.kind == .boss { parts.append("boss track") }
         if def.kind == .breather { parts.append("short track") }
+        parts.append("rival: \(def.world.rival.name)")
         parts.append(def.softEchoes ? "echoes are soft here" : "echoes are solid")
         return parts.joined(separator: " · ")
+    }
+
+    private func ladderText(_ record: TrackRecord?) -> String {
+        guard let record else { return "Finish once and your run comes back as an echo. Every new best adds another, up to five." }
+        if record.mastered { return "Five of your runs beaten with gold. Nothing left to prove here." }
+        if record.rung >= TrackRecord.topRung { return "Five echoes race you here. Beat the rival to master the track." }
+        return "\(record.rung) \(record.rung == 1 ? "echo races" : "echoes race") you here. A new best adds another."
     }
 }
 

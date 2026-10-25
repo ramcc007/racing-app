@@ -29,10 +29,15 @@ struct RaceView: View {
             guard session == nil else { return }
             let built = await app.build(request.def)
             let world = request.def.world
-            // Each world's rule is explained once, the first time a race uses it (the tutorial covers World 1).
+            // Each world's rule is explained once, the first time a race uses it (the first race covers World 1).
             let needsRule = request.kind != .tutorial && world != .harbour && !request.def.features.isEmpty
                 && !app.progress.seenRules.contains(world.rawValue) && !ScreenshotFlags.skipRuleCards
-            session = RaceSession(request: request, built: built, app: app, reduceMotion: reduceMotion, showRule: needsRule)
+            // The echo ladder: your best runs on this track race you from the line. Screenshots get robot runs.
+            var echoes = app.ladder(for: request.def.id)
+            if ScreenshotFlags.scene == "race" || ScreenshotFlags.scene == "results" {
+                echoes = await Task.detached { AppModel.demoEchoes(for: built, count: 3) }.value
+            }
+            session = RaceSession(request: request, built: built, echoes: echoes, app: app, reduceMotion: reduceMotion, showRule: needsRule)
         }
     }
 }
@@ -43,8 +48,8 @@ final class RaceSession {
     let scene: GameScene
     let showRule: Bool
 
-    init(request: RaceRequest, built: BuiltTrack, app: AppModel, reduceMotion: Bool, showRule: Bool) {
-        controller = RaceController(request: request, built: built, app: app, startPaused: showRule)
+    init(request: RaceRequest, built: BuiltTrack, echoes: [Echo], app: AppModel, reduceMotion: Bool, showRule: Bool) {
+        controller = RaceController(request: request, built: built, app: app, echoes: echoes, startPaused: showRule)
         let progress = app.progress
         scene = GameScene(controller: controller, settings: progress.settings, reduceMotion: reduceMotion, trail: progress.trail,
                           paint: progress.paint(for: controller.spec), celebration: progress.finishCelebration)
@@ -66,11 +71,11 @@ struct RaceScreen: View {
                 .ignoresSafeArea()
                 .accessibilityElement()
                 .accessibilityLabel("Race track")
-                .accessibilityHint("Hold anywhere to drive and slide left or right to steer. Swipe up to boost.")
+                .accessibilityHint("Drag left or right to steer, hold a turn to drift, pull down to brake, swipe up for nitro.")
                 .accessibilityAddTraits(.allowsDirectInteraction)
                 .accessibilityIdentifier("raceScene")
             if controller.outcome == nil {
-                RaceHUD(controller: controller, settings: app.progress.settings, hasGate: controller.built.track.shortcut != nil)
+                RaceHUD(controller: controller, request: request, settings: app.progress.settings, hasGate: controller.built.track.shortcut != nil)
             }
             if showRule {
                 RuleCard(world: request.def.world, features: request.def.features) {
@@ -84,7 +89,7 @@ struct RaceScreen: View {
                     .transition(.opacity)
             }
             if let outcome = controller.outcome {
-                ResultsView(outcome: outcome, request: request)
+                ResultsView(outcome: outcome, request: request, rival: controller.rival)
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
         }
@@ -104,8 +109,10 @@ struct RaceScreen: View {
 
 struct RaceHUD: View {
     @ObservedObject var controller: RaceController
+    let request: RaceRequest
     let settings: GameSettings
     let hasGate: Bool
+    @EnvironmentObject private var app: AppModel
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     /// iPad: the same layout, larger, so the HUD keeps its proportion on a big screen.
@@ -114,16 +121,8 @@ struct RaceHUD: View {
     var body: some View {
         let hud = controller.hud
         let step = controller.tutorialStep
-        let teaching = step == .steerRight || step == .steerLeft
-        let showingCard = teaching || step == .boost
+        let showingCard = step != nil && step != .done
         ZStack {
-            // Easy controls: show the two halves of the screen at the start of every race (and while the tutorial
-            // teaches them), so nobody has to guess.
-            if controller.usesEasyControls && (hud.countdown != nil || hud.runUp || teaching) {
-                SideZones(highlight: step == .steerRight ? 1 : (step == .steerLeft ? -1 : 0))
-                    .allowsHitTesting(false)
-                    .transition(.opacity)
-            }
             VStack(spacing: 10) {
                 HStack(alignment: .top, spacing: 10) {
                     Button {
@@ -138,7 +137,7 @@ struct RaceHUD: View {
                     .accessibilityLabel("Pause")
                     .accessibilityIdentifier("pause")
                     Spacer(minLength: 0)
-                    TimingPanel(hud: hud)
+                    TimingPanel(hud: hud, rival: controller.rival.name)
                         .scaleEffect(scale, anchor: .top)
                         .padding(.bottom, (scale - 1) * 90)
                     Spacer(minLength: 0)
@@ -146,13 +145,25 @@ struct RaceHUD: View {
                         if let lives = hud.lives {
                             LivesView(lives: lives)
                         } else {
-                            Color.clear
+                            Button {
+                                controller.stopSound()
+                                app.restart(request)
+                            } label: {
+                                Image(systemName: "arrow.counterclockwise")
+                                    .font(.system(size: 18, weight: .heavy))
+                                    .frame(width: 48, height: 48)
+                                    .background(.black.opacity(0.45), in: Circle())
+                                    .foregroundStyle(.white)
+                            }
+                            .accessibilityLabel("Go again")
+                            .accessibilityHint("Restarts this sprint straight away")
+                            .accessibilityIdentifier("goAgain")
                         }
                     }
                     .frame(width: 48, height: 48)
                 }
                 if !hud.echoes.isEmpty {
-                    EchoChips(chips: hud.echoes).allowsHitTesting(false)
+                    EchoChips(chips: hud.echoes, survival: request.def.mode == .survival).allowsHitTesting(false)
                 }
                 if let toast = controller.toast {
                     ToastPill(toast: toast).allowsHitTesting(false)
@@ -167,7 +178,7 @@ struct RaceHUD: View {
                         .allowsHitTesting(false)
                         .accessibilityIdentifier("wrongWay")
                 }
-                if let step, step != .drive, step != .done {
+                if let step, step != .done, hud.countdown == nil {
                     TutorialCard(step: step)
                         .allowsHitTesting(false)
                         .transition(.scale(scale: 0.9).combined(with: .opacity))
@@ -183,8 +194,8 @@ struct RaceHUD: View {
                         .transition(.opacity)
                         .accessibilityIdentifier("hint")
                 }
-                if (hud.countdown != nil || (hud.runUp && controller.tutorialStep == nil)) && !teaching {
-                    GoalPanel(goal: controller.goal, def: controller.request.def, easy: controller.usesEasyControls)
+                if hud.countdown != nil || (hud.runUp && !showingCard) {
+                    GoalPanel(goal: controller.goal, def: controller.request.def, rival: controller.rival, firstGo: request.attempt == 0)
                         .allowsHitTesting(false)
                         .transition(.opacity)
                 }
@@ -202,6 +213,13 @@ struct RaceHUD: View {
             .animation(.spring(duration: 0.3), value: controller.tutorialStep)
             .animation(.easeOut(duration: 0.3), value: hud.runUp)
 
+            if let popup = controller.popup {
+                PopupWord(popup: popup)
+                    .offset(y: -60 * scale)
+                    .allowsHitTesting(false)
+                    .transition(.scale(scale: 0.6).combined(with: .opacity))
+                    .accessibilityIdentifier("popup")
+            }
             if let n = hud.countdown {
                 Text("\(n)")
                     .font(.system(size: 120, weight: .black, design: .rounded))
@@ -213,14 +231,36 @@ struct RaceHUD: View {
                     .accessibilityLabel("Starting in \(n)")
             }
         }
+        .animation(.spring(duration: 0.25, bounce: 0.4), value: controller.popup?.id)
     }
 }
 
-/// What this race is for, shown before the start.
+/// A big word in the middle of the screen for a moment: NEAR MISS, SUPER DRIFT, NITRO.
+struct PopupWord: View {
+    let popup: RaceController.Popup
+
+    var body: some View {
+        VStack(spacing: 2) {
+            Text(popup.text)
+                .font(.system(size: 40, weight: .black, design: .rounded))
+                .tracking(1)
+                .foregroundStyle(popup.color)
+                .shadow(color: .black.opacity(0.6), radius: 6, y: 2)
+            if let detail = popup.detail {
+                Text(detail).font(Theme.rounded(.headline, .heavy)).foregroundStyle(.white)
+                    .shadow(color: .black.opacity(0.6), radius: 4)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// What this race is for, shown before the start, with the rival's taunt and the controls in one line.
 struct GoalPanel: View {
     let goal: String
     let def: TrackDef
-    let easy: Bool
+    let rival: Rival
+    let firstGo: Bool
 
     var body: some View {
         VStack(spacing: 6) {
@@ -229,10 +269,15 @@ struct GoalPanel: View {
             Text(goal)
                 .font(Theme.rounded(.title3, .heavy)).foregroundStyle(.white)
                 .multilineTextAlignment(.center)
-            Text(easy ? "Your car drives itself. Hold left or right to move across the road. Follow the arrows."
-                      : "Hold anywhere to drive, slide to steer. Follow the arrows.")
-                .font(Theme.rounded(.footnote, .semibold)).foregroundStyle(.white.opacity(0.75))
-                .multilineTextAlignment(.center)
+            if def.mode == .career {
+                Text("\(rival.name): \u{201C}\(rival.taunt)\u{201D}")
+                    .font(Theme.rounded(.footnote, .bold)).italic().foregroundStyle(Color(hex: rival.color))
+            }
+            if firstGo {
+                Text("Drag to steer \u{00B7} hold the turn to drift \u{00B7} swipe up for nitro")
+                    .font(Theme.rounded(.footnote, .semibold)).foregroundStyle(.white.opacity(0.75))
+                    .multilineTextAlignment(.center)
+            }
         }
         .padding(.horizontal, 18).padding(.vertical, 14)
         .solidCard(cornerRadius: 20, fill: Color.black.opacity(0.72))
@@ -242,39 +287,7 @@ struct GoalPanel: View {
     }
 }
 
-/// The two halves of the screen for easy controls, with the side the tutorial wants lit up.
-struct SideZones: View {
-    let highlight: Int   // -1 left, 1 right, 0 both quiet
-
-    var body: some View {
-        HStack(spacing: 0) {
-            zone(side: -1, icon: "chevron.left.2", text: "Hold left")
-            zone(side: 1, icon: "chevron.right.2", text: "Hold right")
-        }
-        .ignoresSafeArea()
-        .accessibilityHidden(true)
-    }
-
-    private func zone(side: Int, icon: String, text: String) -> some View {
-        let lit = highlight == side
-        return ZStack(alignment: side < 0 ? .bottomLeading : .bottomTrailing) {
-            Rectangle().fill(Color.white.opacity(lit ? 0.22 : 0.0))
-            VStack(spacing: 6) {
-                Image(systemName: icon).font(.system(size: lit ? 44 : 30, weight: .black))
-                Text(text).font(Theme.rounded(lit ? .headline : .footnote, .heavy))
-            }
-            .foregroundStyle(.white.opacity(lit ? 1 : 0.6))
-            .padding(.horizontal, 26)
-            .padding(.bottom, 150)
-            .symbolEffect(.pulse, isActive: lit)
-        }
-        .overlay(alignment: side < 0 ? .trailing : .leading) {
-            if highlight == 0 { Rectangle().fill(Color.white.opacity(0.18)).frame(width: 1).padding(.vertical, 140) }
-        }
-    }
-}
-
-/// A tutorial step that waits for the player to do it.
+/// A lesson in the first race that waits for the player to do it.
 struct TutorialCard: View {
     let step: RaceController.TutorialStep
 
@@ -293,36 +306,39 @@ struct TutorialCard: View {
 
     private var title: String {
         switch step {
-        case .steerRight: return "Hold the RIGHT side"
-        case .steerLeft: return "Now hold the LEFT side"
-        case .boost: return "Boost is full: swipe up!"
-        default: return ""
+        case .steer: return "Drag left or right to STEER"
+        case .drift: return "Hold the turn hard to DRIFT"
+        case .release: return "Let go for a BOOST"
+        case .nitro: return "Nitro is ready: swipe up!"
+        case .done: return ""
         }
     }
 
     private var detail: String {
         switch step {
-        case .steerRight: return "Your car drives and brakes by itself. You choose where it goes on the road."
-        case .steerLeft: return "Move across the road to slipstream your echoes or dodge them."
-        case .boost: return "Flick your thumb up anywhere, or tap BOOST, for a burst of speed."
-        default: return ""
+        case .steer: return "Anywhere on the screen. Your car drives by itself."
+        case .drift: return "Keep pushing through a corner until the sparks fly."
+        case .release: return "The longer the drift, the bigger the boost."
+        case .nitro: return "Or tap NITRO. Drifts, near misses and the road's edge fill it."
+        case .done: return ""
         }
     }
 }
 
 struct TimingPanel: View {
     let hud: RaceController.HUD
+    let rival: String
 
     var body: some View {
         VStack(spacing: 2) {
-            Text(hud.laps > 0 ? "LAP \(min(hud.lap, hud.laps)) / \(hud.laps)" : "LAP \(hud.lap)")
-                .font(Theme.rounded(.caption, .heavy)).tracking(1.5)
-                .foregroundStyle(.white.opacity(0.85))
+            if hud.laps == 0 {
+                Text("LAP \(hud.lap)").font(Theme.rounded(.caption, .heavy)).tracking(1.5).foregroundStyle(.white.opacity(0.85))
+            }
             Text(hud.runUp && hud.time == 0 ? "0.00" : TimeFormat.race(hud.time))
                 .font(Theme.timer(30))
                 .foregroundStyle(.white)
             if let delta = hud.delta {
-                Text(String(format: delta <= 0 ? "%.2f s ahead of gold" : "%.2f s behind gold", abs(delta)))
+                Text(String(format: delta <= 0 ? "%.2f s ahead of %@" : "%.2f s behind %@", abs(delta), rival))
                     .font(Theme.rounded(.caption, .heavy)).monospacedDigit()
                     .foregroundStyle(delta <= 0 ? Theme.good : Theme.bad)
             } else if hud.runUp && hud.countdown == nil {
@@ -333,9 +349,8 @@ struct TimingPanel: View {
         .background(.black.opacity(0.42), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .allowsHitTesting(false)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(hud.laps > 0 ? "Lap \(min(hud.lap, hud.laps)) of \(hud.laps), \(TimeFormat.spoken(hud.time))"
-                            : "Lap \(hud.lap), \(TimeFormat.spoken(hud.time))")
-        .accessibilityValue(hud.delta.map { $0 <= 0 ? "ahead of the gold car" : "behind the gold car" } ?? "")
+        .accessibilityLabel(TimeFormat.spoken(hud.time))
+        .accessibilityValue(hud.delta.map { $0 <= 0 ? "ahead of \(rival)" : "behind \(rival)" } ?? "")
         .accessibilityIdentifier("timing")
     }
 }
@@ -358,11 +373,13 @@ struct LivesView: View {
     }
 }
 
-/// One chip per echo: its lap number and colour (never colour alone), filled when solid, P when parked.
+/// One chip per echo: its rung (or lap) and colour (never colour alone), filled when solid, P when parked.
 struct EchoChips: View {
     let chips: [RaceController.EchoChip]
+    let survival: Bool
     var body: some View {
         HStack(spacing: 6) {
+            Text(survival ? "LAPS" : "ECHOES").font(.system(size: 10, weight: .black, design: .rounded)).foregroundStyle(.white.opacity(0.7))
             ForEach(chips.suffix(8)) { chip in
                 let color = Theme.echoColor(lap: chip.id)
                 HStack(spacing: 3) {
@@ -379,6 +396,8 @@ struct EchoChips: View {
                 .opacity(chip.state == .done ? 0.35 : 1)
             }
         }
+        .padding(.horizontal, 8).padding(.vertical, 4)
+        .background(.black.opacity(0.3), in: Capsule())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(chips.filter { $0.state != .done }.count) echoes on track")
     }
@@ -425,8 +444,33 @@ struct ControlsRow: View {
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 14) {
-            if boostOnLeft { boost; Spacer(); swap } else { swap; Spacer(); boost }
+            if boostOnLeft { boost; Spacer(); drift; swap } else { swap; drift; Spacer(); boost }
         }
+    }
+
+    /// Three pips that light up as a drift builds: the boost it will give when the thumb lets go.
+    private var drift: some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 5) {
+                ForEach(1...3, id: \.self) { tier in
+                    Capsule()
+                        .fill(hud.driftTier >= tier ? Theme.driftColor(tier) : Color.white.opacity(hud.drifting ? 0.35 : 0.18))
+                        .frame(width: 18 * scale, height: 8 * scale)
+                }
+            }
+            Text(hud.drifting ? (hud.driftTier >= 3 ? "ULTRA" : (hud.driftTier == 2 ? "SUPER" : "DRIFT")) : "DRIFT")
+                .font(.system(size: 10 * scale, weight: .black, design: .rounded))
+                .foregroundStyle(hud.drifting ? Theme.driftColor(max(1, hud.driftTier)) : .white.opacity(0.55))
+        }
+        .padding(.horizontal, 10 * scale).padding(.vertical, 8 * scale)
+        .background(.black.opacity(hud.drifting ? 0.55 : 0.35), in: Capsule())
+        .scaleEffect(hud.drifting ? 1.08 : 1)
+        .animation(.spring(duration: 0.2), value: hud.drifting)
+        .allowsHitTesting(false)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Drift")
+        .accessibilityValue(hud.drifting ? "drifting, tier \(hud.driftTier) of 3" : "not drifting")
+        .accessibilityIdentifier("driftMeter")
     }
 
     @ViewBuilder private var swap: some View {
@@ -444,10 +488,8 @@ struct ControlsRow: View {
             }
             .disabled(!hud.swapAvailable)
             .accessibilityLabel("Relay swap")
-            .accessibilityValue(hud.swapAvailable ? "ready" : "used this lap")
+            .accessibilityValue(hud.swapAvailable ? "ready" : "used")
             .accessibilityIdentifier("swap")
-        } else {
-            Color.clear.frame(width: 68 * scale, height: 68 * scale).allowsHitTesting(false)
         }
     }
 
@@ -461,20 +503,22 @@ struct ControlsRow: View {
                                                               style: StrokeStyle(lineWidth: 6, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .padding(3)
-                // The notch marks how much one boost costs.
+                // The notch marks how much one nitro costs.
                 Circle().trim(from: Race.boostCost - 0.008, to: Race.boostCost + 0.008).stroke(Color.white.opacity(0.9), lineWidth: 10)
                     .rotationEffect(.degrees(-90))
                     .padding(3)
                 VStack(spacing: 0) {
                     Image(systemName: hud.docked ? "arrow.up.circle.fill" : "bolt.fill").font(.system(size: 24 * scale, weight: .heavy))
-                    Text(hud.docked ? "LEAVE" : "BOOST").font(.system(size: 11 * scale, weight: .black, design: .rounded))
+                    Text(hud.docked ? "LEAVE" : "NITRO").font(.system(size: 11 * scale, weight: .black, design: .rounded))
                 }
                 .foregroundStyle(hud.boostReady || hud.docked ? Color.black : .white.opacity(0.75))
             }
             .frame(width: 84 * scale, height: 84 * scale)
+            .scaleEffect(hud.boosting ? 1.1 : 1)
+            .animation(.spring(duration: 0.2), value: hud.boosting)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(hud.docked ? "Leave the bay" : "Boost")
+        .accessibilityLabel(hud.docked ? "Leave the bay" : "Nitro")
         .accessibilityValue("\(Int(hud.boost * 100)) percent charged" + (hud.boostReady ? ", ready" : ""))
         .accessibilityIdentifier("boost")
     }
@@ -528,7 +572,7 @@ struct PauseMenu: View {
                 Text(request.def.mode == .career ? "\(request.def.label) · \(request.def.name)" : request.def.name)
                     .font(Theme.rounded(.subheadline, .semibold)).foregroundStyle(Theme.muted)
                 if let medal = request.def.medal, request.def.mode == .career {
-                    Label(medal.goal(laps: request.def.laps), systemImage: "medal")
+                    Label(medal.detail, systemImage: "medal")
                         .font(Theme.rounded(.footnote, .semibold)).foregroundStyle(Theme.muted)
                         .multilineTextAlignment(.leading)
                 }
@@ -544,7 +588,7 @@ struct PauseMenu: View {
                     controller.stopSound()
                     app.restart(request)
                 } label: {
-                    Label(isWeekly ? "Restart gauntlet" : "Restart", systemImage: "arrow.counterclockwise")
+                    Label(isWeekly ? "Restart gauntlet" : "Go again", systemImage: "arrow.counterclockwise")
                         .font(Theme.rounded(.headline, .bold)).frame(maxWidth: .infinity).padding(.vertical, 4)
                 }
                 .secondaryButtonStyle()

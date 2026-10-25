@@ -7,9 +7,9 @@ No other game, brand or company names anywhere (guideline 2.3.7 / 5.2).
 | Field | Text | Length / limit |
 |---|---|---|
 | Name | Echo Lap | 8 / 30 |
-| Subtitle | Race against your own laps | 26 / 30 |
+| Subtitle | Drift past yourself | 19 / 30 |
 | Keywords | `racing,racer,car,cars,ghost,drift,track,slipstream,boost,daily,offline,one thumb,arcade,time trial` | 98 / 100 |
-| Promotional text | Every lap you finish stays on the track as an echo car. Slipstream it, park it on a switch, swap places with it. 120 tracks, a new daily track, no ads. | 151 / 170 |
+| Promotional text | Hold the turn, drift, let go for a boost. Beat the rival, then beat yourself: your best runs come back as echo cars. 120 sprints, a daily track, no ads. | 157 / 170 |
 | Primary category | Games → Racing | |
 | Secondary category | Games → Arcade | |
 | Price | Free | |
@@ -22,15 +22,17 @@ Keywords don't repeat words already in the name or subtitle (Apple indexes those
 
 ## Description
 
-Every lap you drive stays on the track.
+Hold the turn. Drift. Let go.
 
-Finish a lap and it keeps racing beside you as an echo: a car that drives your exact line, lap after lap. Use your
-echoes. Tuck in behind one to slipstream and charge your boost. Park one on a switch so the gate stays open on your
-next lap. Swap places with the echo ahead. Or just try not to crash into the mistakes you made two laps ago.
+Echo Lap is a one-thumb drift racer. Your car drives itself: drag to steer, hold a corner hard to drift, and let go
+for a boost. The longer the drift, the bigger the boost. Fill the nitro by taking risks: drift, pass your echoes by
+a whisker, ride the edge of the road, tuck into a slipstream. Touch an echo and you spin and lose the lot.
 
-ONE THUMB, REAL DEPTH
-• Hold anywhere to drive, slide to steer, swipe up to boost.
-• Easy to start, with plenty to master: racing lines, slipstream chains, perfectly timed shortcuts.
+Every sprint is 20 to 45 seconds against a rival with a mouth on them. Beat them for three stars. Then beat
+yourself: every best run comes back as an echo car that races you from the line. One more joins the road with
+every new best, up to five. Beat all five with gold and the track is mastered.
+
+• Easy to start, with plenty to master: drift lines, near misses, nitro timing, perfectly timed shortcuts.
 
 120 TRACKS IN 8 WORLDS
 • Harbour, Red Canyon, Neon City, Glacier, Jungle, Foundry, Sky Port and Orbit.
@@ -43,6 +45,7 @@ ALWAYS SOMETHING TO CHASE
 • A new daily track every day, the same for everyone, with three daily goals and a streak.
 • A weekly gauntlet: three tracks back to back.
 • Echo Survival: laps never end and every lap adds another echo. How long can you last?
+• The echo ladder: 120 tracks to master, five of your own runs at a time.
 • Race your own best-run ghost.
 • Six racers to unlock, and paints, echo trails and finish celebrations to earn.
 • Game Center leaderboards and 36 achievements.

@@ -17,12 +17,12 @@ struct DailyView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     ModeHeader(built: built, def: def, eyebrow: today.shortLabel.uppercased(), title: "Daily track",
-                               subtitle: "\(def.world.name) · \(def.laps) laps · \(Self.timeLeft())")
+                               subtitle: "\(def.world.name) · one sprint · \(Self.timeLeft())")
                     HStack(spacing: 12) {
                         StatTile(title: "Today's best", value: record.map { TimeFormat.race($0.bestTime) } ?? "–", icon: "stopwatch.fill")
                         StatTile(title: "Streak", value: "\(app.progress.dailyStreak) \(app.progress.dailyStreak == 1 ? "day" : "days")", icon: "flame.fill")
                     }
-                    Text("First finish today pays \(Economy.dailyFirstFinishSparks) Sparks plus \(Economy.dailyStreakSparks) per streak day (up to \(Economy.dailyStreakCap) days). Best streak: \(app.progress.bestDailyStreak).")
+                    Text("First finish today pays \(Economy.dailyFirstFinishSparks) Sparks plus \(Economy.dailyStreakSparks) per streak day (up to \(Economy.dailyStreakCap) days). Best streak: \(app.progress.bestDailyStreak). Your best runs today race you as echoes.")
                         .font(Theme.rounded(.footnote, .medium)).foregroundStyle(Theme.muted)
                     if let goals {
                         VStack(alignment: .leading, spacing: 12) {
@@ -182,7 +182,7 @@ struct WeeklyView: View {
                             .frame(width: 84, height: 64)
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Race \(i + 1)").font(Theme.rounded(.headline, .heavy))
-                                Text("\(def.world.name) · \(def.laps) laps").font(Theme.rounded(.footnote, .medium)).foregroundStyle(Theme.muted)
+                                Text("\(def.world.name) · one sprint").font(Theme.rounded(.footnote, .medium)).foregroundStyle(Theme.muted)
                                 if !def.features.isEmpty {
                                     Text(def.features.sorted { $0.rawValue < $1.rawValue }.map(\.displayName).joined(separator: ", "))
                                         .font(Theme.rounded(.caption, .bold)).foregroundStyle(Theme.worldColor(def.world))

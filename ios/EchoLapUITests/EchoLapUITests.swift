@@ -1,6 +1,6 @@
 import XCTest
 
-/// End-to-end checks on a fresh install. `-EchoUITest` makes a robot drive at 6× speed, so races finish quickly
+/// End-to-end checks on a fresh install. `-EchoUITest` makes a robot drive at 6× speed, so sprints finish quickly
 /// and the same way every run; `-EchoReset` wipes saved progress first.
 final class EchoLapUITests: XCTestCase {
     private var app: XCUIApplication!
@@ -11,7 +11,7 @@ final class EchoLapUITests: XCTestCase {
 
     /// `frozen` stops the race clock (it stays on the countdown), so menus can be tested without the race ending
     /// underneath them and without the app animating between every query.
-    /// `manual` turns the robot driver off, so the test drives with real touches (easy controls, the default).
+    /// `manual` turns the robot driver off, so the test drives with real touches.
     private func launch(frozen: Bool = false, manual: Bool = false) {
         app = XCUIApplication()
         app.launchArguments = ["-EchoUITest", "-EchoReset"] + (frozen ? ["-EchoFastForward", "0"] : [])
@@ -41,32 +41,40 @@ final class EchoLapUITests: XCTestCase {
         XCTAssertTrue(element.waitForExistence(timeout: seconds), "\(element) did not appear", file: file, line: line)
     }
 
-    /// Intro → first race → results → home, then every menu screen opens and closes.
+    /// Intro → first sprint → results → GO AGAIN → results → home, then every menu screen opens and closes.
     func testFirstLaunchJourney() {
         launch()
-        // Three intro cards: why you race, the twist, how to use it.
+        // Three intro cards: the controls, the rival, the echoes.
         let next = app.buttons["introNext"]
         waitFor(next)
         XCTAssertTrue(app.staticTexts["ECHO LAP"].exists)
-        XCTAssertTrue(app.staticTexts["Beat the gold car"].exists)
+        XCTAssertTrue(app.staticTexts["Hold the turn. Drift. Let go."].exists)
         XCTAssertTrue(app.links["Privacy"].exists || app.buttons["Privacy"].exists, "privacy link on the first screen")
         XCTAssertTrue(app.buttons["introSkip"].exists)
         snapshot("01-intro")
         next.tap()
-        waitFor(app.staticTexts["Every lap stays on the track"])
+        waitFor(app.staticTexts["Beat the rival"])
         app.buttons["introNext"].tap()
-        waitFor(app.staticTexts["Use your echoes"])
+        waitFor(app.staticTexts["Your runs come back"])
         let start = app.buttons["startRacing"]
         waitFor(start)
         start.tap()
 
         waitFor(app.buttons["pause"], 30)
+        XCTAssertTrue(app.buttons["goAgain"].exists, "instant restart in the HUD")
         snapshot("02-race")
-        let continueButton = app.buttons["resultsPrimary"]
-        waitFor(continueButton, 150)
+        let again = app.buttons["resultsAgain"]
+        waitFor(again, 150)
         snapshot("03-results")
         XCTAssertTrue(app.staticTexts["Nice driving!"].exists)
-        continueButton.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["ladder"].exists, "the echo ladder shows after a finish")
+        again.tap()
+
+        // GO AGAIN: the sprint restarts at once (short countdown) with the first run on the road as an echo.
+        waitFor(app.buttons["pause"], 30)
+        waitFor(app.buttons["resultsAgain"], 150)
+        snapshot("03b-results-again")
+        app.buttons["resultsMenu"].tap()
 
         let race = app.buttons["continueRace"]
         waitFor(race)
@@ -103,7 +111,7 @@ final class EchoLapUITests: XCTestCase {
         app.buttons["closeDetail"].tap()
     }
 
-    /// Pause, resume, restart and quit all work during a race, and the quit asks first.
+    /// Pause, resume, go again and quit all work during a race, and the quit asks first.
     func testPauseMenu() {
         launch(frozen: true)
         let skip = app.buttons["introSkip"]
@@ -119,7 +127,7 @@ final class EchoLapUITests: XCTestCase {
 
         openPauseMenu()
         app.buttons["restart"].tap()
-        XCTAssertFalse(app.buttons["resume"].waitForExistence(timeout: 2), "restart starts a fresh race")
+        XCTAssertFalse(app.buttons["resume"].waitForExistence(timeout: 2), "go again starts a fresh race")
 
         openPauseMenu()
         app.buttons["quit"].tap()
@@ -129,7 +137,7 @@ final class EchoLapUITests: XCTestCase {
         waitFor(app.buttons["continueRace"])
     }
 
-    /// The boost button is a real control with a value VoiceOver can read.
+    /// The nitro button and the drift meter are real controls with values VoiceOver can read.
     func testRaceControlsAreAccessible() {
         launch(frozen: true)
         waitFor(app.buttons["introSkip"])
@@ -138,11 +146,13 @@ final class EchoLapUITests: XCTestCase {
         waitFor(boost, 30)
         XCTAssertGreaterThanOrEqual(boost.frame.width, 44)
         XCTAssertGreaterThanOrEqual(app.buttons["pause"].frame.width, 44)
+        XCTAssertGreaterThanOrEqual(app.buttons["goAgain"].frame.width, 44)
         XCTAssertFalse((boost.value as? String ?? "").isEmpty)
+        XCTAssertTrue(app.descendants(matching: .any)["driftMeter"].exists)
     }
 
-    /// The first race teaches easy controls by doing: each lesson waits until the player has done it.
-    func testTutorialTeachesEasyControlsByDoing() {
+    /// The first race teaches by doing: steer, hold the turn to drift, let go for the boost, then fire the nitro.
+    func testTutorialTeachesDriftByDoing() {
         launch(manual: true)
         let skip = app.buttons["introSkip"]
         waitFor(skip)
@@ -150,22 +160,26 @@ final class EchoLapUITests: XCTestCase {
 
         let card = app.descendants(matching: .any)["tutorialCard"]
         waitFor(card, 30)
-        XCTAssertTrue(card.label.contains("RIGHT"), "first lesson: hold the right side (\(card.label))")
-        snapshot("11-tutorial-right")
-        let screen = app.windows.firstMatch
-        screen.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.55)).press(forDuration: 4)
-        XCTAssertTrue(waitForLabel(card, containing: "LEFT", seconds: 10), "second lesson: hold the left side (\(card.label))")
-        snapshot("12-tutorial-left")
-        screen.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.55)).press(forDuration: 4)
-        XCTAssertTrue(waitForDisappearance(card, seconds: 10), "the steering lessons finish once both sides were held")
-
-        // On lap 2 the boost lesson stops the race until the player boosts.
-        XCTAssertTrue(waitForLabel(card, containing: "swipe up", seconds: 120), "boost lesson appears on lap 2")
-        snapshot("13-tutorial-boost")
+        XCTAssertTrue(waitForLabel(card, containing: "STEER", seconds: 15), "first lesson: steer (\(card.label))")
+        snapshot("11-tutorial-steer")
+        // Drag the thumb to the right and keep it there: that is a steer, then a drift.
+        let scene = app.descendants(matching: .any)["raceScene"]
+        let from = scene.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
+        let to = scene.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.55))
+        from.press(forDuration: 0.1, thenDragTo: to, withVelocity: .fast, thenHoldForDuration: 3.0)
+        snapshot("12-tutorial-drift")
+        // Letting go ended the drift with a boost, so the lesson moved on to the nitro.
+        XCTAssertTrue(waitForLabel(card, containing: "swipe up", seconds: 30), "after a drift and release the nitro lesson shows (\(card.label))")
+        snapshot("13-tutorial-nitro")
         app.buttons["boost"].tap()
-        XCTAssertTrue(waitForDisappearance(card, seconds: 10), "boosting finishes the lesson")
-        waitFor(app.buttons["resultsPrimary"], 180)
-        snapshot("14-tutorial-results")
+        XCTAssertTrue(waitForDisappearance(card, seconds: 40), "firing the nitro finishes the lessons")
+
+        openPauseMenu()
+        app.buttons["quit"].tap()
+        let confirm = app.buttons["Quit to menu"]
+        waitFor(confirm)
+        confirm.tap()
+        waitFor(app.buttons["continueRace"])
     }
 
     private func waitForLabel(_ element: XCUIElement, containing text: String, seconds: TimeInterval) -> Bool {

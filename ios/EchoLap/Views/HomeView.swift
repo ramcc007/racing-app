@@ -123,6 +123,7 @@ struct HomeView: View {
                 CounterPill(systemImage: "star.fill", value: "\(progress.totalStars)", color: Theme.gold, label: "stars")
                 CounterPill(systemImage: "sparkle", value: "\(progress.sparks)", color: Theme.spark, label: "Sparks")
                 CounterPill(systemImage: "medal.fill", value: "\(progress.medalCount)", color: Theme.good, label: "medals")
+                CounterPill(systemImage: "chart.bar.fill", value: "\(progress.masteredCount)", color: Theme.echo[1], label: "mastered")
             }
         }
         .padding(.top, 6)
@@ -136,8 +137,14 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record == nil ? "NEXT UP" : "IMPROVE").font(Theme.rounded(.caption, .heavy)).tracking(2).foregroundStyle(Theme.worldColor(def.world))
                     Text(def.name).font(Theme.rounded(.title, .black))
-                    Text("\(def.label) · \(def.world.name) · \(def.laps) laps").font(Theme.rounded(.subheadline, .medium)).foregroundStyle(Theme.muted)
-                    if let record { StarsView(count: record.stars, size: 16).padding(.top, 2) }
+                    Text("\(def.label) · \(def.world.name) · rival \(def.world.rival.name)").font(Theme.rounded(.subheadline, .medium)).foregroundStyle(Theme.muted)
+                    if let record {
+                        HStack(spacing: 10) {
+                            StarsView(count: record.stars, size: 16)
+                            LadderDots(rung: record.rung, mastered: record.mastered, size: 10)
+                        }
+                        .padding(.top, 2)
+                    }
                 }
                 Spacer()
                 Group {
@@ -152,7 +159,7 @@ struct HomeView: View {
             Button {
                 app.play(def)
             } label: {
-                Label("Race", systemImage: "flag.checkered").font(Theme.rounded(.title3, .heavy)).frame(maxWidth: .infinity).padding(.vertical, 4)
+                Label(record == nil ? "Race" : "Beat your best", systemImage: "flag.checkered").font(Theme.rounded(.title3, .heavy)).frame(maxWidth: .infinity).padding(.vertical, 4)
             }
             .primaryButtonStyle()
             .controlSize(.large)

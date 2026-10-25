@@ -102,6 +102,36 @@ enum Routes {
     }
 }
 
+/// The robot's racing line as the app sees it: the line the rival drives and the direction arrows follow.
+public struct RacingLine: Sendable {
+    /// Sideways offset from the centreline at every track sample.
+    public let lateral: [Double]
+    public let points: [Vec2]
+    private let length: Double
+    private let step: Double
+    private let count: Int
+
+    public init(track: Track) {
+        let line = Routes.racingLine(track)
+        points = line
+        lateral = (0..<track.count).map { (line[$0] - track.points[$0]).dot(track.normal($0)) }
+        length = track.length
+        step = track.step
+        count = track.count
+    }
+
+    /// Position and heading at a distance raced since the line.
+    public func pose(atProgress progress: Double) -> (position: Vec2, heading: Double) {
+        let s = max(0, progress).truncatingRemainder(dividingBy: length)
+        let f = s / step
+        let i = ((Int(f.rounded(.down)) % count) + count) % count
+        let j = (i + 1) % count
+        let t = f - f.rounded(.down)
+        let p = points[i] + (points[j] - points[i]) * t
+        return (p, (points[j] - points[i]).angle)
+    }
+}
+
 /// Drives one race for the robot (also used for the in-app demo and autopilot).
 public final class RobotDriver {
     public let plan: RobotPlan

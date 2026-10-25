@@ -18,6 +18,24 @@ struct StarsView: View {
     }
 }
 
+/// The echo ladder: five dots, filled up to the rung, gold when the track is mastered.
+struct LadderDots: View {
+    let rung: Int
+    let mastered: Bool
+    var size: CGFloat = 12
+    var body: some View {
+        HStack(spacing: size * 0.35) {
+            ForEach(0..<TrackRecord.topRung, id: \.self) { i in
+                Circle()
+                    .fill(i < rung ? (mastered ? Theme.gold : Theme.echoColor(lap: i + 1)) : Theme.muted.opacity(0.25))
+                    .frame(width: size, height: size)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(mastered ? "Track mastered" : "Echo ladder rung \(rung) of \(TrackRecord.topRung)")
+    }
+}
+
 /// A small counter: stars, Sparks, level.
 struct CounterPill: View {
     let systemImage: String

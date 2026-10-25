@@ -23,6 +23,10 @@ enum Theme {
 
     static func echoColor(lap: Int) -> Color { echo[(max(1, lap) - 1) % echo.count] }
 
+    /// Drift spark colours by tier: white while building, then blue, orange and purple boosts.
+    static let driftUI: [UIColor] = [UIColor.white, UIColor(hex: 0x56B4E9), UIColor(hex: 0xFF8C1A), UIColor(hex: 0xB49BFF)]
+    static func driftColor(_ tier: Int) -> Color { Color(driftUI[clamp(tier, 0, 3)]) }
+
     static func worldColor(_ world: World) -> Color { Color(hex: WorldStyle.of(world).accent) }
 
     static func rounded(_ style: Font.TextStyle, _ weight: Font.Weight = .bold) -> Font {

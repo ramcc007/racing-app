@@ -134,6 +134,7 @@ struct TrackTile: View {
                     StarsView(count: record?.stars ?? 0, size: 13)
                     Spacer()
                     if record?.medal == true { Image(systemName: "medal.fill").font(.caption).foregroundStyle(Theme.good) }
+                    if let record { LadderDots(rung: record.rung, mastered: record.mastered, size: 6) }
                 } else {
                     Image(systemName: "lock.fill").font(.caption).foregroundStyle(Theme.muted)
                     Spacer()
@@ -154,8 +155,9 @@ struct TrackTile: View {
         if def.kind == .breather { text += ", short track" }
         guard unlocked else { return text + ", locked" }
         if let record {
-            text += ", \(record.stars) of 3 stars, best \(TimeFormat.spoken(record.bestTime))"
+            text += ", \(record.stars) of 3 stars, best \(TimeFormat.spoken(record.bestTime)), ladder rung \(record.rung)"
             if record.medal { text += ", medal earned" }
+            if record.mastered { text += ", mastered" }
         } else {
             text += ", not raced yet"
         }

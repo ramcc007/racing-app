@@ -17,13 +17,6 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section {
-                Picker("Controls", selection: binding(\.controls)) {
-                    Text("Easy").tag(GameSettings.Controls.easy)
-                    Text("Pro").tag(GameSettings.Controls.pro)
-                }
-                .pickerStyle(.segmented)
-                .accessibilityIdentifier("controlsPicker")
-                if app.progress.settings.controls == .pro {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Text("Steering sensitivity")
@@ -39,9 +32,8 @@ struct SettingsView: View {
                     }
                     .accessibilityIdentifier("sensitivity")
                 }
-                }
                 Toggle("Tilt to steer", isOn: binding(\.tiltSteering))
-                Toggle("Boost button on the left", isOn: binding(\.boostButtonOnLeft))
+                Toggle("Nitro button on the left", isOn: binding(\.boostButtonOnLeft))
                 Picker("Camera", selection: binding(\.camera)) {
                     Text("Follows the car").tag(GameSettings.Camera.follow)
                     Text("Fixed, north up").tag(GameSettings.Camera.fixed)
@@ -49,20 +41,17 @@ struct SettingsView: View {
             } header: {
                 Text("Controls")
             } footer: {
-                Text(app.progress.settings.controls == .easy
-                     ? "Easy: the car drives and brakes by itself. Hold the left or right side of the screen to move across the road; steer towards the bay or an open shortcut to take it. Swipe up or tap BOOST to boost."
-                     : "Pro: hold anywhere to drive and slide your thumb to steer. Lift to slow down. Swipe up or tap BOOST to boost. Game controllers work with both.")
+                Text("The car drives by itself. Drag anywhere to steer, hold a turn hard to drift, pull your thumb down to brake, and swipe up (or tap NITRO) to fire the nitro. Game controllers work too.")
             }
 
             Section {
-                Toggle("Guide line and arrows", isOn: binding(\.showGuide))
-                Toggle("Best-run ghost", isOn: binding(\.showGhost))
+                Toggle("Direction arrows", isOn: binding(\.showGuide))
                 Toggle("Coaching hints", isOn: binding(\.showHints))
                 Toggle("Calm effects", isOn: binding(\.calmEffects))
             } header: {
                 Text("Display")
             } footer: {
-                Text("Calm effects turns off camera rotation, shake and particles. It switches on by itself when Reduce Motion is on.")
+                Text("Calm effects turns off camera shake, speed lines, sparks and slow motion. It switches on by itself when Reduce Motion is on.")
             }
 
             Section("Sound and haptics") {
@@ -109,7 +98,7 @@ struct SettingsView: View {
             Button("Reset", role: .destructive) { app.resetProgress() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Stars, Sparks, racers, styles and records on this device will be erased. This can't be undone.")
+            Text("Stars, Sparks, racers, styles, saved runs and records on this device will be erased. This can't be undone.")
         }
     }
 
@@ -128,22 +117,28 @@ struct HowToPlayView: View {
     var body: some View {
         List {
             Section("Driving") {
-                row("car.fill", "Easy controls (default)", "The car drives and brakes by itself. Hold the left or right side of the screen to move across the road. Steer towards the bay or an open shortcut to take it.")
-                row("arrow.up.forward", "Follow the arrows", "Arrows on the road and a glowing line show the way round.")
-                row("hand.point.up.left.fill", "Pro controls", "Choose Pro in Settings: hold anywhere to drive, slide to steer, lift to slow down.")
-                row("bolt.fill", "Boost", "Swipe up, tap with a second finger or press the boost button. A boost costs the marked part of the meter.")
-                row("gamecontroller.fill", "Controllers", "Left stick steers, A or right trigger drives, B boosts, X swaps.")
+                row("hand.draw.fill", "Steer", "Your car drives by itself. Drag your thumb left or right anywhere on the screen.")
+                row("arrow.turn.down.right", "Drift", "Hold a turn hard at speed and the car drifts: sparks fly and the DRIFT pips fill. Let go for a boost. The longer the drift, the bigger the boost.")
+                row("arrow.down", "Brake", "Pull your thumb straight down. You rarely need it: a long drift slows you too.")
+                row("bolt.fill", "Nitro", "Swipe up, tap with a second finger or press NITRO. One fire costs the marked part of the meter.")
+                row("gamecontroller.fill", "Controllers", "Left stick steers, A or left trigger brakes, B or right trigger fires nitro, X swaps.")
             }
-            Section("Echoes") {
-                row("repeat", "Every lap stays", "When you finish a lap, it keeps driving as an echo car with its lap number.")
-                row("wind", "Slipstream", "Drive right behind an echo to go faster and fill the boost meter.")
-                row("exclamationmark.triangle.fill", "Solid echoes", "From World 2, bumping into an echo spins you out. In World 1 they're soft.")
-                row("person.fill.viewfinder", "Ghost", "Your best run on a track races with you as a white ghost. It never blocks you.")
+            Section("Filling the nitro") {
+                row("sparkles", "Drift boosts", "Every drift you release adds nitro, more for a longer drift.")
+                row("car.2.fill", "Near misses", "Pass a solid echo by a whisker without touching it.")
+                row("road.lanes", "The edge", "Ride the very edge of the road at speed. Over the kerb and it stops.")
+                row("wind", "Slipstream", "Drive right behind an echo.")
+                row("exclamationmark.triangle.fill", "Touching an echo", "Spins you out and empties the whole meter.")
+            }
+            Section("Echoes and the ladder") {
+                row("repeat", "Your runs come back", "Your best runs on a track race you from the line as echo cars. Each one shows its rung: 1 is your best.")
+                row("chart.bar.fill", "The echo ladder", "Every new best time puts one more of your runs on the road, up to five. Five echoes beaten with gold masters the track.")
+                row("person.fill.viewfinder", "The rival", "Each world's rival drives the gold pace. Finish ahead for three stars.")
             }
             Section("Stars and rewards") {
-                row("star.fill", "Stars", "1 star for finishing, 2 for beating the silver time, 3 for finishing ahead of the gold car. Stars open worlds and racers.")
-                row("medal.fill", "Medals", "Each track has a medal goal that uses your echoes.")
-                row("sparkle", "Sparks", "Earned from stars, medals, daily goals and streaks. Spend them on styles in the garage.")
+                row("star.fill", "Stars", "1 star for finishing, 2 for beating the silver time, 3 for beating the rival. Stars open worlds and racers.")
+                row("medal.fill", "Medals", "Each track has a medal goal that uses the skills: drift boosts, near misses, gates, swaps.")
+                row("sparkle", "Sparks", "Earned from stars, medals, ladder rungs, daily goals and streaks. Spend them on styles in the garage.")
                 row("chevron.up.2", "Level", "Every race earns XP. Each new level pays 100 Sparks.")
             }
             Section("World rules") {

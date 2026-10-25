@@ -54,14 +54,20 @@ world colour works (export from `design/icon/icon.html`).
 | `echolap.ach.medals10` | Decorated | Earn 10 echo medals. | 20 |
 | `echolap.ach.medals60` | Medal case | Earn 60 echo medals. | 35 |
 | `echolap.ach.medals120` | Full honours | Earn every echo medal. | 60 |
+| `echolap.ach.mastered1` | Top of the ladder | Master a track: five echoes beaten with gold. | 20 |
+| `echolap.ach.mastered15` | Ladder climber | Master 15 tracks. | 40 |
+| `echolap.ach.mastered60` | Echo legend | Master 60 tracks. | 80 |
+| `echolap.ach.drifts100` | Sideways | Earn 100 drift boosts. | 15 |
+| `echolap.ach.drifts1000` | Drift king | Earn 1,000 drift boosts. | 30 |
+| `echolap.ach.nearMiss50` | By a whisker | Pass your echoes within a whisker 50 times. | 20 |
+| `echolap.ach.nearMiss500` | Paint trader | 500 near misses. | 35 |
 | `echolap.ach.drafts100` | Slipstreamer | Slipstream behind echoes 100 times. | 15 |
-| `echolap.ach.drafts1000` | Draft legend | Slipstream behind echoes 1,000 times. | 30 |
-| `echolap.ach.boosts250` | Afterburner | Use boost 250 times. | 20 |
+| `echolap.ach.boosts250` | Afterburner | Fire the nitro 250 times. | 20 |
 | `echolap.ach.swaps50` | Relay runner | Relay-swap 50 times. | 25 |
 | `echolap.ach.gate25` | Gatekeeper | Pass 25 gates or bridges your echoes opened. | 25 |
 | `echolap.ach.ice30` | Icebreaker | Break 30 sheets of thin ice. | 25 |
 | `echolap.ach.jumps100` | Moonwalker | Take 100 jumps. | 25 |
-| `echolap.ach.laps1000` | Marathon | Complete 1,000 laps. | 30 |
+| `echolap.ach.sprints1000` | Marathon | Finish 1,000 sprints. | 30 |
 | `echolap.ach.daily1` | Daily driver | Finish a daily track. | 10 |
 | `echolap.ach.streak3` | Three in a row | Finish the daily track 3 days in a row. | 15 |
 | `echolap.ach.streak7` | Week streak | Finish the daily track 7 days in a row. | 25 |

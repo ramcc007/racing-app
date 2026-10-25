@@ -63,11 +63,11 @@ enum ScreenshotScene {
             p.seenRules = [2, 3]
             for def in Catalog.career where def.world <= .neon {
                 if def.world == .neon && def.slot > 8 { continue }
-                let lap = (14 + 0.15 * Double(def.index - 1)) * (def.kind == .breather ? 0.85 : 1) * 0.97
+                let lap = (20 + 0.17 * Double(def.index - 1)) * (def.kind == .breather ? 0.8 : (def.kind == .boss ? 1.15 : 1)) * 0.97
                 let stars = def.world == .harbour ? 3 : (def.slot % 4 == 0 ? 2 : 3)
-                let laps = (0..<def.laps).map { lap * (1 + 0.012 * Double($0 == 0 ? 3 : 0)) }
-                p.tracks[def.id] = TrackRecord(bestTime: laps.reduce(0, +), stars: stars, medal: def.slot % 3 != 0,
-                                               bestLapTimes: laps, plays: 2 + def.slot % 3)
+                let rung = def.world == .harbour ? (def.slot % 3 == 0 ? 5 : 3 + def.slot % 2) : 1 + def.slot % 4
+                p.tracks[def.id] = TrackRecord(bestTime: lap, stars: stars, medal: def.slot % 3 != 0,
+                                               bestLapTimes: [lap], plays: 2 + def.slot % 3, rung: rung)
             }
             p.xp = Economy.xpForLevel(12) + 410
             p.sparks = 1_860
@@ -86,6 +86,9 @@ enum ScreenshotScene {
             p.stats.laps = 448
             p.stats.drafts = 612
             p.stats.boosts = 377
+            p.stats.drifts = 1_480
+            p.stats.driftBoosts = 1_102
+            p.stats.nearMisses = 236
             p.stats.swaps = 0
             p.stats.echoGatePasses = 38
             p.stats.golds = 72

@@ -2,10 +2,11 @@ import SwiftUI
 import StoreKit
 import EchoLapCore
 
-/// After a race: time, stars, laps, medal, every Spark and XP earned, anything unlocked, and what to do next.
+/// After a sprint: time, stars, the rival's verdict, the echo ladder, every Spark earned, and a huge GO AGAIN.
 struct ResultsView: View {
     let outcome: RaceController.Outcome
     let request: RaceRequest
+    let rival: Rival
     @EnvironmentObject private var app: AppModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.requestReview) private var requestReview
@@ -21,10 +22,11 @@ struct ResultsView: View {
             Color.black.opacity(0.55).ignoresSafeArea()
             VStack(spacing: 0) {
                 ScrollView {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 14) {
                         header
                         if def.mode == .career, result.finished { starsBlock }
-                        if !lapTimes.isEmpty, def.mode != .survival { lapsBlock }
+                        if def.mode == .career || def.mode == .daily, result.finished, let summary { ladderBlock(summary) }
+                        if def.mode != .survival { skillsRow }
                         if let medal = def.medal, def.mode == .career, result.finished { medalBlock(medal) }
                         if let summary { rewardsBlock(summary) }
                         if let summary { unlocksBlock(summary) }
@@ -64,7 +66,7 @@ struct ResultsView: View {
                     .accessibilityLabel(TimeFormat.spoken(displayTime))
                 if let summary, let previous = summary.previousBest {
                     let diff = displayTime - previous
-                    Text(summary.newBest ? "New best · \(TimeFormat.delta(diff))" : "Best \(TimeFormat.race(previous)) · \(TimeFormat.delta(diff))")
+                    Text(summary.newBest ? "NEW BEST \u{00B7} \(TimeFormat.delta(diff))" : "Best \(TimeFormat.race(previous)) \u{00B7} \(TimeFormat.delta(diff))")
                         .font(Theme.rounded(.subheadline, .heavy))
                         .foregroundStyle(summary.newBest ? Theme.good : Theme.muted)
                 } else if summary?.newBest == true || def.mode == .career {
@@ -88,7 +90,7 @@ struct ResultsView: View {
         case .daily: return summary?.newBest == true ? "New daily best!" : "Daily track"
         case .career:
             let stars = summary?.stars ?? 0
-            return stars >= 3 ? "Gold!" : (stars == 2 ? "Silver!" : "Finished")
+            return stars >= 3 ? "GOLD!" : (stars == 2 ? "Silver" : "Finished")
         }
     }
 
@@ -98,7 +100,7 @@ struct ResultsView: View {
         return result.totalTime
     }
 
-    // MARK: - Stars
+    // MARK: - Stars and the rival
 
     private var starsBlock: some View {
         let stars = summary?.stars ?? outcome.targets?.stars(for: result.totalTime) ?? 1
@@ -117,17 +119,19 @@ struct ResultsView: View {
             if let targets = outcome.targets {
                 let gap = result.totalTime - targets.gold
                 VStack(spacing: 4) {
-                    Label(gap <= 0 ? String(format: "You beat the gold car by %.2f s", -gap)
-                                   : String(format: "The gold car finished %.2f s ahead", gap),
-                          systemImage: gap <= 0 ? "flag.checkered" : "car.side.fill")
-                        .font(Theme.rounded(.subheadline, .heavy))
-                        .foregroundStyle(gap <= 0 ? Theme.gold : Theme.text)
+                    HStack(spacing: 8) {
+                        Image(systemName: "car.side.fill").foregroundStyle(Color(hex: rival.color))
+                        Text("\(rival.name): \u{201C}\(gap <= 0 ? rival.beaten : rival.won)\u{201D}")
+                            .font(Theme.rounded(.subheadline, .heavy)).italic()
+                            .foregroundStyle(Color(hex: rival.color))
+                    }
+                    Text(gap <= 0 ? String(format: "You beat %@ by %.2f s", rival.name, -gap) : String(format: "%@ finished %.2f s ahead", rival.name, gap))
+                        .font(Theme.rounded(.footnote, .bold)).foregroundStyle(Theme.text)
                     if stars < 3 {
-                        Text(stars == 2 ? "Finish ahead of it for 3 stars: \(TimeFormat.race(targets.gold))"
+                        Text(stars == 2 ? "Beat \(rival.name) for 3 stars: \(TimeFormat.race(targets.gold))"
                                         : "Silver: \(TimeFormat.race(targets.silver)) \u{00B7} Gold: \(TimeFormat.race(targets.gold))")
                             .font(Theme.rounded(.footnote, .bold)).foregroundStyle(Theme.muted)
-                        Text("Tip: slipstream your echoes to fill BOOST, and take the shortcut when its gate is open.")
-                            .font(Theme.rounded(.caption, .medium)).foregroundStyle(Theme.muted)
+                        Text(tip).font(Theme.rounded(.caption, .medium)).foregroundStyle(Theme.muted)
                     }
                 }
                 .multilineTextAlignment(.center)
@@ -135,6 +139,14 @@ struct ResultsView: View {
             }
         }
         .padding(.vertical, 4)
+    }
+
+    private var tip: String {
+        let s = result.stats
+        if s.driftBoosts < 2 { return "Tip: hold the turn hard through corners and let go for a boost." }
+        if s.bumps > 0 { return "Tip: a touch costs the whole nitro meter. Pass echoes by a whisker instead." }
+        if s.boosts == 0 { return "Tip: swipe up on a straight to fire the nitro." }
+        return "Tip: ride the edge of the road on straights to fill the nitro."
     }
 
     private func revealStars() async {
@@ -166,52 +178,50 @@ struct ResultsView: View {
         }
     }
 
-    // MARK: - Laps and medal
+    // MARK: - Echo ladder, skills, medal
 
-    /// Every lap of this race, or of all three gauntlet races once the gauntlet is done.
-    private var lapTimes: [Double] {
-        if case .weekly(let n) = request.kind, n == 2 { return app.weeklySession.flatMap(\.lapTimes) }
-        return result.lapTimes
-    }
-
-    private var lapsBlock: some View {
-        let laps = lapTimes
-        let best = laps.min() ?? 0
-        return VStack(spacing: 6) {
-            ForEach(Array(laps.enumerated()), id: \.offset) { i, t in
-                HStack {
-                    Circle().fill(Theme.echoColor(lap: i + 1)).frame(width: 10, height: 10)
-                    Text(lapTitle(i)).font(Theme.rounded(.callout, .semibold)).foregroundStyle(Theme.muted)
-                    Spacer()
-                    if t == best && laps.count > 1 {
-                        Text("BEST").font(Theme.rounded(.caption2, .black)).foregroundStyle(Theme.good)
-                    }
-                    Text(TimeFormat.race(t)).font(Theme.rounded(.callout, .heavy)).monospacedDigit()
-                }
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("\(lapTitle(i)), \(TimeFormat.spoken(t))" + (t == best && laps.count > 1 ? ", best lap" : ""))
+    private func ladderBlock(_ s: RewardSummary) -> some View {
+        HStack(spacing: 12) {
+            LadderDots(rung: s.rungAfter, mastered: app.progress.tracks[def.id]?.mastered ?? false, size: 14)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(s.mastered ? "Track mastered!" : (s.climbedRung ? "Echo ladder: rung \(s.rungAfter)" : "Echo ladder: rung \(s.rungAfter)"))
+                    .font(Theme.rounded(.headline, .heavy))
+                    .foregroundStyle(s.mastered ? Theme.gold : Theme.text)
+                Text(ladderText(s)).font(Theme.rounded(.footnote, .medium)).foregroundStyle(Theme.muted)
             }
+            Spacer(minLength: 0)
         }
         .padding(14)
         .background(Theme.raised.opacity(0.6), in: RoundedRectangle(cornerRadius: 18))
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("ladder")
     }
 
-    private func lapTitle(_ i: Int) -> String {
-        if def.mode == .weekly, case .weekly(let n) = request.kind, n == 2 {
-            let perRace = max(1, def.laps)
-            return "Race \(i / perRace + 1) · lap \(i % perRace + 1)"
+    private func ladderText(_ s: RewardSummary) -> String {
+        if s.mastered { return "Five of your runs beaten with gold. Nothing left to prove here." }
+        if s.rungAfter >= TrackRecord.topRung { return "Five echoes on the road. Gold here masters the track." }
+        if s.climbedRung { return "New best: this run joins the road as an echo. Beat all of you next time." }
+        return "Beat your best to put another echo on the road."
+    }
+
+    private var skillsRow: some View {
+        let s = result.stats
+        return HStack(spacing: 8) {
+            SkillChip(value: s.driftBoosts, label: "drift boosts", color: Theme.driftColor(2))
+            SkillChip(value: s.nearMisses, label: "near misses", color: Theme.good)
+            SkillChip(value: s.boosts, label: "nitros", color: Theme.accent)
         }
-        return "Lap \(i + 1)"
+        .accessibilityElement(children: .combine)
     }
 
     private func medalBlock(_ medal: Medal) -> some View {
-        let earned = summary?.medalEarned ?? medal.isEarned(by: result.stats, laps: def.laps)
+        let earned = summary?.medalEarned ?? medal.isEarned(by: result.stats)
         return HStack(spacing: 12) {
             Image(systemName: earned ? "medal.fill" : "medal").font(.title).foregroundStyle(earned ? Theme.good : Theme.muted)
             VStack(alignment: .leading, spacing: 2) {
                 Text(earned ? (summary?.medalIsNew == true ? "Medal earned: \(medal.title)" : "Medal: \(medal.title) ✓") : "Medal: \(medal.title)")
                     .font(Theme.rounded(.headline, .heavy))
-                Text(medal.goal(laps: def.laps)).font(Theme.rounded(.footnote, .medium)).foregroundStyle(Theme.muted)
+                Text(medal.detail).font(Theme.rounded(.footnote, .medium)).foregroundStyle(Theme.muted)
             }
             Spacer(minLength: 0)
         }
@@ -289,16 +299,17 @@ struct ResultsView: View {
 
     private var actions: some View {
         VStack(spacing: 10) {
-            if let primary = primaryAction {
-                Button(action: primary.action) {
-                    Label(primary.title, systemImage: primary.icon).font(Theme.rounded(.headline, .heavy)).frame(maxWidth: .infinity).padding(.vertical, 4)
-                }
-                .primaryButtonStyle()
-                .controlSize(.large)
-                .accessibilityIdentifier("resultsPrimary")
+            Button(action: primary.action) {
+                Label(primary.title, systemImage: primary.icon)
+                    .font(Theme.rounded(.title2, .black))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
             }
+            .primaryButtonStyle()
+            .controlSize(.large)
+            .accessibilityIdentifier("results" + primary.id)
             HStack(spacing: 10) {
-                ForEach(secondaryActions, id: \.title) { action in
+                ForEach(secondaryActions, id: \.id) { action in
                     Button(action: action.action) {
                         Label(action.title, systemImage: action.icon).font(Theme.rounded(.subheadline, .bold)).frame(maxWidth: .infinity).padding(.vertical, 4)
                     }
@@ -322,36 +333,41 @@ struct ResultsView: View {
         return next
     }
 
-    private var primaryAction: Action? {
-        if outcome.isTutorial {
-            return Action(id: "Continue", title: "Continue", icon: "arrow.right") { app.goHome() }
-        }
-        switch request.kind {
-        case .weekly(let n) where n < 2 && result.finished:
+    private var again: Action {
+        Action(id: "Again", title: "GO AGAIN", icon: "arrow.counterclockwise") { app.restart(request) }
+    }
+
+    /// GO AGAIN is always the big button: the loop is the game. A gauntlet in progress moves on instead.
+    private var primary: Action {
+        if case .weekly(let n) = request.kind, n < 2, result.finished {
             return Action(id: "Next", title: "Race \(n + 2) of 3", icon: "arrow.right") { app.continueWeekly(after: n) }
-        case .weekly:
-            return Action(id: "Retry", title: "Try the gauntlet again", icon: "arrow.counterclockwise") { app.restart(request) }
-        case .survival:
-            return Action(id: "Retry", title: "Run again", icon: "arrow.counterclockwise") { app.restart(request) }
-        case .daily:
-            return Action(id: "Retry", title: "Race again", icon: "arrow.counterclockwise") { app.restart(request) }
-        default:
-            if let next = nextCareerTrack, result.finished {
-                return Action(id: "Next", title: "Next: \(next.label)", icon: "arrow.right") { app.play(next) }
-            }
-            return Action(id: "Retry", title: "Retry", icon: "arrow.counterclockwise") { app.restart(request) }
         }
+        return again
     }
 
     private var secondaryActions: [Action] {
-        if outcome.isTutorial {
-            return [Action(id: "Again", title: "Race again", icon: "arrow.counterclockwise") { app.play(def) }]
-        }
         var list: [Action] = []
-        if case .career = request.kind, nextCareerTrack != nil, result.finished {
-            list.append(Action(id: "Retry", title: "Retry", icon: "arrow.counterclockwise") { app.restart(request) })
+        if let next = nextCareerTrack, result.finished {
+            list.append(Action(id: "Next", title: "Next: \(next.label)", icon: "arrow.right") { app.play(next) })
         }
         list.append(Action(id: "Menu", title: "Menu", icon: "house.fill") { app.goHome() })
         return list
+    }
+}
+
+/// A run's skill count, as a small chip.
+struct SkillChip: View {
+    let value: Int
+    let label: String
+    let color: Color
+
+    var body: some View {
+        VStack(spacing: 2) {
+            Text("\(value)").font(Theme.rounded(.title3, .black)).foregroundStyle(color).monospacedDigit()
+            Text(label).font(Theme.rounded(.caption2, .bold)).foregroundStyle(Theme.muted)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .background(Theme.raised.opacity(0.6), in: RoundedRectangle(cornerRadius: 14))
     }
 }

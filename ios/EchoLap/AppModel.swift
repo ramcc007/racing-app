@@ -12,6 +12,8 @@ struct RaceRequest: Identifiable, Hashable {
     let id = UUID()
     let def: TrackDef
     let kind: Kind
+    /// 0 for the first go at a track this sitting; GO AGAIN counts up, and retries get a short countdown.
+    var attempt = 0
 }
 
 /// Where the app is.
@@ -21,7 +23,7 @@ enum Route: Hashable {
     case race(RaceRequest)
 }
 
-/// Owns saved progress, navigation, track building and ghosts.
+/// Owns saved progress, navigation, track building and the saved runs that race you as echoes.
 @MainActor
 final class AppModel: ObservableObject {
     @Published private(set) var progress: PlayerProgress
@@ -33,21 +35,24 @@ final class AppModel: ObservableObject {
 
     private var toastTask: Task<Void, Never>?
     private let fileURL: URL
-    private let ghostFolder: URL
+    private let runsFolder: URL
     private var building: [String: Task<BuiltTrack, Never>] = [:]
+    private var runsCache: [String: [SavedRun]] = [:]
 
     init() {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)
-        let ghosts = support.appendingPathComponent("ghosts", isDirectory: true)
-        try? FileManager.default.createDirectory(at: ghosts, withIntermediateDirectories: true)
+        let runs = support.appendingPathComponent("runs", isDirectory: true)
+        try? FileManager.default.createDirectory(at: runs, withIntermediateDirectories: true)
+        // The old single-ghost folder is no longer used.
+        try? FileManager.default.removeItem(at: support.appendingPathComponent("ghosts", isDirectory: true))
         let url = support.appendingPathComponent("progress.json")
         var loaded = PlayerProgress()
         if let data = try? Data(contentsOf: url), let saved = try? JSONDecoder().decode(PlayerProgress.self, from: data) {
             loaded = saved
         }
         fileURL = url
-        ghostFolder = ghosts
+        runsFolder = runs
         progress = loaded
         route = loaded.introSeen ? .home : .intro
         applySettings()
@@ -105,16 +110,46 @@ final class AppModel: ObservableObject {
         }
     }
 
-    // MARK: - Ghosts
+    // MARK: - Saved runs (the echo ladder)
 
-    func ghost(for id: String) -> Ghost? {
-        guard let data = try? Data(contentsOf: ghostFolder.appendingPathComponent(id + ".json")) else { return nil }
-        return try? JSONDecoder().decode(Ghost.self, from: data)
+    /// The best runs saved for a track, fastest first.
+    func savedRuns(for id: String) -> [SavedRun] {
+        if let cached = runsCache[id] { return cached }
+        let loaded = (try? Data(contentsOf: runsFolder.appendingPathComponent(id + ".json")))
+            .flatMap { try? JSONDecoder().decode([SavedRun].self, from: $0) } ?? []
+        runsCache[id] = loaded
+        return loaded
     }
 
-    func saveGhost(_ ghost: Ghost) {
-        guard let data = try? JSONEncoder().encode(ghost) else { return }
-        try? data.write(to: ghostFolder.appendingPathComponent(ghost.trackID + ".json"), options: [.atomic])
+    /// The echoes to put on the road for a track: as many of your best runs as your rung on its ladder.
+    func ladder(for id: String) -> [Echo] {
+        let runs = savedRuns(for: id)
+        return SavedRun.ladder(runs, count: progress.ladderCount(for: id, savedRuns: runs.count))
+    }
+
+    private func saveRun(_ run: SavedRun) {
+        let kept = SavedRun.keepBest(savedRuns(for: run.trackID), adding: run)
+        runsCache[run.trackID] = kept
+        guard let data = try? JSONEncoder().encode(kept) else { return }
+        try? data.write(to: runsFolder.appendingPathComponent(run.trackID + ".json"), options: [.atomic])
+    }
+
+    /// Echoes for a demo or screenshot: the robot drives the track a few times with a little weave.
+    nonisolated static func demoEchoes(for built: BuiltTrack, count: Int) -> [Echo] {
+        var runs: [SavedRun] = []
+        for k in 0..<count {
+            let race = Race(track: built.track, spec: Cars.pip, laps: 1, countdown: 0.05)
+            let driver = RobotDriver(track: built.track, plan: built.targets.plan)
+            driver.weave = 0.25 + 0.1 * Double(k)
+            var ticks = 0
+            while !race.isFinished && ticks < 120 * 120 {
+                race.tick(driver.input(for: race))
+                race.events.removeAll(keepingCapacity: true)
+                ticks += 1
+            }
+            if race.isFinished { runs.append(SavedRun(race: race)) }
+        }
+        return SavedRun.ladder(runs, count: count)
     }
 
     // MARK: - Navigation
@@ -155,12 +190,11 @@ final class AppModel: ObservableObject {
         route = .home
     }
 
-    /// Races the same event again. A weekly gauntlet starts over from its first track.
+    /// GO AGAIN: the same event, straight away, with a short countdown. A weekly gauntlet starts over from its first track.
     func restart(_ request: RaceRequest) {
         switch request.kind {
         case .weekly: startWeekly()
-        case .tutorial: route = .race(RaceRequest(def: request.def, kind: .tutorial))
-        default: play(request.def, kind: request.kind)
+        default: route = .race(RaceRequest(def: request.def, kind: request.kind, attempt: request.attempt + 1))
         }
     }
 
@@ -171,7 +205,7 @@ final class AppModel: ObservableObject {
         play(tracks[index + 1], kind: .weekly(index + 1))
     }
 
-    /// The intro's "Start racing": the first race is track 1-1 with coaching hints.
+    /// The intro's "Start racing": the first race is track 1-1 and teaches the controls by doing.
     func startTutorial() {
         update { $0.introSeen = true }
         route = .race(RaceRequest(def: Catalog.track(id: "1-1")!, kind: .tutorial))
@@ -184,8 +218,9 @@ final class AppModel: ObservableObject {
     func resetProgress() {
         progress = PlayerProgress()
         save()
-        try? FileManager.default.removeItem(at: ghostFolder)
-        try? FileManager.default.createDirectory(at: ghostFolder, withIntermediateDirectories: true)
+        runsCache = [:]
+        try? FileManager.default.removeItem(at: runsFolder)
+        try? FileManager.default.createDirectory(at: runsFolder, withIntermediateDirectories: true)
         applySettings()
         route = .intro
     }
@@ -193,7 +228,8 @@ final class AppModel: ObservableObject {
     // MARK: - Results
 
     /// Saves a race result and returns what it earned. Weekly races only count once all three are done.
-    func record(_ result: RaceResult, request: RaceRequest, targets: Targets?, ghost: Ghost?) -> RewardSummary? {
+    /// A finished career or daily run is kept as an echo for the ladder.
+    func record(_ result: RaceResult, request: RaceRequest, targets: Targets?, run: SavedRun?) -> RewardSummary? {
         let day = today
         switch request.kind {
         case .weekly(let index):
@@ -205,6 +241,7 @@ final class AppModel: ObservableObject {
                 stats.drafts += r.stats.drafts; stats.boosts += r.stats.boosts; stats.bumps += r.stats.bumps
                 stats.draftSeconds += r.stats.draftSeconds; stats.swaps += r.stats.swaps
                 stats.echoGatePasses += r.stats.echoGatePasses; stats.jumps += r.stats.jumps; stats.distance += r.stats.distance
+                stats.drifts += r.stats.drifts; stats.driftBoosts += r.stats.driftBoosts; stats.nearMisses += r.stats.nearMisses
             }
             let finished = weeklySession.count == 3 && weeklySession.allSatisfy(\.finished)
             let combined = RaceResult(trackID: "weekly-" + day.week.string, carID: result.carID, finished: finished,
@@ -223,9 +260,8 @@ final class AppModel: ObservableObject {
             if request.kind == .tutorial {
                 update { $0.tutorialDone = true }
             }
-            if let ghost, result.finished, request.def.mode == .career || request.def.mode == .daily {
-                let previous = self.ghost(for: ghost.trackID)
-                if previous == nil || ghost.totalTime < previous!.totalTime { saveGhost(ghost) }
+            if let run, result.finished, request.def.mode == .career || request.def.mode == .daily {
+                saveRun(run)
             }
             return summary
         }

@@ -4,6 +4,7 @@ import AVFoundation
 enum SoundEffect: Hashable {
     case countdown, go, lap, echoJoin, draft, boost, boostEmpty, bump, softTouch, gateOpen, gateClose, gateHit
     case dock, undock, iceCrack, iceBreak, splash, swap, jump, land, finish, star(Int), tap, buy, unlock
+    case drift, driftTier(Int), driftBoost, nearMiss, edge
 }
 
 /// Pre-renders each effect once and plays it on one of several player nodes, plus a looping engine note whose pitch
@@ -184,6 +185,20 @@ final class SoundEngine {
             let f = [783.99, 987.77, 1174.66][max(0, min(2, k))]
             return make(0.45) { [self] _, t in note(f, at: t, decay: 7, volume: 0.6) }
         case .tap: return make(0.05) { [self] _, t in note(1400, at: t, decay: 120, volume: 0.25) }
+        case .drift:
+            // A short tyre squeal: filtered noise with a falling whine.
+            return make(0.3) { [self] i, t in noise(i) * exp(-t * 9) * 0.22 + sin(2 * .pi * (900 - 300 * t) * t) * exp(-t * 10) * 0.12 }
+        case .driftTier(let k):
+            let f = [0.0, 880, 1108.7, 1318.5][max(0, min(3, k))]
+            return make(0.2) { [self] _, t in note(f, at: t, decay: 16, volume: 0.45) + note(f * 1.5, at: t - 0.05, decay: 18, volume: 0.25) }
+        case .driftBoost:
+            return make(0.5) { [self] i, t in
+                noise(i) * exp(-pow(t - 0.1, 2) * 60) * 0.35 + sin(2 * .pi * (300 + 1200 * t) * t) * exp(-t * 5) * 0.3
+            }
+        case .nearMiss:
+            // A fast whoosh past the ear.
+            return make(0.35) { [self] i, t in noise(i) * exp(-pow(t - 0.12, 2) * 120) * 0.7 + note(2200, at: t - 0.1, decay: 20, volume: 0.2) }
+        case .edge: return make(0.12) { [self] i, t in noise(i) * exp(-t * 50) * 0.18 + note(1760, at: t, decay: 35, volume: 0.15) }
         case .buy:
             return make(0.6) { [self] _, t in 0.4 * (note(880, at: t, decay: 6) + note(1318.5, at: t - 0.08, decay: 6) + note(1760, at: t - 0.16, decay: 6)) }
         case .unlock:
