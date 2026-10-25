@@ -494,12 +494,12 @@ public final class Race {
                     events.append(.wallHit)
                 }
             }
-            // Pinned nose-first against the wall a car can't steer (no speed, no turning): swing it round to face
-            // along the road so it can always drive on.
-            if car.forward.dot(n) > 0.2 && car.forwardSpeed < 90 {
+            // Nose into the wall, the car slides along it: the barrier swings it to face along the road, so holding
+            // the turn into a wall never grinds you to a halt and a pinned car can always drive on.
+            if car.forward.dot(n) > 0.1 {
                 let want = track.tangents[loc.index].angle
                 let diff = wrapAngle(want - car.heading)
-                car.heading += max(-2.5 * Physics.dt, min(2.5 * Physics.dt, diff))
+                car.heading += max(-6 * Physics.dt, min(6 * Physics.dt, diff))
             }
         }
 

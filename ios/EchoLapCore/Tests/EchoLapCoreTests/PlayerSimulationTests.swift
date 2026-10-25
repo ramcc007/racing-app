@@ -30,7 +30,7 @@ final class PlayerSimulationTests: XCTestCase {
     /// Never drifts (steering capped under the drift point) and brakes for corners by grip alone.
     private func timid(_ race: Race, _ input: ControlInput) -> ControlInput {
         var out = input
-        out.steer = clamp(input.steer, -0.55, 0.55)
+        out.steer = clamp(input.steer, -0.4, 0.4)
         out.boost = race.car.docked   // leaves a bay if running wide parked the car, never fires the nitro
         return out
     }

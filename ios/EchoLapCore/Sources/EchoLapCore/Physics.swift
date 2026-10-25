@@ -82,8 +82,8 @@ public enum Physics {
     static let steerFadeSpeed = 90.0
 
     // Drift. Entering needs real steering at real speed; leaving needs the thumb back near the middle (hysteresis).
-    public static let driftEnterSteer = 0.6
-    public static let driftExitSteer = 0.3
+    public static let driftEnterSteer = 0.45
+    public static let driftExitSteer = 0.22
     public static let driftEnterSpeed = 0.45
     public static let driftExitSpeed = 0.3
     /// Turn rate multiplier while drifting.

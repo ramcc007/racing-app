@@ -549,14 +549,18 @@ final class RaceTests: XCTestCase {
     /// before the wall takes the speed away, and letting go gives the boost.
     func testFullLockOnAStraightTeachesTheDriftAgainstTheWall() {
         let track = TestTracks.circle(radius: 1500, halfWidth: 36)
-        let race = Race(track: track, spec: Cars.pip)
-        race.testingStart(at: 20, speed: 320)
-        var events: [RaceEvent] = []
-        for _ in 0..<(120 * 2) { race.tick(ControlInput(steer: 1)); events += race.events; race.events.removeAll() }
-        for _ in 0..<30 { race.tick(ControlInput(steer: 0)); events += race.events; race.events.removeAll() }
-        XCTAssertTrue(events.contains(.driftTier(1)), "\(events)")
-        XCTAssertTrue(events.contains { if case .driftBoost(let t) = $0 { return t >= 1 } else { return false } })
-        XCTAssertFalse(race.offroad)
+        for speed in [200.0, 250, 320] {
+            let race = Race(track: track, spec: Cars.pip)
+            race.testingStart(at: 20, speed: speed)
+            var events: [RaceEvent] = []
+            for _ in 0..<Int(120 * 2.5) { race.tick(ControlInput(steer: 1)); events += race.events; race.events.removeAll() }
+            for _ in 0..<60 { race.tick(ControlInput(steer: 0)); events += race.events; race.events.removeAll() }
+            XCTAssertTrue(events.contains(.driftTier(1)), "at \(speed): \(events)")
+            XCTAssertTrue(events.contains { if case .driftBoost(let t) = $0 { return t >= 1 } else { return false } }, "at \(speed)")
+            XCTAssertFalse(race.offroad)
+            XCTAssertGreaterThan(race.car.forwardSpeed, 60, "at \(speed): sliding along the wall, not grinding into it")
+            XCTAssertGreaterThan(race.car.forward.dot(track.tangents[race.location.index]), 0.5, "at \(speed): facing along the road")
+        }
     }
 
     func testTheBarrierHasGapsAtTheBayAndTheLane() {
