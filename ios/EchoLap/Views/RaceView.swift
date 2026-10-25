@@ -179,7 +179,7 @@ struct RaceHUD: View {
                         .accessibilityIdentifier("wrongWay")
                 }
                 if let step, step != .done, hud.countdown == nil {
-                    TutorialCard(step: step)
+                    TutorialCard(step: step, debug: controller.debugState)
                         .allowsHitTesting(false)
                         .transition(.scale(scale: 0.9).combined(with: .opacity))
                 }
@@ -290,6 +290,7 @@ struct GoalPanel: View {
 /// A lesson in the first race that waits for the player to do it.
 struct TutorialCard: View {
     let step: RaceController.TutorialStep
+    var debug = ""
 
     var body: some View {
         VStack(spacing: 8) {
@@ -301,6 +302,7 @@ struct TutorialCard: View {
         .solidCard(cornerRadius: 22, fill: Theme.accent.opacity(0.92))
         .frame(maxWidth: 440)
         .accessibilityElement(children: .combine)
+        .accessibilityValue(debug)
         .accessibilityIdentifier("tutorialCard")
     }
 

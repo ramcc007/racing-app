@@ -167,11 +167,12 @@ final class EchoLapUITests: XCTestCase {
         let to = scene.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.55))
         from.press(forDuration: 0.1, thenDragTo: to, withVelocity: .fast, thenHoldForDuration: 2.5)
         snapshot("12-tutorial-drift")
+        let afterDrag = currentLesson()
         // Letting go ended the drift with a boost, so the lesson moved on to the nitro.
         let nitroLesson = lessonCard(containing: "swipe up")
         let shown = nitroLesson.waitForExistence(timeout: 30)
         snapshot("13-tutorial-nitro")
-        XCTAssertTrue(shown, "after a drift and release the nitro lesson shows; card now: \(currentLesson())")
+        XCTAssertTrue(shown, "after a drift and release the nitro lesson shows; right after the drag: \(afterDrag); now: \(currentLesson())")
         app.buttons["boost"].tap()
         XCTAssertTrue(waitForDisappearance(app.descendants(matching: .any)["tutorialCard"], seconds: 40), "firing the nitro finishes the lessons")
 
@@ -190,7 +191,7 @@ final class EchoLapUITests: XCTestCase {
 
     private func currentLesson() -> String {
         let card = app.descendants(matching: .any).matching(identifier: "tutorialCard").firstMatch
-        return card.exists ? card.label : "(no card)"
+        return card.exists ? "\(card.label) [\(card.value as? String ?? "")]" : "(no card)"
     }
 
     private func waitForDisappearance(_ element: XCUIElement, seconds: TimeInterval) -> Bool {

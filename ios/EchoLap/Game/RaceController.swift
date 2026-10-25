@@ -73,6 +73,8 @@ final class RaceController: ObservableObject {
     @Published private(set) var isPaused = false
     @Published private(set) var outcome: Outcome?
     @Published private(set) var tutorialStep: TutorialStep?
+    /// Debug builds only: the live input and car state, read by the UI tests through the lesson card.
+    @Published private(set) var debugState = ""
 
     let request: RaceRequest
     let built: BuiltTrack
@@ -353,14 +355,15 @@ final class RaceController: ObservableObject {
             case .driftTier(let tier):
                 Sound.play(.driftTier(tier), volume: 0.7)
                 Haptics.medium()
-                if tier == 1 && tutorialStep == .drift { lessonDone(.release) }
+                // Whoever drifts before the drift lesson even shows skips straight to the release lesson.
+                if tier >= 1 && (tutorialStep == .steer || tutorialStep == .drift) { lessonDone(.release) }
             case .driftBoost(let tier):
                 if tier > 0 {
                     Sound.play(.driftBoost, volume: 0.9)
                     Haptics.rigid()
                     punchRequested = true
                     showPopup(tier >= 3 ? "ULTRA DRIFT" : (tier == 2 ? "SUPER DRIFT" : "DRIFT BOOST"), detail: nil, color: Theme.driftColor(tier))
-                    if tutorialStep == .release { lessonDone(.nitro) }
+                    if let step = tutorialStep, [.steer, .drift, .release].contains(step) { lessonDone(.nitro) }
                 }
             case .nearMiss:
                 Sound.play(.nearMiss)
@@ -478,6 +481,13 @@ final class RaceController: ObservableObject {
             return EchoChip(id: echo.lap, state: pose.docked ? .parked : (echo.solid && !race.track.def.softEchoes ? .solid : .ghost))
         }
         if h != hud { hud = h }
+        #if DEBUG
+        if tutorialStep != nil {
+            debugState = String(format: "steer %.2f brake %d touching %d drifting %d driftTime %.2f tier %d speed %.0f t %.1f wallHits %d",
+                                touchSteer, touchBrake ? 1 : 0, touching ? 1 : 0, car.drifting ? 1 : 0, car.driftTime, car.driftTier,
+                                car.forwardSpeed, race.time, race.stats.wallHits)
+        }
+        #endif
     }
 
     func showToast(_ text: String, _ tone: Toast.Tone) {
