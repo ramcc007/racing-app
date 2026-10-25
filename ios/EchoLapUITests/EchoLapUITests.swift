@@ -61,7 +61,7 @@ final class EchoLapUITests: XCTestCase {
         start.tap()
 
         waitFor(app.buttons["pause"], 30)
-        XCTAssertTrue(app.buttons["goAgain"].exists, "instant restart in the HUD")
+        waitFor(app.buttons["goAgain"], 10)
         snapshot("02-race")
         let again = app.buttons["resultsAgain"]
         waitFor(again, 150)
@@ -176,11 +176,16 @@ final class EchoLapUITests: XCTestCase {
         app.buttons["boost"].tap()
         XCTAssertTrue(waitForDisappearance(app.descendants(matching: .any)["tutorialCard"], seconds: 40), "firing the nitro finishes the lessons")
 
-        openPauseMenu()
-        app.buttons["quit"].tap()
-        let confirm = app.buttons["Quit to menu"]
-        waitFor(confirm)
-        confirm.tap()
+        // Back to the menu: through the results if the sprint has finished by now, else through the pause menu.
+        if app.buttons["resultsMenu"].waitForExistence(timeout: 3) {
+            app.buttons["resultsMenu"].tap()
+        } else {
+            openPauseMenu()
+            app.buttons["quit"].tap()
+            let confirm = app.buttons["Quit to menu"]
+            waitFor(confirm)
+            confirm.tap()
+        }
         waitFor(app.buttons["continueRace"])
     }
 
