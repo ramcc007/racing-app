@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   core:
-    name: Game logic tests
+    name: Game logic tests and Release build
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
@@ -39,12 +39,36 @@ jobs:
           set -o pipefail
           swift test -c release 2>&1 | tee "$RUNNER_TEMP/core-tests.log"
 
+      # The App Store build: Release configuration for real devices, unsigned here (testflight.yml signs it). Catches
+      # anything that only compiles in Debug (screenshot and UI-test helpers are compiled out of Release).
+      - name: Release build for devices (unsigned)
+        working-directory: ios
+        run: |
+          set -o pipefail
+          brew install xcodegen
+          xcodegen generate
+          xcodebuild build \
+            -project EchoLap.xcodeproj \
+            -scheme EchoLap \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/dd-release" \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee "$RUNNER_TEMP/release-build.log" | grep -E "error:|BUILD|\*\*" || true
+          grep -q "BUILD SUCCEEDED" "$RUNNER_TEMP/release-build.log" || { grep -E "error:" "$RUNNER_TEMP/release-build.log" | sort -u | head -80; exit 1; }
+          APP=$(find "$RUNNER_TEMP/dd-release/Build/Products/Release-iphoneos" -maxdepth 1 -name EchoLap.app | head -1)
+          [ -f "$APP/PrivacyInfo.xcprivacy" ] && echo "Privacy manifest is in the bundle." || { echo "::error::PrivacyInfo.xcprivacy missing from the app bundle"; exit 1; }
+          /usr/libexec/PlistBuddy -c "Print :CFBundleDisplayName" -c "Print :ITSAppUsesNonExemptEncryption" -c "Print :UILaunchScreen" "$APP/Info.plist"
+          xcodebuild -version
+
       - name: Keep the log
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: core-tests-log
-          path: ${{ runner.temp }}/core-tests.log
+          path: |
+            ${{ runner.temp }}/core-tests.log
+            ${{ runner.temp }}/release-build.log
           if-no-files-found: ignore
 
   app:
