@@ -6,7 +6,7 @@ passwords or card details into a chat: they go only into the GitHub and Apple pa
 ## 0. Decisions only you can make
 | Decision | Default in the code | Change where |
 |---|---|---|
-| Bundle ID (permanent once registered) | `store.numfall.echolap` (same publisher prefix as NumFall) | `ios/project.yml` (two places), `tools/ci/screenshots.sh`, `.github/workflows/testflight.yml` (two places) |
+| Bundle ID (permanent once registered) | `com.echolap.app` (its own ID, not tied to NumFall; invisible to players, so it can stay if the game is renamed) | `ios/project.yml` (two places), `tools/ci/screenshots.sh`, `.github/workflows/testflight.yml` (two places) |
 | App name on the Home Screen | Echo Lap | `CFBundleDisplayName` in `ios/project.yml`, intro title in `Views/IntroView.swift`, `site/*.html` |
 | Support email on the website | support@numfall.store (NumFall's public address) | `site/*.html` |
 | Website address | https://ramcc007.github.io/racing-app/ | `AppLinks` in `ios/EchoLap/EchoLapApp.swift` |
@@ -22,10 +22,10 @@ search on 25 Oct 2026 found no app, game or trademark called "Echo Lap". `echola
 
 ## 2. Register the app with Apple — 15 minutes
 1. https://developer.apple.com/account → **Certificates, Identifiers & Profiles → Identifiers → +** →
-   App IDs → App → Description "Echo Lap", Bundle ID **explicit** `store.numfall.echolap`.
+   App IDs → App → Description "Echo Lap", Bundle ID **explicit** `com.echolap.app`.
    Capabilities: tick **Game Center**. Register.
 2. https://appstoreconnect.apple.com → **Apps → + → New App**: platform iOS, name "Echo Lap",
-   primary language English (U.S.), bundle ID `store.numfall.echolap`, SKU `echolap-ios`, full access.
+   primary language English (U.S.), bundle ID `com.echolap.app`, SKU `echolap-ios`, full access.
 
 ## 3. Let GitHub sign and upload builds — 10 minutes (reuse NumFall's key)
 The TestFlight workflow uses an App Store Connect API key. You can reuse the key NumFall already uses.

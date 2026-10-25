@@ -3,7 +3,7 @@
 # Usage: tools/ci/screenshots.sh <path to EchoLap.app> <output folder> <phone|small|pad>
 # One device per call, so each can have its own time limit in the workflow. Scenes come from ScreenshotScene.swift.
 set -uo pipefail
-APP="$1"; OUT="$2"; WHICH="${3:-phone}"; BUNDLE="${BUNDLE_ID:-store.numfall.echolap}"
+APP="$1"; OUT="$2"; WHICH="${3:-phone}"; BUNDLE="${BUNDLE_ID:-com.echolap.app}"
 mkdir -p "$OUT"
 log() { echo "[$(date +%H:%M:%S)] $*"; }
 # Any single simulator command that hangs is killed after N seconds, so one stuck device cannot block the whole job.
