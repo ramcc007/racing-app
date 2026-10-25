@@ -9,11 +9,23 @@ final class EchoLapUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    /// `realTime` keeps the robot at normal speed so a race lasts long enough to pause it.
-    private func launch(realTime: Bool = false) {
+    /// `frozen` stops the race clock (it stays on the countdown), so menus can be tested without the race ending
+    /// underneath them and without the app animating between every query.
+    private func launch(frozen: Bool = false) {
         app = XCUIApplication()
-        app.launchArguments = ["-EchoUITest", "-EchoReset"] + (realTime ? ["-EchoFastForward", "1"] : [])
+        app.launchArguments = ["-EchoUITest", "-EchoReset"] + (frozen ? ["-EchoFastForward", "0"] : [])
         app.launch()
+    }
+
+    /// Taps the HUD pause button until the pause menu shows (the first tap can land while the scene is settling).
+    private func openPauseMenu(file: StaticString = #filePath, line: UInt = #line) {
+        let pause = app.buttons["pause"]
+        waitFor(pause, 30, file: file, line: line)
+        for _ in 0..<3 {
+            pause.tap()
+            if app.buttons["resume"].waitForExistence(timeout: 5) { return }
+        }
+        XCTFail("The pause menu did not open", file: file, line: line)
     }
 
     private func snapshot(_ name: String) {
@@ -82,24 +94,23 @@ final class EchoLapUITests: XCTestCase {
 
     /// Pause, resume, restart and quit all work during a race, and the quit asks first.
     func testPauseMenu() {
-        launch(realTime: true)
+        launch(frozen: true)
         let start = app.buttons["startRacing"]
         waitFor(start)
         start.tap()
 
-        let pause = app.buttons["pause"]
-        waitFor(pause, 30)
-        pause.tap()
-        waitFor(app.buttons["resume"])
+        openPauseMenu()
         snapshot("10-paused")
+        XCTAssertTrue(app.buttons["restart"].exists)
+        XCTAssertTrue(app.buttons["quit"].exists)
         app.buttons["resume"].tap()
-        XCTAssertFalse(app.buttons["resume"].waitForExistence(timeout: 1))
+        XCTAssertFalse(app.buttons["resume"].waitForExistence(timeout: 2))
 
-        pause.tap()
+        openPauseMenu()
         app.buttons["restart"].tap()
-        waitFor(app.buttons["pause"], 30)
+        XCTAssertFalse(app.buttons["resume"].waitForExistence(timeout: 2), "restart starts a fresh race")
 
-        app.buttons["pause"].tap()
+        openPauseMenu()
         app.buttons["quit"].tap()
         let confirm = app.buttons["Quit to menu"]
         waitFor(confirm)
@@ -109,7 +120,7 @@ final class EchoLapUITests: XCTestCase {
 
     /// The boost button is a real control with a value VoiceOver can read.
     func testRaceControlsAreAccessible() {
-        launch(realTime: true)
+        launch(frozen: true)
         waitFor(app.buttons["startRacing"])
         app.buttons["startRacing"].tap()
         let boost = app.buttons["boost"]

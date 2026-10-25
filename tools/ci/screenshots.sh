@@ -43,7 +43,7 @@ SCENES=(
   "home|5|"
   "race|24|-EchoFastForward 3"
   "results|20|-EchoFastForward 8"
-  "world|5|"
+  "world|8|"
   "daily|6|"
   "garage|5|"
   "trophies|5|"
@@ -67,6 +67,7 @@ shoot_device() {   # <label> <"udid [udid...]">: the first simulator that boots 
     IFS='|' read -r scene wait extra <<< "$entry"
     log "$label: $scene"
     limit 30 xcrun simctl terminate "$id" "$BUNDLE" >/dev/null 2>&1
+    sleep 2   # let the previous run (often a busy race) shut down before relaunching
     # shellcheck disable=SC2086
     limit 60 xcrun simctl launch "$id" "$BUNDLE" -EchoScene "$scene" $extra || log "launch failed: $scene"
     sleep "$wait"

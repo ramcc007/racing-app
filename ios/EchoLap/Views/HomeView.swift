@@ -39,6 +39,7 @@ struct HomeRoot: View {
 
 struct HomeView: View {
     @EnvironmentObject private var app: AppModel
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @Binding var path: NavigationPath
     @State private var detail: TrackDef?
     @State private var showDaily = false
@@ -176,7 +177,8 @@ struct HomeView: View {
                 showDaily = true
             }
             .accessibilityIdentifier("dailyCard")
-            HStack(spacing: 12) {
+            let layout = sizeClass == .regular ? AnyLayout(HStackLayout(spacing: 12)) : AnyLayout(VStackLayout(spacing: 12))
+            layout {
                 ModeCard(title: "Echo Survival", subtitle: progress.survivalUnlocked ? "Best \(progress.survivalBest) laps" : "Finish 1-5 to open",
                          detail: nil, icon: "heart.fill", color: Theme.bad, locked: !progress.survivalUnlocked) { showSurvival = true }
                     .accessibilityIdentifier("survivalCard")

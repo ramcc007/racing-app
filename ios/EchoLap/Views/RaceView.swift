@@ -106,6 +106,10 @@ struct RaceHUD: View {
     @ObservedObject var controller: RaceController
     let settings: GameSettings
     let hasGate: Bool
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
+    /// iPad: the same layout, larger, so the HUD keeps its proportion on a big screen.
+    private var scale: CGFloat { sizeClass == .regular ? 1.35 : 1 }
 
     var body: some View {
         let hud = controller.hud
@@ -125,6 +129,8 @@ struct RaceHUD: View {
                     .accessibilityIdentifier("pause")
                     Spacer(minLength: 0)
                     TimingPanel(hud: hud)
+                        .scaleEffect(scale, anchor: .top)
+                        .padding(.bottom, (scale - 1) * 90)
                     Spacer(minLength: 0)
                     Group {
                         if let lives = hud.lives {
@@ -157,7 +163,7 @@ struct RaceHUD: View {
                 if hasGate || hud.docked {
                     StatusPill(open: hud.gateOpen, docked: hud.docked).allowsHitTesting(false)
                 }
-                ControlsRow(controller: controller, hud: hud, boostOnLeft: settings.boostButtonOnLeft)
+                ControlsRow(controller: controller, hud: hud, boostOnLeft: settings.boostButtonOnLeft, scale: scale)
             }
             .padding(.horizontal, 14)
             .padding(.top, 6)
@@ -290,6 +296,7 @@ struct ControlsRow: View {
     @ObservedObject var controller: RaceController
     let hud: RaceController.HUD
     let boostOnLeft: Bool
+    var scale: CGFloat = 1
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 14) {
@@ -303,11 +310,11 @@ struct ControlsRow: View {
                 controller.requestSwap()
             } label: {
                 VStack(spacing: 2) {
-                    Image(systemName: "arrow.left.arrow.right").font(.system(size: 20, weight: .heavy))
-                    Text("SWAP").font(.system(size: 10, weight: .black, design: .rounded))
+                    Image(systemName: "arrow.left.arrow.right").font(.system(size: 20 * scale, weight: .heavy))
+                    Text("SWAP").font(.system(size: 10 * scale, weight: .black, design: .rounded))
                 }
                 .foregroundStyle(hud.swapAvailable ? Color.black : .white.opacity(0.5))
-                .frame(width: 68, height: 68)
+                .frame(width: 68 * scale, height: 68 * scale)
                 .background(hud.swapAvailable ? Theme.echo[1] : Color.black.opacity(0.45), in: Circle())
             }
             .disabled(!hud.swapAvailable)
@@ -315,7 +322,7 @@ struct ControlsRow: View {
             .accessibilityValue(hud.swapAvailable ? "ready" : "used this lap")
             .accessibilityIdentifier("swap")
         } else {
-            Color.clear.frame(width: 68, height: 68).allowsHitTesting(false)
+            Color.clear.frame(width: 68 * scale, height: 68 * scale).allowsHitTesting(false)
         }
     }
 
@@ -334,12 +341,12 @@ struct ControlsRow: View {
                     .rotationEffect(.degrees(-90))
                     .padding(3)
                 VStack(spacing: 0) {
-                    Image(systemName: hud.docked ? "arrow.up.circle.fill" : "bolt.fill").font(.system(size: 24, weight: .heavy))
-                    Text(hud.docked ? "LEAVE" : "BOOST").font(.system(size: 11, weight: .black, design: .rounded))
+                    Image(systemName: hud.docked ? "arrow.up.circle.fill" : "bolt.fill").font(.system(size: 24 * scale, weight: .heavy))
+                    Text(hud.docked ? "LEAVE" : "BOOST").font(.system(size: 11 * scale, weight: .black, design: .rounded))
                 }
                 .foregroundStyle(hud.boostReady || hud.docked ? Color.black : .white.opacity(0.75))
             }
-            .frame(width: 84, height: 84)
+            .frame(width: 84 * scale, height: 84 * scale)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(hud.docked ? "Leave the bay" : "Boost")

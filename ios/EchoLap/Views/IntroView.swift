@@ -69,6 +69,7 @@ struct IntroView: View {
         }
         .task {
             guard demo == nil else { return }
+            app.prefetch([Catalog.track(id: "1-1")!])   // the first race is ready the moment "Start racing" is tapped
             let def = Catalog.track(id: "1-3")!
             let built = await app.build(def)
             let race = DemoRace(built: built, reduceMotion: reduceMotion)
