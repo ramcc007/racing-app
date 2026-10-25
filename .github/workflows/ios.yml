@@ -1,0 +1,127 @@
+# Builds and tests the Echo Lap iPhone/iPad app on a GitHub-hosted Mac, so no local Mac is needed.
+#   1. Game-logic tests (EchoLapCore: physics, echoes, every rule, all 120 tracks driven by the robot, rewards).
+#   2. Builds the app for the iOS Simulator.
+#   3. UI tests on an iPhone simulator: intro → first race → results → every menu, pause/restart/quit.
+#   4. Screenshots on iPhone Pro Max, a small iPhone and iPad, kept as a downloadable artifact.
+# No code signing and no upload to Apple here: signed uploads to TestFlight are in testflight.yml (started by hand).
+name: iOS build
+
+on:
+  push:
+    branches: ['claude/**', main]
+    paths: ['ios/**', 'tools/ci/**', '.github/workflows/ios.yml']
+  pull_request:
+    paths: ['ios/**', 'tools/ci/**', '.github/workflows/ios.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select the newest installed Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_*.app 2>/dev/null | grep -v -i beta | sort -V | tail -1)
+          [ -n "$XC" ] && sudo xcode-select -s "$XC"
+          xcodebuild -version
+          swift --version
+
+      - name: Game logic tests (EchoLapCore)
+        working-directory: ios/EchoLapCore
+        run: |
+          set -o pipefail
+          swift test -c release 2>&1 | tee "$RUNNER_TEMP/core-tests.log"
+
+      - name: Generate the Xcode project
+        working-directory: ios
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Build the app for the iOS Simulator
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild build-for-testing \
+            -project EchoLap.xcodeproj \
+            -scheme EchoLap \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/dd" \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee "$RUNNER_TEMP/app-build.log" | grep -E "error:|warning: .*(deprecated|will never)|BUILD|\*\*" || true
+          grep -q "TEST BUILD SUCCEEDED\|BUILD SUCCEEDED" "$RUNNER_TEMP/app-build.log" || { grep -E "error:" "$RUNNER_TEMP/app-build.log" | head -60; exit 1; }
+
+      - name: UI tests on an iPhone simulator
+        working-directory: ios
+        timeout-minutes: 30
+        run: |
+          set -o pipefail
+          UDID=$(xcrun simctl list devices available | grep -E "iPhone [0-9]+ Pro \(" | tail -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+          [ -z "$UDID" ] && UDID=$(xcrun simctl list devices available | grep -E "iPhone" | tail -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+          echo "Simulator: $UDID"
+          xcodebuild test-without-building \
+            -project EchoLap.xcodeproj \
+            -scheme EchoLap \
+            -destination "id=$UDID" \
+            -derivedDataPath "$RUNNER_TEMP/dd" \
+            -resultBundlePath "$RUNNER_TEMP/UITests.xcresult" \
+            2>&1 | tee "$RUNNER_TEMP/ui-tests.log" | grep -E "Test Case|error|failed|passed|TEST" || true
+          grep -q "TEST EXECUTE SUCCEEDED\|\*\* TEST SUCCEEDED \*\*" "$RUNNER_TEMP/ui-tests.log" || { tail -80 "$RUNNER_TEMP/ui-tests.log"; exit 1; }
+
+      - name: Keep the UI test screenshots
+        if: always()
+        continue-on-error: true
+        run: |
+          [ -d "$RUNNER_TEMP/UITests.xcresult" ] || exit 0
+          mkdir -p "$RUNNER_TEMP/ui-test-screens"
+          xcrun xcresulttool export attachments --path "$RUNNER_TEMP/UITests.xcresult" --output-path "$RUNNER_TEMP/ui-test-screens" || true
+          ls -la "$RUNNER_TEMP/ui-test-screens"
+
+      - name: Screenshots, iPhone 6.9-inch
+        continue-on-error: true
+        timeout-minutes: 20
+        run: |
+          APP=$(find "$RUNNER_TEMP/dd/Build/Products" -name EchoLap.app -path '*Debug-iphonesimulator*' | head -1)
+          bash tools/ci/screenshots.sh "$APP" "$RUNNER_TEMP/screenshots" phone 2>&1 | tee -a "$RUNNER_TEMP/screenshots.log"
+
+      - name: Screenshots, small iPhone
+        continue-on-error: true
+        timeout-minutes: 15
+        run: |
+          APP=$(find "$RUNNER_TEMP/dd/Build/Products" -name EchoLap.app -path '*Debug-iphonesimulator*' | head -1)
+          bash tools/ci/screenshots.sh "$APP" "$RUNNER_TEMP/screenshots" small 2>&1 | tee -a "$RUNNER_TEMP/screenshots.log"
+
+      - name: Screenshots, iPad 13-inch
+        continue-on-error: true
+        timeout-minutes: 15
+        run: |
+          APP=$(find "$RUNNER_TEMP/dd/Build/Products" -name EchoLap.app -path '*Debug-iphonesimulator*' | head -1)
+          bash tools/ci/screenshots.sh "$APP" "$RUNNER_TEMP/screenshots" pad 2>&1 | tee -a "$RUNNER_TEMP/screenshots.log"
+
+      - name: Keep the screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: |
+            ${{ runner.temp }}/screenshots
+            ${{ runner.temp }}/ui-test-screens
+          if-no-files-found: ignore
+
+      - name: Keep the logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-logs
+          path: |
+            ${{ runner.temp }}/core-tests.log
+            ${{ runner.temp }}/app-build.log
+            ${{ runner.temp }}/ui-tests.log
+            ${{ runner.temp }}/screenshots.log
+          if-no-files-found: ignore

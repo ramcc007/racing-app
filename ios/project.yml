@@ -1,0 +1,102 @@
+# XcodeGen spec for the Echo Lap iPhone + iPad app.
+# On a Mac: `brew install xcodegen`, then `cd ios && xcodegen`, then open EchoLap.xcodeproj.
+# CI (.github/workflows/ios.yml) does exactly this on a GitHub-hosted Mac.
+name: EchoLap
+options:
+  bundleIdPrefix: store.numfall
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+packages:
+  EchoLapCore:
+    path: EchoLapCore
+targets:
+  EchoLap:
+    type: application
+    platform: iOS
+    sources:
+      - path: EchoLap
+        excludes: ["Resources/PrivacyInfo.xcprivacy"]
+      - path: EchoLap/Resources/PrivacyInfo.xcprivacy
+        buildPhase: resources
+    dependencies:
+      - package: EchoLapCore
+      - sdk: GameKit.framework
+      - sdk: SpriteKit.framework
+      - sdk: GameController.framework
+    entitlements:
+      path: EchoLap/EchoLap.entitlements
+      # Written out in full: XcodeGen generates the file from these properties (NumFall lesson: an empty list shipped
+      # a build without Game Center).
+      properties:
+        com.apple.developer.game-center: true
+    info:
+      path: EchoLap/Info.plist
+      properties:
+        CFBundleDisplayName: Echo Lap
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSApplicationCategoryType: public.app-category.racing-games
+        ITSAppUsesNonExemptEncryption: false
+        CADisableMinimumFrameDurationOnPhone: true      # 120 Hz on ProMotion iPhones
+        GCSupportsControllerUserInteraction: true       # game controllers work in races and menus
+        GCSupportsGameMode: true
+        UILaunchScreen:
+          UIColorName: LaunchBackground                 # plain colour that matches the first frame: no logo, no splash
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UIUserInterfaceStyle: Dark
+        UIRequiresFullScreen: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    settings:
+      base:
+        # Permanent once registered in App Store Connect. Owner decision pending (see docs/OWNER_STEPS.md).
+        PRODUCT_BUNDLE_IDENTIFIER: store.numfall.echolap
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_VERSION: "5.0"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_PREVIEWS: YES
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: YES
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: YES
+      configs:
+        # Release is built only by .github/workflows/testflight.yml, which creates a short-lived Apple Distribution
+        # certificate and App Store profile and passes the profile name in ECHOLAP_PROFILE_NAME. Debug stays automatic.
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER: $(ECHOLAP_PROFILE_NAME)
+  EchoLapUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: EchoLapUITests
+    dependencies:
+      - target: EchoLap
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: store.numfall.echolap.uitests
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_VERSION: "5.0"
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  EchoLap:
+    build:
+      targets:
+        EchoLap: all
+        EchoLapUITests: [test]
+    test:
+      config: Debug
+      targets:
+        - EchoLapUITests

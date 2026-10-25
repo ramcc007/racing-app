@@ -105,6 +105,9 @@ enum Routes {
 public final class RobotDriver {
     public let plan: RobotPlan
     let spec: CarSpec
+    /// Demo only: a gentle, lap-dependent weave so each lap (and so each echo) takes a slightly different line.
+    /// Always 0 when the robot sets targets.
+    public var weave: Double = 0
     private var routes: [Int: Route] = [:]   // key: bay bit 1, shortcut bit 2
     private var routeKey = -1
     private var routeIndex = 0
@@ -165,7 +168,10 @@ public final class RobotDriver {
         let look = 38 + 0.26 * speed
         let target = route.points[(routeIndex + Int(look / route.step)) % route.count]
         let diff = wrapAngle((target - car.position).angle - car.heading)
-        let steer = clamp(-diff * 2.8, -1, 1)
+        var steer = clamp(-diff * 2.8, -1, 1)
+        if weave > 0 {
+            steer = clamp(steer + weave * sin(race.lapTime * 1.7 + Double(lap) * 2.3) * (0.6 + 0.4 * sin(Double(lap) * 1.1)), -1, 1)
+        }
 
         let brakeDistance = speed * speed / (2 * Physics.coast) + 60
         var tightest = Double.infinity
