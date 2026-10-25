@@ -1,7 +1,7 @@
 import Foundation
 
 /// Curve helpers used by the track generator and the robot's racing line.
-enum Geometry {
+public enum Geometry {
     /// Closed Catmull–Rom spline through the control points, `perSegment` samples between each pair.
     static func closedSpline(_ ctrl: [Vec2], perSegment: Int) -> [Vec2] {
         let n = ctrl.count
@@ -86,7 +86,7 @@ enum Geometry {
     }
 
     /// Distance from p to segment ab, plus the 0...1 position of the closest point along it.
-    static func segmentDistance(_ p: Vec2, _ a: Vec2, _ b: Vec2) -> (distance: Double, t: Double) {
+    public static func segmentDistance(_ p: Vec2, _ a: Vec2, _ b: Vec2) -> (distance: Double, t: Double) {
         let ab = b - a
         let len2 = ab.lengthSquared
         guard len2 > 1e-9 else { return (p.distance(to: a), 0) }
