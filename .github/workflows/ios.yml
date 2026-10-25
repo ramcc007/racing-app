@@ -117,14 +117,36 @@ jobs:
           UDID=$(xcrun simctl list devices available | grep -E "iPhone [0-9]+ Pro \(" | tail -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
           [ -z "$UDID" ] && UDID=$(xcrun simctl list devices available | grep -E "iPhone" | tail -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
           echo "Simulator: $UDID"
-          xcodebuild test-without-building \
-            -project EchoLap.xcodeproj \
-            -scheme EchoLap \
-            -destination "id=$UDID" \
-            -derivedDataPath "$RUNNER_TEMP/dd" \
-            -resultBundlePath "$RUNNER_TEMP/UITests.xcresult" \
-            > "$RUNNER_TEMP/ui-tests.log" 2>&1 || true
-          grep -E "Test Case .*(passed|failed)|: error: " "$RUNNER_TEMP/ui-tests.log" || true
+          # Boot the simulator first and wait until it is really ready, so the first test's app launch is not the
+          # thing that pays for a cold simulator.
+          xcrun simctl boot "$UDID" 2>/dev/null || true
+          xcrun simctl bootstatus "$UDID" -b > /dev/null 2>&1 || true
+          run_tests() {   # $@: extra xcodebuild arguments (e.g. -only-testing for a rerun)
+            rm -rf "$RUNNER_TEMP/UITests.xcresult"
+            xcodebuild test-without-building \
+              -project EchoLap.xcodeproj \
+              -scheme EchoLap \
+              -destination "id=$UDID" \
+              -derivedDataPath "$RUNNER_TEMP/dd" \
+              -resultBundlePath "$RUNNER_TEMP/UITests.xcresult" \
+              "$@" \
+              > "$RUNNER_TEMP/ui-tests.log" 2>&1 || true
+            grep -E "Test Case .*(passed|failed)|: error: " "$RUNNER_TEMP/ui-tests.log" || true
+          }
+          run_tests
+          # A test whose app never got a process ID died before its body ran: run just those once more.
+          DEAD=$(grep -E "does not have a process ID" "$RUNNER_TEMP/ui-tests.log" | sed -E 's/.*-\[EchoLapUITests\.([A-Za-z]+) ([A-Za-z]+)\].*/\1\/\2/' | sort -u)
+          if [ -n "$DEAD" ]; then
+            echo "Rerunning tests whose app did not launch: $DEAD"
+            cp "$RUNNER_TEMP/ui-tests.log" "$RUNNER_TEMP/ui-tests-first.log"
+            ARGS=(); for t in $DEAD; do ARGS+=(-only-testing:"EchoLapUITests/$t"); done
+            run_tests "${ARGS[@]}"
+            # The rerun must pass, and the only failures in the first log must be the tests that never launched.
+            grep -q "TEST EXECUTE SUCCEEDED\|\*\* TEST SUCCEEDED \*\*" "$RUNNER_TEMP/ui-tests.log"
+            FIRST_FAILED=$(grep -cE "Test Case .*failed" "$RUNNER_TEMP/ui-tests-first.log" || true)
+            [ "$FIRST_FAILED" -eq "$(echo "$DEAD" | wc -l | tr -d ' ')" ]
+            exit $?
+          fi
           grep -q "TEST EXECUTE SUCCEEDED\|\*\* TEST SUCCEEDED \*\*" "$RUNNER_TEMP/ui-tests.log"
 
       - name: Collect the UI test screenshots
@@ -178,6 +200,7 @@ jobs:
           path: |
             ${{ runner.temp }}/app-build.log
             ${{ runner.temp }}/ui-tests.log
+            ${{ runner.temp }}/ui-tests-first.log
             ${{ runner.temp }}/screenshots-*.log
           if-no-files-found: ignore
 
