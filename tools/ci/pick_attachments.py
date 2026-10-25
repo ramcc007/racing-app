@@ -28,7 +28,7 @@ kept = 0
 for item in walk(json.load(open(manifest))):
     name = item.get("suggestedHumanReadableName", "")
     exported = item["exportedFileName"]
-    match = re.match(r"(\d\d-[a-z-]+)", name)
+    match = re.match(r"(\d\d[a-z]?-[a-z-]+)", name)
     if match and exported.endswith(".png"):
         shutil.copy(os.path.join(src, exported), os.path.join(out, "uitest_" + match.group(1) + ".png"))
         kept += 1

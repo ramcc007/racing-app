@@ -39,10 +39,10 @@ echo "phone=$PHONE small=$SMALL pad=$PAD"
 # Each entry: scene|seconds to wait|extra launch arguments.
 # The race scenes run the robot driver; -EchoFastForward speeds the simulation so echoes have built up.
 SCENES=(
-  "intro|7|"
-  "home|5|"
-  "race|30|-EchoFastForward 2"
-  "results|20|-EchoFastForward 8"
+  "intro|8|"
+  "home|6|"
+  "race|16|-EchoFastForward 1"
+  "results|24|-EchoFastForward 4"
   "world|8|"
   "daily|6|"
   "garage|5|"
@@ -63,6 +63,11 @@ shoot_device() {   # <label> <"udid [udid...]">: the first simulator that boots 
   limit 30 xcrun simctl status_bar "$id" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 --operatorName "" 2>/dev/null
   log "install on $label"
   limit 120 xcrun simctl install "$id" "$APP" || { log "install failed on $label"; return; }
+  # A cold first launch on a fresh simulator can take longer than any scene's wait: warm the app up once first.
+  limit 60 xcrun simctl launch "$id" "$BUNDLE" -EchoScene home >/dev/null 2>&1 || true
+  sleep 12
+  limit 30 xcrun simctl terminate "$id" "$BUNDLE" >/dev/null 2>&1
+  sleep 2
   for entry in "${SCENES[@]}"; do
     IFS='|' read -r scene wait extra <<< "$entry"
     log "$label: $scene"
