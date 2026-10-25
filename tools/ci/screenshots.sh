@@ -41,7 +41,7 @@ echo "phone=$PHONE small=$SMALL pad=$PAD"
 SCENES=(
   "intro|7|"
   "home|5|"
-  "race|24|-EchoFastForward 3"
+  "race|30|-EchoFastForward 2"
   "results|20|-EchoFastForward 8"
   "world|8|"
   "daily|6|"
@@ -71,7 +71,10 @@ shoot_device() {   # <label> <"udid [udid...]">: the first simulator that boots 
     # shellcheck disable=SC2086
     limit 60 xcrun simctl launch "$id" "$BUNDLE" -EchoScene "$scene" $extra || log "launch failed: $scene"
     sleep "$wait"
-    limit 60 xcrun simctl io "$id" screenshot "$OUT/${label}_${scene}.png" || log "screenshot failed: $scene"
+    # A busy simulator (a race running fast-forward) can make one capture stall; try once more before giving up.
+    limit 60 xcrun simctl io "$id" screenshot "$OUT/${label}_${scene}.png" \
+      || { sleep 3; limit 90 xcrun simctl io "$id" screenshot "$OUT/${label}_${scene}.png"; } \
+      || log "screenshot failed: $scene"
   done
   limit 60 xcrun simctl shutdown "$id" 2>/dev/null
 }
@@ -82,3 +85,7 @@ case "$WHICH" in
   pad)   shoot_device ipad-pro-13 "$PAD" ;;
 esac
 ls -la "$OUT"
+for entry in "${SCENES[@]}"; do   # one line per missing scene, so the workflow log shows it
+  scene="${entry%%|*}"
+  ls "$OUT"/*_"$scene".png >/dev/null 2>&1 || echo "MISSING: $scene"
+done
