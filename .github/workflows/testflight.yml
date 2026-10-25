@@ -69,7 +69,8 @@ jobs:
           chmod 600 "$RUNNER_TEMP/keys/AuthKey_$ASC_KEY_ID.p8"
           echo "ASC_KEY_PATH=$RUNNER_TEMP/keys/AuthKey_$ASC_KEY_ID.p8" >> "$GITHUB_ENV"
 
-      # A short-lived Apple Distribution certificate and App Store profile, made with the API key and removed at the end.
+      # A short-lived Apple Distribution certificate and App Store profile, made with the API key. A later run removes them
+      # (never this one: Apple checks the signature while it processes the upload).
       # (Automatic signing would first need a development profile, which needs a registered iPhone.)
       - name: Create signing certificate and profile for this run
         env:
