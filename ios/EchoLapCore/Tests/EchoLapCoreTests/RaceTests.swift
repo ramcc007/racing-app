@@ -503,31 +503,73 @@ final class RaceTests: XCTestCase {
         XCTAssertLessThan(race.car.forwardSpeed, Cars.pip.topSpeed * 0.75)
     }
 
-    func testOffRoadIsSlowAndTheOuterWallHoldsYou() {
+    func testTheBarrierKeepsYouOnTheTrackAndAHardHitCostsSpeed() {
         let track = TestTracks.circle()
         let race = Race(track: track, spec: Cars.pip)
         race.testingStart(at: 0, speed: 300)
-        // Drive straight off the circle for three seconds.
-        TestTracks.run(race, ticks: 360, input: ControlInput(steer: 0))
-        XCTAssertTrue(race.offroad)
-        XCTAssertGreaterThan(race.stats.offroadSeconds, 0.5)
-        let loc = track.locate(race.car.position)
-        XCTAssertLessThanOrEqual(loc.distance, track.halfWidth + 120.5, "the soft wall keeps you near the track")
+        // Drive straight off the circle for three seconds: the barrier along the kerb stops you.
+        let events = TestTracks.run(race, ticks: 360, input: ControlInput(steer: 0))
+        XCTAssertTrue(events.contains(.wallHit))
+        XCTAssertEqual(race.stats.wallHits, 1, "one hit, then a scrape along the wall")
+        XCTAssertFalse(race.offroad, "never in the scenery")
+        XCTAssertLessThanOrEqual(race.location.distance, track.halfWidth + Race.wallOffset + 0.5)
+        XCTAssertEqual(race.stats.offroadSeconds, 0, accuracy: 0.05)
     }
 
-    func testCarPinnedNoseFirstAgainstTheOuterWallTurnsBackOntoTheRoad() {
+    func testAGlancingScrapeAlongTheBarrierIsNotAHit() {
+        let track = TestTracks.circle(halfWidth: 40)
+        let race = Race(track: track, spec: Cars.pip)
+        // Start on the outer edge, pointing almost along the road, drifting slowly outwards into the wall.
+        race.testingStart(at: 10, speed: 300, lateral: -(40 + Race.wallOffset - 2))
+        race.testingSetCar { $0.heading -= 0.06 }
+        let before = race.car.speed
+        let events = TestTracks.run(race, ticks: 60, input: ControlInput(steer: 0))
+        XCTAssertFalse(events.contains(.wallHit))
+        XCTAssertGreaterThan(race.car.speed, before * 0.45, "a scrape costs speed but never stops you")
+        XCTAssertLessThan(race.car.speed, before * 0.9, "riding the wall is slower than driving")
+    }
+
+    func testCarPinnedNoseFirstAgainstTheBarrierTurnsBackOntoTheRoad() {
         let track = TestTracks.circle()
         let race = Race(track: track, spec: Cars.pip)
         race.testingStart(at: 10)
         let i = 10
         let out = track.normal(i) * -1   // anticlockwise circle: the left normal points inwards, so this is outwards
         race.testingSetCar { car in
-            car.position = track.points[i] + out * (track.halfWidth + 125)
+            car.position = track.points[i] + out * (track.halfWidth + Race.wallOffset)
             car.heading = out.angle
             car.velocity = .zero
         }
         for _ in 0..<(120 * 4) { race.tick(ControlInput(steer: 0)) }
-        XCTAssertLessThan(race.location.distance, track.halfWidth + 125, "the car drove away from the wall")
         XCTAssertGreaterThan(race.car.forwardSpeed, 60, "the car is moving again")
+        XCTAssertGreaterThan(race.progress, track.s(10) + 100, "and going the right way")
+    }
+
+    /// The first race's drift lesson: holding full lock at speed, even on a straight, is a drift that reaches tier 1
+    /// before the wall takes the speed away, and letting go gives the boost.
+    func testFullLockOnAStraightTeachesTheDriftAgainstTheWall() {
+        let track = TestTracks.circle(radius: 1500, halfWidth: 36)
+        let race = Race(track: track, spec: Cars.pip)
+        race.testingStart(at: 20, speed: 320)
+        var events: [RaceEvent] = []
+        for _ in 0..<(120 * 2) { race.tick(ControlInput(steer: 1)); events += race.events; race.events.removeAll() }
+        for _ in 0..<30 { race.tick(ControlInput(steer: 0)); events += race.events; race.events.removeAll() }
+        XCTAssertTrue(events.contains(.driftTier(1)), "\(events)")
+        XCTAssertTrue(events.contains { if case .driftBoost(let t) = $0 { return t >= 1 } else { return false } })
+        XCTAssertFalse(race.offroad)
+    }
+
+    func testTheBarrierHasGapsAtTheBayAndTheLane() {
+        let track = TestTracks.circleWithShortcut(trigger: .pad)
+        let pad = track.pad!
+        let race = Race(track: track, spec: Cars.pip)
+        race.testingStart(at: pad.index - 12, speed: 200)
+        // Aim straight at the bay centre from the road.
+        race.testingSetCar { car in
+            car.heading = (pad.center - car.position).angle
+            car.velocity = car.forward * 200
+        }
+        TestTracks.run(race, ticks: 120, input: ControlInput(steer: 0)) { $0.car.docked }
+        XCTAssertTrue(race.car.docked, "the bay is reachable through the barrier")
     }
 }

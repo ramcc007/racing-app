@@ -29,14 +29,14 @@ public struct Difficulty: Equatable, Sendable {
         let lapSeconds = (20 + 0.17 * Double(def.index - 1)) * (breather ? 0.8 : (boss ? 1.15 : 1))
         // Tight enough from the first track that the hairpins ask for a drift; the last tracks need a brake as well.
         let minRadiusCars = 3.0 - 1.0 * t
-        let slackBonus = breather ? 0.05 : 0
+        let slackBonus = breather ? 0.03 : 0
         return Difficulty(
             roadWidth: widthCars * Physics.carWidth,
             lapLength: lapSeconds * assumedLapSpeed,
             minRadius: minRadiusCars * Physics.carLength,
             wiggle: t,
-            goldSlack: 0.10 - 0.05 * t + slackBonus,
-            silverSlack: 0.22 - 0.10 * t + slackBonus,
+            goldSlack: 0.06 - 0.04 * t + slackBonus,
+            silverSlack: 0.16 - 0.08 * t + slackBonus,
             bumpPenalty: def.softEchoes ? 0 : (0.6 + 0.4 * Double(max(0, def.index - 16)) / 104)
         )
     }

@@ -48,7 +48,7 @@ final class PlayerSimulationTests: XCTestCase {
             boosts += r.stats.boosts
         }
         print("nitro player: gold \(golds)/120, silver+ \(silvers)/120, drift boosts \(driftBoosts), nitros \(boosts); missed: \(misses)")
-        XCTAssertGreaterThanOrEqual(golds, 110, "gold must be reachable with the tools the game gives: \(misses)")
+        XCTAssertGreaterThanOrEqual(golds, 100, "gold must be reachable with the tools the game gives: \(misses)")
         XCTAssertEqual(silvers, 120)
         XCTAssertGreaterThan(driftBoosts, 120 * 2, "the robot's line drifts a few corners a track")
     }
@@ -66,6 +66,6 @@ final class PlayerSimulationTests: XCTestCase {
         print("timid player: finished \(finished)/120, silver+ \(silvers)/120, gold \(golds)/120; slow: \(slow.prefix(20))")
         XCTAssertEqual(finished, 120, "nobody is ever stuck")
         XCTAssertGreaterThanOrEqual(silvers, 80, "silver is for careful drivers too")
-        XCTAssertLessThan(golds, 60, "but gold mostly needs the drift")
+        XCTAssertLessThan(golds, 50, "but gold mostly needs the drift")
     }
 }

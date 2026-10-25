@@ -84,7 +84,7 @@ public enum Physics {
     // Drift. Entering needs real steering at real speed; leaving needs the thumb back near the middle (hysteresis).
     public static let driftEnterSteer = 0.6
     public static let driftExitSteer = 0.3
-    public static let driftEnterSpeed = 0.5
+    public static let driftEnterSpeed = 0.45
     public static let driftExitSpeed = 0.3
     /// Turn rate multiplier while drifting.
     public static let driftTurn = 1.6
@@ -99,7 +99,7 @@ public enum Physics {
     /// Hold a drift this long for a tier 1, 2 or 3 boost on release.
     public static let driftTiers = [0.4, 0.9, 1.5]
     /// Seconds of boost each tier gives.
-    public static let driftBoostSeconds = [0.0, 0.35, 0.6, 0.9]
+    public static let driftBoostSeconds = [0.0, 0.5, 0.9, 1.3]
 
     public static func driftTier(for seconds: Double) -> Int {
         driftTiers.filter { seconds >= $0 }.count

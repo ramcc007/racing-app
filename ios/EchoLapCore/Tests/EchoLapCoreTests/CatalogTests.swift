@@ -127,10 +127,10 @@ final class CatalogTests: XCTestCase {
             XCTAssertGreaterThanOrEqual(d.roadWidth, 2.3 * Physics.carWidth, "\(def.id): always room to pass an echo")
         }
         let first = Difficulty.of(Catalog.career[0]), last = Difficulty.of(Catalog.career[119])
-        XCTAssertEqual(first.goldSlack, 0.10, accuracy: 1e-9)
-        XCTAssertEqual(last.goldSlack, 0.05, accuracy: 1e-9)
-        XCTAssertEqual(first.silverSlack, 0.22, accuracy: 1e-9)
-        XCTAssertEqual(last.silverSlack, 0.12, accuracy: 1e-9)
+        XCTAssertEqual(first.goldSlack, 0.06, accuracy: 1e-9)
+        XCTAssertEqual(last.goldSlack, 0.02, accuracy: 1e-9)
+        XCTAssertEqual(first.silverSlack, 0.16, accuracy: 1e-9)
+        XCTAssertEqual(last.silverSlack, 0.08, accuracy: 1e-9)
     }
 
     func testEconomyAndCosmetics() {

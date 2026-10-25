@@ -373,6 +373,10 @@ final class RaceController: ObservableObject {
                 showPopup("EDGE", detail: nil, color: .white)
             case .edgeEnd:
                 break
+            case .wallHit:
+                Sound.play(.gateHit, volume: 0.7)
+                Haptics.medium()
+                shakeRequested = true
             case .gateOpened:
                 Sound.play(.gateOpen, volume: 0.6)
             case .gateClosed:

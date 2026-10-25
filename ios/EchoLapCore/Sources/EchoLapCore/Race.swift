@@ -26,6 +26,8 @@ public struct RaceStats: Codable, Equatable, Sendable {
     public var nearMisses = 0
     /// Seconds spent riding the very edge of the road at speed.
     public var edgeSeconds = 0.0
+    /// Hard hits on the barrier along the kerb.
+    public var wallHits = 0
 
     public init() {}
 
@@ -37,7 +39,7 @@ public struct RaceStats: Codable, Equatable, Sendable {
         gateHits = get(.gateHits, 0); iceBreaks = get(.iceBreaks, 0); splashes = get(.splashes, 0); docks = get(.docks, 0)
         jumps = get(.jumps, 0); distance = get(.distance, 0); offroadSeconds = get(.offroadSeconds, 0)
         drifts = get(.drifts, 0); driftSeconds = get(.driftSeconds, 0); driftBoosts = get(.driftBoosts, 0)
-        nearMisses = get(.nearMisses, 0); edgeSeconds = get(.edgeSeconds, 0)
+        nearMisses = get(.nearMisses, 0); edgeSeconds = get(.edgeSeconds, 0); wallHits = get(.wallHits, 0)
     }
 }
 
@@ -75,6 +77,8 @@ public enum RaceEvent: Equatable, Sendable {
     /// Riding the edge of the road at speed started or stopped.
     case edgeStart
     case edgeEnd
+    /// A hard hit on the barrier along the kerb (scrapes along it are silent).
+    case wallHit
 }
 
 /// One recorded lap, replayed in sync with the current lap.
@@ -218,6 +222,13 @@ public final class Race {
     public static let nearMissDistance = 34.0
     /// How close to the road edge (from the kerb inwards) counts as riding the edge.
     public static let edgeBand = 14.0
+    /// The barrier runs along the outside of the kerb: a car's centre can get this far past the road edge, no further.
+    public static let wallOffset = TrackGenerator.kerb - 3
+    /// Hitting the barrier faster than this straight-on is a hard hit (sound, shake); slower is a scrape.
+    public static let wallHitSpeed = 70.0
+    /// Speed drained per second while scraping along the barrier, so riding the wall round a corner is always slower
+    /// than driving it.
+    public static let wallFriction = 1.6
     public static let iceBreakPasses = 3
     public static let sensorOpenSeconds = 5.0
     public static let gateGraceSeconds = 1.0
@@ -435,9 +446,16 @@ public final class Race {
             onLane = d <= sc.halfWidth + 2 && t > 0 && t < 1
         }
         let onBay = track.bays.contains { car.position.distance(to: $0.center) <= $0.radius + 8 }
-        let onRoad = loc.distance <= hw + 2
+        // The kerb up to the barrier counts as road: you can ride it, you never crawl on grass beside the track.
+        let onRoad = loc.distance <= hw + Race.wallOffset + 1
         offroad = !(onRoad || onLane || onBay)
         if offroad && !car.isAirborne { stats.offroadSeconds += Physics.dt }
+        // Gaps in the barrier where the road is left on purpose: the bays, and the lane's two ends.
+        let nearBay = track.bays.contains { car.position.distance(to: $0.center) <= $0.radius + 44 }
+        let nearLane = track.shortcut.map { sc in
+            let (d, t) = Geometry.segmentDistance(car.position, sc.a, sc.b)
+            return d <= sc.halfWidth + 34 && t > 0 && t < 1
+        } ?? false
 
         // Riding the edge: the outer strip of the road at speed fills the nitro a little. Over the kerb it stops.
         let riding = onRoad && !onLane && !car.isAirborne && !car.docked && loc.distance > hw - Race.edgeBand
@@ -458,16 +476,27 @@ public final class Race {
             }
         }
 
-        // Soft outer wall: you can run wide, but not wander off into the scenery.
-        if !onLane && !onBay && loc.distance > hw + 120 {
+        // The barrier along the kerb: run wide and you scrape it, hit it straight on and you lose real speed, but you
+        // never leave the track.
+        let wallDistance = hw + Race.wallOffset
+        if !nearLane && !nearBay && !car.isAirborne && loc.distance > wallDistance {
             let n = (car.position - track.points[loc.index]).normalized
-            car.position = track.points[loc.index] + n * (hw + 120)
+            car.position = track.points[loc.index] + n * wallDistance
             let out = car.velocity.dot(n)
-            if out > 0 { car.velocity -= n * out }
-            car.velocity = car.velocity * 0.98
+            if out > 0 {
+                car.velocity -= n * out
+                // Speed lost grows with how squarely the car hit, and the scrape itself keeps draining speed.
+                let squareness = min(1, out / max(1, car.speed + out))
+                car.velocity = car.velocity * (1 - 0.6 * squareness) * (1 - Race.wallFriction * Physics.dt)
+                if out > Race.wallHitSpeed {
+                    car.boostTime = 0
+                    stats.wallHits += 1
+                    events.append(.wallHit)
+                }
+            }
             // Pinned nose-first against the wall a car can't steer (no speed, no turning): swing it round to face
             // along the road so it can always drive on.
-            if car.forward.dot(n) > 0.2 {
+            if car.forward.dot(n) > 0.2 && car.forwardSpeed < 90 {
                 let want = track.tangents[loc.index].angle
                 let diff = wrapAngle(want - car.heading)
                 car.heading += max(-2.5 * Physics.dt, min(2.5 * Physics.dt, diff))
