@@ -1,0 +1,101 @@
+<!doctype html><meta charset="utf-8">
+<body><script src="lib.js"></script><script src="config.js"></script><script>
+const W = 2400, H = 1500;
+const s = svgRoot(W, H, '#F3EFE6');
+text(s, 80, 120, 'How ' + TITLE.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) + ' works', { size: 72, weight: 900, fill: '#1B2430', family: 'Inter Display' });
+text(s, 80, 180, 'Each lap you finish turns into an "echo": a solid car that drives your exact line again, alongside you.', { size: 34, weight: 500, fill: '#55606E' });
+
+const PW = 720, PH = 560, GX = 80, GY = 240, GAP = 40;
+const panels = [
+  ['1', 'Lap 1: just race', 'Your line is recorded as you drive.'],
+  ['2', 'Lap 2: meet yourself', 'Lap 1 drives again, in sync with you.'],
+  ['3', 'Slipstream', 'Tuck in behind an echo to fill Boost.'],
+  ['4', 'Switch pads', 'An echo on a pad holds the shortcut open.'],
+  ['5', 'Bumps cost time', 'Hit an echo and you spin. Plan your lines.'],
+  ['6', 'Lap 6: the swarm', 'Five of you on track. The rival is you.'],
+];
+
+function miniTrack(g, ox, oy) {
+  const c = [[120, 200], [300, 130], [560, 150], [640, 300], [560, 440], [320, 460], [120, 400], [80, 300]]
+    .map(([x, y]) => [ox + x, oy + y]);
+  const pts = spline(c, 50);
+  road(g, pts, { width: 104, asphalt: '#3A3F48' });
+  [0.08, 0.76].forEach(f => {
+    const q = along(pts, f);
+    el('path', { d: 'M-10 -14 L8 0 L-10 14', fill: 'none', stroke: 'rgba(255,255,255,.7)', 'stroke-width': 6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', transform: `translate(${q.x} ${q.y}) rotate(${q.a})` }, g);
+  });
+  return pts;
+}
+
+panels.forEach(([n, title, sub], i) => {
+  const col = i % 3, row = Math.floor(i / 3);
+  const x = GX + col * (PW + GAP), y = GY + row * (PH + GAP + 40);
+  const g = el('g', {}, s);
+  el('rect', { x, y, width: PW, height: PH, rx: 32, fill: '#FFFFFF', stroke: '#E2DCCF', 'stroke-width': 3 }, g);
+  el('rect', { x, y, width: PW, height: PH, rx: 32, fill: '#2B6B4A', opacity: 0.10 }, g);
+  const under = el('g', {}, g);
+  const pts = miniTrack(g, x, y);
+  el('circle', { cx: x + 52, cy: y + 52, r: 28, fill: '#1B2430' }, g);
+  text(g, x + 52, y + 63, n, { size: 30, weight: 900, anchor: 'middle' });
+  text(g, x + 96, y + 64, title, { size: 36, weight: 800, fill: '#1B2430' });
+  text(g, x + 20, y + PH + 46, sub, { size: 30, weight: 500, fill: '#3C4652' });
+
+  const P = (f, off = 0) => along(pts, f, off);
+  if (i === 0) {
+    const line = slice(pts, 0.02, 0.62, -6, 10, 3);
+    el('path', { d: pathD(line, false), fill: 'none', stroke: ECHO[0], 'stroke-width': 8, 'stroke-dasharray': '2 14', 'stroke-linecap': 'round' }, g);
+    const p = P(0.62, -6); car(g, p.x, p.y, p.a, '#F5F7FA', { outline: '#1B2430' });
+    text(g, x + 330, y + 305, 'recording…', { size: 26, weight: 700, fill: ECHO[0], anchor: 'middle' });
+  }
+  if (i === 1) {
+    echo(g, pts, 0.45, 1, { offset: 24, trail: 0.14 });
+    const p = P(0.40, -24); car(g, p.x, p.y, p.a, '#F5F7FA', { outline: '#1B2430' });
+    text(g, x + 360, y + 305, 'same start, same moment', { size: 24, weight: 700, fill: '#55606E', anchor: 'middle' });
+  }
+  if (i === 2) {
+    const e = echo(g, pts, 0.50, 2, { offset: 0, trail: 0.10 });
+    const p = P(0.43, 0);
+    for (let k = 0; k < 6; k++) {
+      const q = along(pts, 0.445 + k * 0.007, (k % 2 ? 22 : -22));
+      el('line', { x1: q.x - 14, y1: q.y, x2: q.x + 14, y2: q.y, stroke: '#FFFFFF', 'stroke-width': 5, 'stroke-linecap': 'round', opacity: 0.85, transform: `rotate(${q.a} ${q.x} ${q.y})` }, g);
+    }
+    car(g, p.x, p.y, p.a, '#F5F7FA', { outline: '#1B2430' });
+    // Boost meter filling.
+    el('rect', { x: x + 200, y: y + 280, width: 320, height: 34, rx: 17, fill: '#E7E2D6' }, g);
+    el('rect', { x: x + 200, y: y + 280, width: 230, height: 34, rx: 17, fill: '#F2A93B' }, g);
+    text(g, x + 360, y + 306, 'BOOST', { size: 22, weight: 900, fill: '#1B2430', anchor: 'middle' });
+  }
+  if (i === 3) {
+    // Shortcut lane across the infield, gated.
+    const a = P(0.66), b = P(0.14);
+    el('line', { x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: '#E8E4DA', 'stroke-width': 84 }, under);
+    el('line', { x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: '#3A3F48', 'stroke-width': 70 }, under);
+    el('line', { x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: '#F2A93B', 'stroke-width': 6, 'stroke-dasharray': '18 16' }, under);
+    const m = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    el('rect', { x: m.x - 50, y: m.y - 46, width: 16, height: 92, rx: 6, fill: '#2FA36B' }, g);
+    el('rect', { x: m.x + 34, y: m.y - 46, width: 16, height: 92, rx: 6, fill: '#2FA36B' }, g);
+    text(g, m.x + 120, m.y + 10, 'gate OPEN', { size: 26, weight: 900, fill: '#2FA36B' });
+    const pad = P(0.30, 0);
+    el('rect', { x: pad.x - 56, y: pad.y - 40, width: 112, height: 80, rx: 12, fill: '#2FA36B', transform: `rotate(${pad.a} ${pad.x} ${pad.y})` }, g);
+    echo(g, pts, 0.30, 3, { offset: 0, trail: 0.08 });
+    text(g, pad.x - 150, pad.y + 8, 'pad', { size: 26, weight: 900, fill: '#2FA36B' });
+    const p = P(0.60, 0); car(g, p.x, p.y, p.a, '#F5F7FA', { outline: '#1B2430' });
+  }
+  if (i === 4) {
+    const e = echo(g, pts, 0.53, 1, { offset: 8, trail: 0.1 });
+    const p = P(0.495, -10);
+    for (let k = 0; k < 8; k++) {
+      const a = k * Math.PI / 4;
+      el('line', { x1: p.x + 30 + Math.cos(a) * 34, y1: p.y - 4 + Math.sin(a) * 34, x2: p.x + 30 + Math.cos(a) * 54, y2: p.y - 4 + Math.sin(a) * 54, stroke: '#D64545', 'stroke-width': 6, 'stroke-linecap': 'round' }, g);
+    }
+    car(g, p.x, p.y, p.a + 50, '#F5F7FA', { outline: '#D64545' });
+    text(g, x + 360, y + 305, '−0.8 s', { size: 44, weight: 900, fill: '#D64545', anchor: 'middle' });
+  }
+  if (i === 5) {
+    [[0.20, 1, 22], [0.33, 2, -20], [0.47, 3, 16], [0.60, 4, -14], [0.86, 5, 10]].forEach(([f, lap, off]) => echo(g, pts, f, lap, { offset: off, trail: 0.07 }));
+    const p = P(0.53, 4); car(g, p.x, p.y, p.a, '#F5F7FA', { outline: '#1B2430' });
+    text(g, x + 360, y + 305, 'lap 6 / 6', { size: 30, weight: 900, fill: '#1B2430', anchor: 'middle' });
+  }
+});
+stamp(s, W, H, true);
+</script></body>

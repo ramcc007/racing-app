@@ -1,0 +1,70 @@
+<!doctype html><meta charset="utf-8">
+<body><script src="lib.js"></script><script src="config.js"></script><script>
+const W = 1320, H = 2868;
+const s = svgRoot(W, H, '#1D1B33');
+const defs = el('defs', {}, s);
+const bg = el('linearGradient', { id: 'bg', x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+el('stop', { offset: 0, 'stop-color': '#2A2650' }, bg);
+el('stop', { offset: 1, 'stop-color': '#121020' }, bg);
+el('rect', { width: W, height: H, fill: 'url(#bg)' }, s);
+
+text(s, 660, 230, 'TRACK 3-7 · NEON ALLEY', { size: 36, weight: 800, anchor: 'middle', fill: '#43E0FF', spacing: 3 });
+text(s, 660, 420, '1:12.48', { size: 180, weight: 900, anchor: 'middle', family: 'Inter Display' });
+el('rect', { x: 470, y: 460, width: 380, height: 64, rx: 32, fill: '#2FA36B' }, s);
+text(s, 660, 504, 'NEW PERSONAL BEST', { size: 28, weight: 900, anchor: 'middle' });
+
+// Stars with the times that earned them.
+[['Finish', '✓'], ['Silver', '1:15.90'], ['Gold', '1:12.90']].forEach(([l, t], i) => {
+  const cx = 360 + i * 300;
+  star(s, cx, 680, 100, '#F2C94C', '#FFE9A8');
+  text(s, cx, 830, l, { size: 34, weight: 800, anchor: 'middle' });
+  text(s, cx, 875, t, { size: 30, weight: 600, anchor: 'middle', fill: '#B9B4D9' });
+});
+
+// Lap chart: each lap's time, coloured as the echo it became.
+panel(s, 60, 950, 1200, 620, { r: 40, fill: 'rgba(255,255,255,.06)' });
+text(s, 110, 1030, 'Your laps', { size: 40, weight: 800 });
+text(s, 1210, 1030, 'each lap became an echo', { size: 26, weight: 600, anchor: 'end', fill: '#B9B4D9' });
+const laps = [13.42, 12.10, 15.88, 10.71, 10.33, 10.04];
+laps.forEach((t, i) => {
+  const y = 1090 + i * 76;
+  el('circle', { cx: 130, cy: y + 24, r: 24, fill: i < 5 ? ECHO[i] : '#F5F7FA' }, s);
+  text(s, 130, y + 34, String(i + 1), { size: 26, weight: 900, anchor: 'middle', fill: '#111' });
+  const w = (t / 16) * 600;
+  el('rect', { x: 180, y: y + 6, width: w, height: 36, rx: 18, fill: i < 5 ? ECHO[i] : '#F5F7FA', opacity: 0.9 }, s);
+  text(s, 180 + w + 20, y + 36, t.toFixed(2) + ' s', { size: 28, weight: 700 });
+  if (i === 2) text(s, 1210, y + 36, 'parked on pad', { size: 24, weight: 700, anchor: 'end', fill: '#2FD38A' });
+  if (i >= 3) text(s, 1210, y + 36, 'used shortcut', { size: 24, weight: 700, anchor: 'end', fill: '#43E0FF' });
+});
+
+// Echo medal.
+panel(s, 60, 1610, 1200, 220, { r: 40, fill: 'rgba(47,163,107,.18)', stroke: 'rgba(47,211,138,.5)' });
+el('circle', { cx: 170, cy: 1720, r: 66, fill: '#2FA36B' }, s);
+el('path', { d: 'M140 1722 L162 1746 L204 1694', fill: 'none', stroke: '#fff', 'stroke-width': 12, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, s);
+text(s, 270, 1700, 'Echo medal: Gatekeeper', { size: 42, weight: 900 });
+text(s, 270, 1752, 'Lap 3 held the shortcut open for laps 4–6', { size: 30, weight: 600, fill: '#C9F0DC' });
+
+// Rewards: fixed, never random.
+panel(s, 60, 1870, 580, 240, { r: 40, fill: 'rgba(255,255,255,.06)' });
+el('circle', { cx: 150, cy: 1990, r: 46, fill: '#F2A93B' }, s);
+el('path', { d: 'M150 1958 L160 1984 L186 1990 L160 1996 L150 2022 L140 1996 L114 1990 L140 1984 Z', fill: '#fff' }, s);
+text(s, 220, 1985, '+120', { size: 64, weight: 900 });
+text(s, 220, 2035, 'Sparks', { size: 30, weight: 600, fill: '#B9B4D9' });
+panel(s, 680, 1870, 580, 240, { r: 40, fill: 'rgba(255,255,255,.06)' });
+text(s, 720, 1950, 'Next racer: Needle', { size: 32, weight: 800 });
+el('rect', { x: 720, y: 1980, width: 500, height: 30, rx: 15, fill: 'rgba(255,255,255,.12)' }, s);
+el('rect', { x: 720, y: 1980, width: 467, height: 30, rx: 15, fill: '#4CB28B' }, s);
+text(s, 720, 2060, '168 / 180 ★', { size: 30, weight: 700, fill: '#B9B4D9' });
+
+// Ghost comparison.
+text(s, 660, 2200, 'vs your best ghost: −0.84 s', { size: 36, weight: 700, anchor: 'middle', fill: '#5BD08D' });
+
+// Buttons.
+el('rect', { x: 60, y: 2300, width: 380, height: 150, rx: 75, fill: 'rgba(255,255,255,.1)', stroke: 'rgba(255,255,255,.25)', 'stroke-width': 3 }, s);
+text(s, 250, 2392, 'Retry', { size: 44, weight: 800, anchor: 'middle' });
+el('rect', { x: 470, y: 2300, width: 790, height: 150, rx: 75, fill: '#F2A93B' }, s);
+text(s, 865, 2392, 'Next track  →', { size: 48, weight: 900, anchor: 'middle', fill: '#1B2430' });
+el('rect', { x: 60, y: 2490, width: 1200, height: 120, rx: 60, fill: 'none', stroke: 'rgba(255,255,255,.25)', 'stroke-width': 3 }, s);
+text(s, 660, 2565, 'Save a 15-second replay clip', { size: 36, weight: 700, anchor: 'middle', fill: '#E6E3F7' });
+stamp(s, W, H - 40);
+</script></body>

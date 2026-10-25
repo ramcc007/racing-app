@@ -1,0 +1,990 @@
+[
+  {
+    "name": "Hill Climb Racing",
+    "ios_app_id": "564540143",
+    "developer": "Fingersoft",
+    "release_year": null,
+    "price_model": "free + IAP + ads (listing notes in-app purchases and advertising); separate Apple Arcade edition 'Hill Climb Racing+' (id6444795419)",
+    "genre_tag": "physics hill-climb",
+    "still_live": "yes (listing indexed in search; not live-verified)",
+    "us_rating": {
+      "avg": 4.6,
+      "count": "135K",
+      "source": "https://apps.apple.com/us/app/-/id564540143",
+      "via": "search snippet",
+      "accessed": "2026-10-25",
+      "note": "snippet date not visible; other Apple snapshots of the same listing showed 124K and 128K ratings (all 4.6)"
+    },
+    "global_ios_ratings": [
+      {
+        "count": "360K",
+        "avg": 4.48,
+        "source": "https://appgoblin.info/apps/564540143",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "storefront scope not stated"
+      },
+      {
+        "count": 17315,
+        "avg": 4.6,
+        "source": "https://apps.appfollow.io/ios/hill-climb-racing/564540143?country=ca",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Canada storefront only, review count"
+      }
+    ],
+    "downloads": [
+      {
+        "value": "912 million",
+        "scope": "all platforms",
+        "source": "https://www.blog.udonis.co/mobile-marketing/mobile-games/most-downloaded-mobile-games",
+        "date": "2026 update (exact date not shown in snippet)",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Udonis all-time list, ranked #11"
+      },
+      {
+        "value": "1,197,622,168",
+        "scope": "Google Play",
+        "source": "https://splitmetrics.com/blog/most-downloaded-games-in-google-play/",
+        "date": "Aug 2025",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Google Play-only all-time figure exceeds Udonis all-platform figure; sources disagree"
+      },
+      {
+        "value": "1B+",
+        "scope": "Google Play",
+        "source": "https://play.google.com/store/apps/details?id=com.fingersoft.hillclimb&hl=en_US",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Play install band; listing showed 4.3 stars, ~10.6M reviews"
+      },
+      {
+        "value": "18M",
+        "scope": "iOS",
+        "source": "https://appgoblin.info/apps/564540143",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "AppGoblin install estimate"
+      },
+      {
+        "value": "2.5 billion",
+        "scope": "all platforms (whole Hill Climb Racing franchise, not this title alone)",
+        "source": "https://mobilegamer.biz/data-digest-hill-climb-racing-hits-2-5bn-mobiles-top-advertisers-2024s-top-ios-games-hybridcasual-and-south-korea-stats-more/",
+        "date": "Dec 2024",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "franchise total"
+      }
+    ],
+    "notes": "Release year not sourced in this pass. Three different US ratings-count snapshots seen (124K/128K/135K)."
+  },
+  {
+    "name": "Hill Climb Racing 2",
+    "ios_app_id": "1146465836",
+    "developer": "Fingersoft",
+    "release_year": 2016,
+    "price_model": "free + IAP",
+    "genre_tag": "physics hill-climb (multiplayer)",
+    "still_live": "yes (listing indexed; not live-verified)",
+    "us_rating": {
+      "avg": 4.7,
+      "count": "180K",
+      "source": "https://apps.apple.com/us/app/-/id1146465836",
+      "via": "search snippet",
+      "accessed": "2026-10-25",
+      "note": "snippet date not visible"
+    },
+    "global_ios_ratings": [
+      {
+        "count": "180.0K",
+        "avg": 4.7,
+        "source": "https://apppricinglab.com/app/apple/1146465836",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "storefront not stated; matches US page figure. Release date 2016-12-07 from this page"
+      },
+      {
+        "count": "~210K",
+        "avg": null,
+        "source": "https://apptopia.com/ios/app/1146465836/about",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Apptopia US ratings total; different snapshot"
+      },
+      {
+        "count": 21493,
+        "avg": 4.6,
+        "source": "https://apps.appfollow.io/ios/hill-climb-racing-2/1146465836?country=ca",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Canada storefront only"
+      }
+    ],
+    "downloads": [
+      {
+        "value": "426 million",
+        "scope": "all platforms",
+        "source": "https://www.blog.udonis.co/mobile-marketing/mobile-games/most-downloaded-mobile-games",
+        "date": "2026 update (exact date not shown in snippet)",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Udonis all-time list (rank ~78, formatting ambiguous)"
+      },
+      {
+        "value": "100M+ (shown as 10Cr+)",
+        "scope": "Google Play",
+        "source": "https://play.google.com/store/apps/details?id=com.fingersoft.hcr2&hl=en_IN",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Play install band, India-locale page"
+      },
+      {
+        "value": "4.7M reviews, 4.5 avg (ratings, not installs)",
+        "scope": "Google Play",
+        "source": "https://apppricinglab.com/app/google_play/com.fingersoft.hcr2",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Play review count, for context only"
+      }
+    ],
+    "notes": "AppGoblin page for HCR2 not surfaced (searches returned only HCR1 and an unrelated 'HILL RACER 2'). Release year from apppricinglab release date 2016-12-07. Gamesbeat/pocketgamer.biz articles on a '40 million downloads' milestone exist but their dates were not visible."
+  },
+  {
+    "name": "Asphalt Legends (formerly Asphalt 9: Legends / Legends Unite)",
+    "ios_app_id": "805603214",
+    "developer": "Gameloft",
+    "release_year": 2018,
+    "price_model": "free + IAP (not explicitly confirmed by a snippet in this pass)",
+    "genre_tag": "arcade 3D",
+    "still_live": "yes (AppGoblin store data updated May 26, 2026 with 554 new ratings in prior week)",
+    "us_rating": {
+      "avg": 4.8,
+      "count": "1.1M",
+      "source": "https://apps.apple.com/us/app/-/id805603214",
+      "via": "search snippet",
+      "accessed": "2026-10-25",
+      "note": "snippet date not visible; cached page may be stale"
+    },
+    "global_ios_ratings": [
+      {
+        "count": "2.6M",
+        "avg": 4.74,
+        "source": "https://appgoblin.info/apps/805603214",
+        "source_updated": "2026-05-26",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "554 new ratings in past week per page"
+      },
+      {
+        "count": 90357,
+        "avg": 4.7,
+        "source": "https://apps.appfollow.io/ios/asphalt-legends-racing-game/805603214?country=ca",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Canada storefront only"
+      },
+      {
+        "count": 67406,
+        "avg": 4.7,
+        "source": "https://apps.appfollow.io/ios/asphalt-legends-racing-game/805603214?country=au",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Australia storefront only"
+      },
+      {
+        "count": 14718,
+        "avg": 4.7,
+        "source": "https://apps.appfollow.io/ios/asphalt-legends-racing-game/805603214?country=pl",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Poland storefront only"
+      }
+    ],
+    "downloads": [
+      {
+        "value": "4 million+ in first week",
+        "scope": "all platforms",
+        "source": "https://www.gameloft.com/newsroom/asphalt-9-legends-races-to-the-front-of-the-pack-4297",
+        "date": "July 2018 (launch)",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "launch milestone, not lifetime; also reported by https://www.phonearena.com/news/Asphalt-9-Legends-4-million-downloads_id107341"
+      },
+      {
+        "value": "100M+",
+        "scope": "Google Play",
+        "source": "https://play.google.com/pc-store/games/details?id=com.gameloft.android.ANMP.GloftA9HM",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Play install band (PC-store page). Mixrank shows Google Play ~2.84M ratings, 4.4 avg: https://mixrank.com/playstore/apps/com.gameloft.android.ANMP.GloftA9HM"
+      }
+    ],
+    "notes": "Not found in the visible portion of the Udonis all-time list. Release year 2018 from Gameloft press release referencing July 2018 launch. AppGoblin (2.6M) vs US page (1.1M) gap is large: AppGoblin likely sums all storefronts."
+  },
+  {
+    "name": "Asphalt 8: Airborne",
+    "ios_app_id": "610391947",
+    "developer": "Gameloft SE",
+    "release_year": null,
+    "price_model": "free + IAP (tracker lists 10 IAPs); separate Apple Arcade edition 'Asphalt 8: Airborne+' (id1563005359, subscription)",
+    "genre_tag": "arcade 3D",
+    "still_live": "yes, likely (AppGoblin shows last App Store update Dec 9, 2025 and 82 new ratings that week; no delisting report found)",
+    "us_rating": {
+      "avg": null,
+      "count": null,
+      "source": null,
+      "via": null,
+      "accessed": "2026-10-25",
+      "note": "not found: no apps.apple.com/us snippet with rating count surfaced"
+    },
+    "global_ios_ratings": [
+      {
+        "count": "225.3K",
+        "avg": 4.72,
+        "source": "https://appgoblin.info/apps/610391947",
+        "source_updated": "store info last updated on App Store 2025-12-09",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "storefront scope not stated"
+      },
+      {
+        "count": "225.8K",
+        "avg": 4.7,
+        "source": "https://apppricinglab.com/app/apple/610391947",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "storefront not stated"
+      },
+      {
+        "count": 227892,
+        "avg": 4.7,
+        "source": "https://chrome-stats.com/d/id610391947",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25"
+      },
+      {
+        "count": 40610,
+        "avg": 4.7,
+        "source": "https://apps.appfollow.io/ios/asphalt-8-airborne/610391947?country=mx",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Mexico storefront only"
+      }
+    ],
+    "downloads": [
+      {
+        "value": "561 million",
+        "scope": "all platforms",
+        "source": "https://www.blog.udonis.co/mobile-marketing/mobile-games/most-downloaded-mobile-games",
+        "date": "2026 update (exact date not shown in snippet)",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Udonis all-time list, ranked #41 ('Asphalt 8 - Car Racing Game')"
+      },
+      {
+        "value": "1B+",
+        "scope": "Google Play",
+        "source": "https://play.google.com/store/apps/details/Asphalt_8_Juego_de_Carreras?id=com.gameloft.android.ANMP.GloftA8HM&gl=MX",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Mexico listing install band"
+      },
+      {
+        "value": "500M+",
+        "scope": "Google Play",
+        "source": "https://play.google.com/pc-store/games/details?id=com.gameloft.android.ANMP.GloftA8HM&hl=en",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "PC-store page band; conflicts with 1B+ above"
+      }
+    ],
+    "notes": "No evidence of delisting found in a targeted search. Apple Arcade version exists: https://www.applesfera.com/juegos-ios/asphalt-8-airborne-rey-carreras-coches-derrapara-apple-arcade-este-viernes (article date not visible). AppGoblin version string '1.0.9' in snippet looks odd; treat as unreliable. Release year not sourced."
+  },
+  {
+    "name": "Real Racing 3",
+    "ios_app_id": "556164008 (US listing 'Real Racing 3: Car Race Game'); 556164350 (other storefronts e.g. DE/ES/TW/BR)",
+    "developer": "Electronic Arts (Firemonkeys; dev moved to EA Hyderabad in 2023 per press commentary)",
+    "release_year": null,
+    "price_model": "free + IAP (real-money purchases switched off Dec 18, 2025)",
+    "genre_tag": "realistic circuit sim",
+    "still_live": "no - delisted from App Store and Google Play on Dec 18, 2025; servers shut down Mar 19, 2026 (existing owners could re-download until then)",
+    "us_rating": {
+      "avg": null,
+      "count": null,
+      "source": "https://apps.apple.com/us/app/real-racing-3-car-race-game/id556164008",
+      "via": "search snippet",
+      "accessed": "2026-10-25",
+      "note": "not found: US listing surfaced but snippet showed no rating; app delisted"
+    },
+    "global_ios_ratings": [
+      {
+        "count": "454K",
+        "avg": 4.77,
+        "source": "https://appgoblin.info/apps/556164008",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "for US-listing ID 556164008; date not shown"
+      },
+      {
+        "count": "1.39M and 1.99M (two figures)",
+        "avg": "4.7 and 4.6",
+        "source": "https://mixrank.com/appstore/apps/556164350",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "for ID 556164350; page does not say which storefront each figure covers"
+      },
+      {
+        "count": 2551,
+        "avg": 4.6,
+        "source": "https://apps.appfollow.io/ios/real-racing-3/556164350?country=fi",
+        "source_updated": "2024-12-26",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Finland storefront only"
+      },
+      {
+        "count": 4273,
+        "avg": 4.7,
+        "source": "https://apps.appfollow.io/ios/real-racing-3/556164350?country=eg",
+        "source_updated": "2024-08-30",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Egypt storefront only"
+      }
+    ],
+    "downloads": [
+      {
+        "value": "413 million",
+        "scope": "all platforms",
+        "source": "https://www.blog.udonis.co/mobile-marketing/mobile-games/most-downloaded-mobile-games",
+        "date": "2026 update (exact date not shown in snippet)",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Udonis all-time list, rank ~80"
+      },
+      {
+        "value": "500 million+",
+        "scope": "all platforms (developer claim)",
+        "source": "https://apps.apple.com/us/app/real-racing-3-car-race-game/id556164008",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "claim in App Store listing description"
+      },
+      {
+        "value": "22.7M-45.4M",
+        "scope": "iOS",
+        "source": "https://appgoblin.info/apps/556164008",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "AppGoblin install estimate range"
+      }
+    ],
+    "notes": "Shutdown sources: https://alternativeto.net/news/2025/12/ea-is-delisting-real-racing-3-from-the-app-stores-with-servers-shut-down-planned-for-2026/ and https://www.fonearena.com/blog/471601/real-racing-3-discontinued.html. Press describes a '12-year run'. Release year not sourced. Two iOS app IDs exist; ratings differ by ID."
+  },
+  {
+    "name": "CSR Racing 2 (App Store title: 'CSR 2 - Realistic Drag Racing')",
+    "ios_app_id": "887947640",
+    "developer": "Zynga Inc. (NaturalMotion; Android package com.naturalmotion.customstreetracer2)",
+    "release_year": 2016,
+    "price_model": "free + IAP",
+    "genre_tag": "drag",
+    "still_live": "yes (last app update 2026-02-05 per apppricinglab)",
+    "us_rating": {
+      "avg": null,
+      "count": null,
+      "source": "https://apps.apple.com/us/app/app/id887947640",
+      "via": "search snippet",
+      "accessed": "2026-10-25",
+      "note": "not found: US listing surfaced (Free, In-App Purchases) but no rating in snippet"
+    },
+    "global_ios_ratings": [
+      {
+        "count": "882.0K",
+        "avg": 4.7,
+        "source": "https://apppricinglab.com/app/apple/887947640",
+        "source_updated": "app last updated 2026-02-05",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "storefront not stated; release date 2016-06-29 from this page"
+      },
+      {
+        "count": "1.7M",
+        "avg": 4.67,
+        "source": "https://appgoblin.info/apps/887947640",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "storefront scope not stated"
+      }
+    ],
+    "downloads": [
+      {
+        "value": "50M+",
+        "scope": "Google Play",
+        "source": "https://play.google.com/store/apps/details?id=com.naturalmotion.customstreetracer2&hl=en_US",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Play install band; ~5.34M reviews, 4.6"
+      }
+    ],
+    "notes": "Not found in the visible portion of the Udonis all-time list. Udonis racing page lists it as top-grossing racing game in tier-1 Western countries: https://www.blog.udonis.co/mobile-marketing/mobile-games/racing-games"
+  },
+  {
+    "name": "Need for Speed No Limits",
+    "ios_app_id": "883393043",
+    "developer": "Electronic Arts (seller EA Swiss Sarl)",
+    "release_year": 2015,
+    "price_model": "free + IAP ($1.99-$19.99)",
+    "genre_tag": "street racing / arcade 3D",
+    "still_live": "yes (listing indexed; shutdown status not specifically checked)",
+    "us_rating": {
+      "avg": 4.7,
+      "count": "394K",
+      "source": "https://apps.apple.com/app/id883393043",
+      "via": "search snippet",
+      "accessed": "2026-10-25",
+      "note": "URL has no country code (search tool is US-only, so assumed US storefront); snippet date not visible"
+    },
+    "global_ios_ratings": [
+      {
+        "count": "390.6K",
+        "avg": 4.7,
+        "source": "https://www.apppricinglab.com/app/apple/883393043",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "storefront not stated"
+      },
+      {
+        "count": 393067,
+        "avg": 4.7,
+        "source": "https://gizmodo.com/download/need-for-speed-no-limits",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "'votes' on App Store per Gizmodo download page"
+      }
+    ],
+    "downloads": [
+      {
+        "value": "383 million",
+        "scope": "all platforms",
+        "source": "https://www.blog.udonis.co/mobile-marketing/mobile-games/most-downloaded-mobile-games",
+        "date": "2026 update (exact date not shown in snippet)",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Udonis all-time list, rank ~92"
+      },
+      {
+        "value": "100M+",
+        "scope": "Google Play",
+        "source": "https://play.google.com/store/apps/details?id=com.ea.game.nfs14_row&hl=en_CA",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Play install band; ~5.25M reviews, 4.4"
+      }
+    ],
+    "notes": "Release date 2015-10-01 from a tracker snippet (apppricinglab.com or index.interceptd.com; not disambiguated). AppGoblin page not surfaced. Taiwan storefront showed 4.6/13K."
+  },
+  {
+    "name": "Traffic Rider",
+    "ios_app_id": "951744068",
+    "developer": "Skgames Yazilim Muhendislik Teknoloji Ltd. (copyright Soner Kara)",
+    "release_year": 2015,
+    "price_model": "not confirmed in snippets (free with ads/IAP expected)",
+    "genre_tag": "endless traffic (motorbike)",
+    "still_live": "yes (listing indexed; not live-verified)",
+    "us_rating": {
+      "avg": 4.6,
+      "count": "47K",
+      "source": "https://apps.apple.com/app/id951744068",
+      "via": "search snippet",
+      "accessed": "2026-10-25",
+      "note": "URL has no country code (assumed US); another snapshot https://apps.apple.com/app/951744068 showed 4.6 / 45K"
+    },
+    "global_ios_ratings": [
+      {
+        "count": "5.5K",
+        "avg": 4.5,
+        "source": "https://apps.apple.com/KR/app/id951744068",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Korea storefront only (Apple page)"
+      }
+    ],
+    "downloads": [
+      {
+        "value": "770 million",
+        "scope": "all platforms",
+        "source": "https://www.blog.udonis.co/mobile-marketing/mobile-games/most-downloaded-mobile-games",
+        "date": "2026 update (exact date not shown in snippet)",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Udonis all-time list, ranked #18"
+      },
+      {
+        "value": "500M+",
+        "scope": "Google Play",
+        "source": "https://play.google.com/store/apps/dev?id=7063637161723821824&hl=en_US",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "band shown on skgames developer page"
+      }
+    ],
+    "notes": "release_year 2015 is from the App Store copyright line '(c) 2015 Soner Kara', not an explicit release date. AppGoblin/Mixrank global count not surfaced. MX storefront showed 3.8 / 17 ratings."
+  },
+  {
+    "name": "Traffic Racer",
+    "ios_app_id": "547101139",
+    "developer": "Skgames Yazilim (Soner Kara)",
+    "release_year": null,
+    "price_model": "free + IAP",
+    "genre_tag": "endless traffic",
+    "still_live": "yes (listing indexed; not live-verified)",
+    "us_rating": {
+      "avg": 4.3,
+      "count": "7.1K",
+      "source": "https://apps.apple.com/app/id547101139",
+      "via": "search snippet",
+      "accessed": "2026-10-25",
+      "note": "URL has no country code (search summary called it the US listing); snippet date not visible"
+    },
+    "global_ios_ratings": [
+      {
+        "count": "36K",
+        "avg": 4.21,
+        "source": "https://appgoblin.info/apps/547101139",
+        "source_updated": "2025-12 (month only)",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "storefront scope not stated"
+      }
+    ],
+    "downloads": [
+      {
+        "value": "100M+",
+        "scope": "Google Play",
+        "source": "https://play.google.com/store/apps/details?id=com.skgames.trafficracer&hl=en_US",
+        "date": "listing dated 2025-12-08",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Play install band; 4.6, ~6.14M reviews"
+      },
+      {
+        "value": "434,530,457+",
+        "scope": "Google Play",
+        "source": "https://grand-screen.com/games/traffic-racer/",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "third-party mirror of Play install count; may lag"
+      }
+    ],
+    "notes": "Not found in the visible portion of the Udonis all-time list. Very low iOS ratings relative to Android footprint."
+  },
+  {
+    "name": "Beach Buggy Racing",
+    "ios_app_id": "882119723",
+    "developer": "Vector Unit",
+    "release_year": null,
+    "price_model": "not confirmed in snippets",
+    "genre_tag": "kart",
+    "still_live": "yes (AppFollow US page shows activity dated 2026-03-09; not live-verified)",
+    "us_rating": {
+      "avg": 4.4,
+      "count": "~6,600",
+      "source": "https://apps.appfollow.io/ios/beach-buggy-racing/882119723?country=us",
+      "via": "search snippet (AppFollow US tracker)",
+      "accessed": "2026-10-25",
+      "note": "NOT from apps.apple.com: AppFollow US-storefront tracker; count given as 'about 6,600 reviews' in snippet summary; page last update 2026-03-09"
+    },
+    "global_ios_ratings": [
+      {
+        "count": "7.7K",
+        "avg": 4.43,
+        "source": "https://appgoblin.info/apps/882119723",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "storefront scope not stated"
+      }
+    ],
+    "downloads": [
+      {
+        "value": "100M+",
+        "scope": "Google Play",
+        "source": "https://play.google.com/store/apps/details?id=com.vectorunit.purple.googleplay&hl=en_US",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Play install band"
+      }
+    ],
+    "notes": "Not found on Udonis all-time list. A third-party list page in the results (likely https://gurugamer.com/mobile-games/best-offline-racing-games-for-android-under-100mb-12544/amp, attribution not certain) states release date Sept 16, 2014, 100M+ downloads, 4.5 stars - likely Android data, so release_year left null."
+  },
+  {
+    "name": "Beach Buggy Racing 2",
+    "ios_app_id": "1399253988",
+    "developer": "Vector Unit",
+    "release_year": null,
+    "price_model": "not confirmed in snippets",
+    "genre_tag": "kart",
+    "still_live": "yes (listing indexed; not live-verified)",
+    "us_rating": {
+      "avg": 4.6,
+      "count": "33K",
+      "source": "https://apps.apple.com/app/id1399253988",
+      "via": "search snippet",
+      "accessed": "2026-10-25",
+      "note": "URL has no country code (assumed US); snippet date not visible"
+    },
+    "global_ios_ratings": [
+      {
+        "count": "32.7K",
+        "avg": 4.6,
+        "source": "https://apppricinglab.com/app/apple/1399253988",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "storefront not stated"
+      },
+      {
+        "count": 2021,
+        "avg": 4.6,
+        "source": "https://apps.appfollow.io/ios/beach-buggy-racing-2/1399253988?country=br",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Brazil storefront only"
+      },
+      {
+        "count": 737,
+        "avg": 4.4,
+        "source": "https://apps.appfollow.io/ios/beach-buggy-racing-2/1399253988?country=jp",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Japan storefront only"
+      }
+    ],
+    "downloads": [
+      {
+        "value": "100M+",
+        "scope": "Google Play",
+        "source": "https://play.google.com/store/apps/details?id=com.vectorunit.cobalt.googleplay",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Play install band"
+      }
+    ],
+    "notes": "AppGoblin global count not surfaced. Release year not sourced."
+  },
+  {
+    "name": "Race Master 3D: Car Racing",
+    "ios_app_id": "1579072162",
+    "developer": "BERESNEV s.r.o. (App Store developer field); published by SayGames per third-party blog",
+    "release_year": null,
+    "price_model": "not confirmed in snippets",
+    "genre_tag": "hyper-casual",
+    "still_live": "yes (listing indexed; not live-verified)",
+    "us_rating": {
+      "avg": 4.6,
+      "count": "570K",
+      "source": "https://apps.apple.com/US/app/id1579072162",
+      "via": "search snippet",
+      "accessed": "2026-10-25",
+      "note": "snippet date not visible"
+    },
+    "global_ios_ratings": [
+      {
+        "count": "6.7K",
+        "avg": 4.5,
+        "source": "https://apps.apple.com/ro/app/race-master-3d-car-racing/id1579072162",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Romania storefront only (Apple page)"
+      },
+      {
+        "count": 11657,
+        "avg": 4.6,
+        "source": "https://apps.appfollow.io/ios/race-master-3d-auto-rennen/1579072162?country=ch",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Switzerland storefront only"
+      }
+    ],
+    "downloads": [
+      {
+        "value": "100M+",
+        "scope": "Google Play",
+        "source": "https://play.google.com/store/apps/details?id=com.easygames.race&hl=en_IE&gl=US",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Play install band; one cache shows developer SayGames Ltd., 4.5, ~2.39M reviews; other caches show Beresnev Games"
+      },
+      {
+        "value": "~10M per month",
+        "scope": "all platforms (monthly rate, AppMagic)",
+        "source": "https://mobilegamer.biz/octobers-top-mobile-game-downloads-worldwide/",
+        "date": "an October (year not visible)",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "monthly install rate, not lifetime"
+      }
+    ],
+    "notes": "SayGames attribution per https://maf.ad/en/blog/race-master-3d-analysis/. Several look-alike apps exist (e.g. id6462882951, id6736605109, id6451108171) - do not confuse. AppGoblin global count not surfaced. Release year not sourced."
+  },
+  {
+    "name": "Bike Race (App Store title: 'Bike Race: Free Style Games'; MX: 'Bike Race: Motorcycle Racing')",
+    "ios_app_id": "510461758",
+    "developer": "Top Free Games (Apple page); Mixrank names Wildlife Studios",
+    "release_year": null,
+    "price_model": "free + IAP ($0.99-$19.99) + ads (AppGoblin: ~76% ads / 24% IAP revenue split)",
+    "genre_tag": "physics moto trials",
+    "still_live": "yes (listing indexed; not live-verified)",
+    "us_rating": {
+      "avg": 4.8,
+      "count": null,
+      "source": "https://apps.apple.com/app/510461758",
+      "via": "search snippet",
+      "accessed": "2026-10-25",
+      "note": "URL has no country code; snippet cut off before ratings count"
+    },
+    "global_ios_ratings": [
+      {
+        "count": "1.5M",
+        "avg": 4.81,
+        "source": "https://appgoblin.info/apps/510461758",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "storefront scope not stated"
+      },
+      {
+        "count": "613.8K",
+        "avg": 4.8,
+        "source": "https://apppricinglab.com/app/apple/510461758",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "storefront not stated"
+      },
+      {
+        "count": "~1M",
+        "avg": null,
+        "source": "https://apptopia.com/ios/app/510461758/about",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Apptopia US ratings total"
+      }
+    ],
+    "downloads": [
+      {
+        "value": "73M",
+        "scope": "iOS",
+        "source": "https://appgoblin.info/apps/510461758",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "AppGoblin install estimate; page also shows ~1.9M MAU, declining install trend"
+      }
+    ],
+    "notes": "Google Play band not retrieved (search budget exhausted). Not found in visible portion of Udonis list. Release year not sourced (a 2013 school blog shows it existed by 2013: https://tjhs.dpsk12.org/bike-race/). US count unresolved: apppricinglab 613.8K vs Apptopia ~1M."
+  },
+  {
+    "name": "Mario Kart Tour",
+    "ios_app_id": "1293634699",
+    "developer": "Nintendo Co., Ltd.",
+    "release_year": 2019,
+    "price_model": "free + IAP (gacha, Gold Pass subscription; 9 IAPs $1.99-$39.99 per apppricinglab)",
+    "genre_tag": "kart",
+    "still_live": "yes (listing indexed; AppFollow MX/PH pages show updates Jul/Oct 2026)",
+    "us_rating": {
+      "avg": 4.7,
+      "count": "1M",
+      "source": "https://apple.co/3AEw4Pp",
+      "via": "search snippet",
+      "accessed": "2026-10-25",
+      "note": "Apple short link (search summary called it the US listing); date not visible. Older snapshot https://apple.co/3yelyjF showed 4.6 / 5.3K (version 3.6.2)"
+    },
+    "global_ios_ratings": [
+      {
+        "count": "~1.0M",
+        "avg": 4.7,
+        "source": "https://apppricinglab.com/app/apple/1293634699",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "storefront not stated"
+      },
+      {
+        "count": 139596,
+        "avg": 4.8,
+        "source": "https://apps.appfollow.io/ios/mario-kart-tour/1293634699?country=mx",
+        "source_updated": "2026-07-13",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Mexico storefront only"
+      },
+      {
+        "count": 5427,
+        "avg": 4.5,
+        "source": "https://apps.appfollow.io/ios/mario-kart-tour/1293634699?country=ph",
+        "source_updated": "2026-10-03",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Philippines storefront only"
+      }
+    ],
+    "downloads": [],
+    "notes": "Launched Sept 25, 2019 (https://giantbomb.com/wiki/Games/Mario_Kart_Tour, https://gigazine.net/gsc_news/en/20190925-mariokart-tour). Content status (end of new content in 2023) NOT verified in this pass - search budget ran out before it could be checked. No lifetime downloads figure found; AppGoblin page not surfaced."
+  },
+  {
+    "name": "Street Racing 3D (Ivy)",
+    "ios_app_id": "1263345121 (candidate: 'Street Racing 3D Drift'; match to Ivy's Android title unconfirmed)",
+    "developer": "IVYMOBILE INTERNATIONAL ENTERPRISE LIMITED (per Appfigures profile for 'Street Racing 3D Drift')",
+    "release_year": null,
+    "price_model": "free (App Store snippet); IAP not confirmed",
+    "genre_tag": "street racing / drift (arcade 3D)",
+    "still_live": "unclear (candidate listing indexed; identity unconfirmed)",
+    "us_rating": {
+      "avg": null,
+      "count": null,
+      "source": "https://apps.apple.com/us/app/-/id1263345121",
+      "via": "search snippet",
+      "accessed": "2026-10-25",
+      "note": "not found: snippet cut off before ratings"
+    },
+    "global_ios_ratings": [],
+    "downloads": [
+      {
+        "value": "100M+",
+        "scope": "Google Play",
+        "source": "https://play.google.com/store/apps/eventdetails/4828375551300558613",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Play snippet: 4.5 stars, 1.88M reviews, 100M+ downloads; exact source page in result set is a Play event-details URL"
+      }
+    ],
+    "notes": "Appfigures profile: https://appfigures.com/reports/app-profile/280369271880/ratings-reviews (ratings content did not load). No iOS ratings counts found."
+  },
+  {
+    "name": "Extreme Car Driving Simulator",
+    "ios_app_id": "959498315",
+    "developer": "AxesInMotion S.L.",
+    "release_year": null,
+    "price_model": "not confirmed in snippets",
+    "genre_tag": "open-world driving sim",
+    "still_live": "yes (apppricinglab shows update 2026-02-26; not live-verified)",
+    "us_rating": {
+      "avg": null,
+      "count": null,
+      "source": null,
+      "via": null,
+      "accessed": "2026-10-25",
+      "note": "not found: no apps.apple.com/us snippet with rating count surfaced"
+    },
+    "global_ios_ratings": [
+      {
+        "count": "69.9K",
+        "avg": 4.4,
+        "source": "https://apppricinglab.com/app/apple/959498315",
+        "source_updated": "2026-02-26",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "storefront not stated"
+      },
+      {
+        "count": "90.4K",
+        "avg": 4.41,
+        "source": "https://appgoblin.info/apps/959498315",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "storefront scope not stated"
+      },
+      {
+        "count": "165,151 and 216,283 (two figures)",
+        "avg": 4.3,
+        "source": "https://mixrank.com/appstore/apps/959498315",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "ambiguous which figure applies; inconsistent with other trackers"
+      },
+      {
+        "count": "3.6K",
+        "avg": 4.3,
+        "source": "https://apps.apple.com/FR/app/id959498315",
+        "source_updated": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "France storefront only (Apple page)"
+      }
+    ],
+    "downloads": [
+      {
+        "value": "643 million",
+        "scope": "all platforms",
+        "source": "https://www.blog.udonis.co/mobile-marketing/mobile-games/most-downloaded-mobile-games",
+        "date": "2026 update (exact date not shown in snippet)",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Udonis all-time list, ranked #31"
+      },
+      {
+        "value": "500M+",
+        "scope": "Google Play",
+        "source": "https://play.google.com/store/apps/details?id=com.aim.racing&hl=en",
+        "date": null,
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "Play install band"
+      },
+      {
+        "value": "14,584,989 in Feb 2025",
+        "scope": "Google Play (single month)",
+        "source": "https://foxdata.com/en/blogs/top-mobile-games-by-worldwide-downloads-for-february-2025/",
+        "date": "Feb 2025",
+        "via": "search snippet",
+        "accessed": "2026-10-25",
+        "note": "monthly figure, not lifetime"
+      }
+    ],
+    "notes": "Release year not sourced. iOS ratings small relative to Android footprint."
+  }
+]

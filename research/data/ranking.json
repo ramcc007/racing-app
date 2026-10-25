@@ -1,0 +1,363 @@
+{
+  "method": "score = 60% ratings + 40% downloads, each min-max normalised on log10 across eligible apps; missing = 0",
+  "accessed": "2026-10-25",
+  "rows": [
+    {
+      "name": "Race Master 3D",
+      "ratings": 570000.0,
+      "ratings_basis": "US",
+      "downloads": 457000000.0,
+      "downloads_basis": "all platforms (Udonis 2026, via search summary)",
+      "eligible": true,
+      "score": 90.4,
+      "note": "",
+      "rank": 1
+    },
+    {
+      "name": "Asphalt Legends",
+      "ratings": 1100000.0,
+      "ratings_basis": "US",
+      "downloads": 100000000.0,
+      "downloads_basis": "Google Play floor 100M+",
+      "eligible": true,
+      "score": 90.3,
+      "note": "Downloads figure is only a floor; real lifetime total is very likely far higher.",
+      "rank": 2
+    },
+    {
+      "name": "Bike Race",
+      "ratings": 1000000.0,
+      "ratings_basis": "US (Apptopia estimate)",
+      "downloads": 73000000.0,
+      "downloads_basis": "iOS only (AppGoblin estimate)",
+      "eligible": true,
+      "score": 88.0,
+      "note": "Downloads are iOS-only, so the score understates it.",
+      "rank": 3
+    },
+    {
+      "name": "Need for Speed No Limits",
+      "ratings": 394000.0,
+      "ratings_basis": "US",
+      "downloads": 383000000.0,
+      "downloads_basis": "all platforms (Udonis 2026)",
+      "eligible": true,
+      "score": 85.9,
+      "note": "",
+      "rank": 4
+    },
+    {
+      "name": "CSR Racing 2",
+      "ratings": 882000.0,
+      "ratings_basis": "aggregator total (apppricinglab), no US figure found",
+      "downloads": 50000000.0,
+      "downloads_basis": "Google Play floor 50M+",
+      "eligible": true,
+      "score": 85.0,
+      "note": "",
+      "rank": 5
+    },
+    {
+      "name": "Asphalt 8: Airborne",
+      "ratings": 225300.0,
+      "ratings_basis": "global iOS (AppGoblin), no US figure found",
+      "downloads": 561000000.0,
+      "downloads_basis": "all platforms (Udonis 2026)",
+      "eligible": true,
+      "score": 81.9,
+      "note": "",
+      "rank": 6
+    },
+    {
+      "name": "Hill Climb Racing",
+      "ratings": 135000.0,
+      "ratings_basis": "US",
+      "downloads": 912000000.0,
+      "downloads_basis": "all platforms (Udonis 2026)",
+      "eligible": true,
+      "score": 78.9,
+      "note": "",
+      "rank": 7
+    },
+    {
+      "name": "Hill Climb Racing 2",
+      "ratings": 180000.0,
+      "ratings_basis": "US",
+      "downloads": 426000000.0,
+      "downloads_basis": "all platforms (Udonis 2026)",
+      "eligible": true,
+      "score": 78.5,
+      "note": "",
+      "rank": 8
+    },
+    {
+      "name": "Rebel Racing",
+      "ratings": 211000.0,
+      "ratings_basis": "US",
+      "downloads": 50000000.0,
+      "downloads_basis": "Google Play floor 50M+",
+      "eligible": true,
+      "score": 70.7,
+      "note": "",
+      "rank": 9
+    },
+    {
+      "name": "Drive Ahead!",
+      "ratings": 149000.0,
+      "ratings_basis": "US",
+      "downloads": 100000000.0,
+      "downloads_basis": "Google Play floor 100M+",
+      "eligible": true,
+      "score": 70.2,
+      "note": "Car combat arena more than racing.",
+      "rank": 10
+    },
+    {
+      "name": "Rider",
+      "ratings": 116000.0,
+      "ratings_basis": "US*",
+      "downloads": 150000000.0,
+      "downloads_basis": "all platforms (Mobidictum)",
+      "eligible": true,
+      "score": 69.5,
+      "note": "",
+      "rank": 11
+    },
+    {
+      "name": "Traffic Rider",
+      "ratings": 47000.0,
+      "ratings_basis": "US",
+      "downloads": 770000000.0,
+      "downloads_basis": "all platforms (Udonis 2026)",
+      "eligible": true,
+      "score": 67.6,
+      "note": "",
+      "rank": 12
+    },
+    {
+      "name": "Mad Skills Motocross 3",
+      "ratings": 112000.0,
+      "ratings_basis": "US",
+      "downloads": 50000000.0,
+      "downloads_basis": "Google Play floor 50M+",
+      "eligible": true,
+      "score": 64.3,
+      "note": "",
+      "rank": 13
+    },
+    {
+      "name": "CarX Street",
+      "ratings": 137000.0,
+      "ratings_basis": "US*",
+      "downloads": 10000000.0,
+      "downloads_basis": "Google Play floor 10M+",
+      "eligible": true,
+      "score": 59.3,
+      "note": "",
+      "rank": 14
+    },
+    {
+      "name": "Mario Kart Tour",
+      "ratings": 1000000.0,
+      "ratings_basis": "US",
+      "downloads": null,
+      "downloads_basis": "not found",
+      "eligible": true,
+      "score": 59.0,
+      "note": "No download figure found; Nintendo has wound the game down (no new content).",
+      "rank": 15
+    },
+    {
+      "name": "Beach Buggy Racing 2",
+      "ratings": 33000.0,
+      "ratings_basis": "US",
+      "downloads": 100000000.0,
+      "downloads_basis": "Google Play floor 100M+",
+      "eligible": true,
+      "score": 55.1,
+      "note": "",
+      "rank": 16
+    },
+    {
+      "name": "CarX Drift Racing 2",
+      "ratings": 37000.0,
+      "ratings_basis": "US*",
+      "downloads": 50000000.0,
+      "downloads_basis": "Google Play floor 50M+",
+      "eligible": true,
+      "score": 53.2,
+      "note": "",
+      "rank": 17
+    },
+    {
+      "name": "Traffic Racer",
+      "ratings": 7100.0,
+      "ratings_basis": "US",
+      "downloads": 100000000.0,
+      "downloads_basis": "Google Play floor 100M+",
+      "eligible": true,
+      "score": 39.6,
+      "note": "",
+      "rank": 18
+    },
+    {
+      "name": "Hot Wheels Unlimited",
+      "ratings": 140000.0,
+      "ratings_basis": "US*",
+      "downloads": null,
+      "downloads_basis": "not found (weekly US figures only)",
+      "eligible": true,
+      "score": 39.3,
+      "note": "",
+      "rank": 19
+    },
+    {
+      "name": "Beach Buggy Racing",
+      "ratings": 6600.0,
+      "ratings_basis": "US (AppFollow)",
+      "downloads": 100000000.0,
+      "downloads_basis": "Google Play floor 100M+",
+      "eligible": true,
+      "score": 38.9,
+      "note": "",
+      "rank": 20
+    },
+    {
+      "name": "Moto X3M",
+      "ratings": 98000.0,
+      "ratings_basis": "US",
+      "downloads": null,
+      "downloads_basis": "not found",
+      "eligible": true,
+      "score": 35.7,
+      "note": "",
+      "rank": 21
+    },
+    {
+      "name": "Horizon Chase",
+      "ratings": 11000.0,
+      "ratings_basis": "US",
+      "downloads": 10000000.0,
+      "downloads_basis": "Google Play 10M",
+      "eligible": true,
+      "score": 33.9,
+      "note": "",
+      "rank": 22
+    },
+    {
+      "name": "Smashy Road: Wanted",
+      "ratings": 11000.0,
+      "ratings_basis": "US*",
+      "downloads": null,
+      "downloads_basis": "not found",
+      "eligible": true,
+      "score": 13.7,
+      "note": "No update since 2021.",
+      "rank": 23
+    },
+    {
+      "name": "Rush Rally 3",
+      "ratings": 3000.0,
+      "ratings_basis": "US*",
+      "downloads": 500000.0,
+      "downloads_basis": "Google Play 500K",
+      "eligible": true,
+      "score": 7.8,
+      "note": "",
+      "rank": 24
+    },
+    {
+      "name": "Drag Racing Classic",
+      "ratings": 5800.0,
+      "ratings_basis": "US*",
+      "downloads": null,
+      "downloads_basis": "only a franchise-wide claim (not used)",
+      "eligible": true,
+      "score": 7.3,
+      "note": "",
+      "rank": 25
+    },
+    {
+      "name": "GRID Autosport",
+      "ratings": 2800.0,
+      "ratings_basis": "US*",
+      "downloads": 100000.0,
+      "downloads_basis": "iOS sales (2018)",
+      "eligible": true,
+      "score": 0.0,
+      "note": "Premium game, so downloads are paid sales.",
+      "rank": 26
+    },
+    {
+      "name": "Pocket Champs",
+      "ratings": null,
+      "ratings_basis": "not found",
+      "downloads": null,
+      "downloads_basis": "not found (weekly US figures only)",
+      "eligible": true,
+      "score": 0.0,
+      "note": "",
+      "rank": 27
+    },
+    {
+      "name": "Real Racing 3",
+      "ratings": 454000.0,
+      "ratings_basis": "global iOS (AppGoblin)",
+      "downloads": 413000000.0,
+      "downloads_basis": "all platforms (Udonis 2026)",
+      "eligible": false,
+      "score": null,
+      "note": "Removed from the App Store on 18 Dec 2025; servers off 19 Mar 2026."
+    },
+    {
+      "name": "Street Racing 3D",
+      "ratings": null,
+      "ratings_basis": "not found",
+      "downloads": 454000000.0,
+      "downloads_basis": "all platforms (Udonis 2026, via search summary)",
+      "eligible": false,
+      "score": null,
+      "note": "iOS listing could not be confirmed as the same game."
+    },
+    {
+      "name": "Extreme Car Driving Simulator",
+      "ratings": 69900.0,
+      "ratings_basis": "aggregator (apppricinglab)",
+      "downloads": 643000000.0,
+      "downloads_basis": "all platforms (Udonis 2026)",
+      "eligible": false,
+      "score": null,
+      "note": "Free-roam driving sim; racing is not the core mode."
+    },
+    {
+      "name": "Car Parking Multiplayer",
+      "ratings": 49000.0,
+      "ratings_basis": "US",
+      "downloads": 100000000.0,
+      "downloads_basis": "Google Play floor 100M+",
+      "eligible": false,
+      "score": null,
+      "note": "Open-world parking/driving sim; racing is not the core mode."
+    },
+    {
+      "name": "Dr. Driving",
+      "ratings": 6300.0,
+      "ratings_basis": "aggregator (apppricinglab)",
+      "downloads": 692800000.0,
+      "downloads_basis": "Google Play (AppGoblin)",
+      "eligible": false,
+      "score": null,
+      "note": "Driving missions, not racing; App Store status unclear."
+    },
+    {
+      "name": "aquapark.io",
+      "ratings": null,
+      "ratings_basis": "not found",
+      "downloads": null,
+      "downloads_basis": "not found",
+      "eligible": false,
+      "score": null,
+      "note": "Water-slide hyper-casual, not vehicle racing."
+    }
+  ]
+}

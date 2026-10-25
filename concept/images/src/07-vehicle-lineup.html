@@ -1,0 +1,38 @@
+<!doctype html><meta charset="utf-8">
+<body><script src="lib.js"></script><script src="config.js"></script><script>
+const W = 2400, H = 1350;
+const s = svgRoot(W, H, '#EFEAE0');
+text(s, 80, 110, 'Six original racers', { size: 64, weight: 900, fill: '#1B2430', family: 'Inter Display' });
+text(s, 80, 165, 'Unlocked with stars, never sold for real money. Each handles differently; paint and trails are cosmetic.', { size: 32, weight: 500, fill: '#55606E' });
+
+const cars = [
+  { name: 'Pip', shape: 'pod', color: '#F5F7FA', role: 'All-rounder', stats: [3, 3, 3, 3], unlock: 'Start' },
+  { name: 'Wedge', shape: 'wedge', color: '#E05A47', role: 'Top speed, wide turns', stats: [5, 2, 3, 2], unlock: '30 ★' },
+  { name: 'Dune Hopper', shape: 'buggy', color: '#E3B341', role: 'Grip on sand & mud', stats: [2, 5, 3, 3], unlock: '75 ★' },
+  { name: 'Brick', shape: 'brick', color: '#3F8FD2', role: 'Heavy: shrugs off bumps', stats: [3, 3, 1, 2], unlock: '120 ★' },
+  { name: 'Needle', shape: 'needle', color: '#4CB28B', role: 'Light: huge slipstream gain', stats: [4, 2, 5, 5], unlock: '180 ★' },
+  { name: 'Drifter', shape: 'hover', color: '#B49BFF', role: 'Slides for ever; ice expert', stats: [4, 1, 4, 4], unlock: '250 ★' },
+];
+const labels = ['Speed', 'Grip', 'Accel', 'Draft'];
+const CW = 360, GX = 80, GY = 230, GAP = 24;
+cars.forEach((c, i) => {
+  const x = GX + i * (CW + GAP), y = GY;
+  el('rect', { x, y, width: CW, height: 1000, rx: 32, fill: '#FFFFFF', stroke: '#E2DCCF', 'stroke-width': 3 }, s);
+  // Turntable.
+  el('ellipse', { cx: x + CW / 2, cy: y + 250, rx: 140, ry: 140, fill: '#F3EFE6' }, s);
+  el('ellipse', { cx: x + CW / 2, cy: y + 250, rx: 140, ry: 140, fill: 'none', stroke: '#E2DCCF', 'stroke-width': 3, 'stroke-dasharray': '10 10' }, s);
+  el('ellipse', { cx: x + CW / 2 + 8, cy: y + 262, rx: 66, ry: 112, fill: 'rgba(0,0,0,.12)' }, s);
+  car(s, x + CW / 2, y + 250, -90, c.color, { shape: c.shape, scale: 2.6, canopy: '#1E2A3A', noShadow: true });
+  text(s, x + 32, y + 470, c.name, { size: 48, weight: 900, fill: '#1B2430' });
+  text(s, x + 32, y + 515, c.role, { size: 25, weight: 600, fill: '#55606E' });
+  labels.forEach((l, k) => {
+    const yy = y + 590 + k * 72;
+    text(s, x + 32, yy, l, { size: 24, weight: 700, fill: '#3C4652' });
+    for (let b = 0; b < 5; b++)
+      el('rect', { x: x + 150 + b * 38, y: yy - 22, width: 30, height: 26, rx: 6, fill: b < c.stats[k] ? '#1B2430' : '#E7E2D6' }, s);
+  });
+  el('rect', { x: x + 32, y: y + 900, width: CW - 64, height: 64, rx: 32, fill: i === 0 ? '#2FA36B' : '#1B2430' }, s);
+  text(s, x + CW / 2, y + 942, i === 0 ? 'Unlocked' : 'Unlock at ' + c.unlock, { size: 26, weight: 800, anchor: 'middle' });
+});
+stamp(s, W, H, true);
+</script></body>

@@ -1,0 +1,57 @@
+<!doctype html><meta charset="utf-8">
+<body><script src="lib.js"></script><script src="config.js"></script><script>
+const W = 2400, H = 1350;
+const s = svgRoot(W, H, '#1B2A3A');
+
+// Sky-to-ground gradient backdrop (dusk harbour).
+const defs = el('defs', {}, s);
+const bg = el('linearGradient', { id: 'bg', x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+el('stop', { offset: 0, 'stop-color': '#21364D' }, bg);
+el('stop', { offset: 1, 'stop-color': '#0F1A26' }, bg);
+el('rect', { width: W, height: H, fill: 'url(#bg)' }, s);
+
+// Ground grid like a scale model board.
+for (let x = 0; x < W; x += 80) el('line', { x1: x, y1: 0, x2: x, y2: H, stroke: 'rgba(255,255,255,.035)', 'stroke-width': 2 }, s);
+for (let y = 0; y < H; y += 80) el('line', { x1: 0, y1: y, x2: W, y2: y, stroke: 'rgba(255,255,255,.035)', 'stroke-width': 2 }, s);
+
+// A big sweeping figure-of-eight with a bridge, generated from control points.
+const ctrl = [[300, 1010], [380, 700], [700, 560], [1020, 720], [1300, 960], [1720, 1170], [2120, 1060], [2190, 800], [1900, 650], [1480, 690], [1150, 900], [820, 1150], [480, 1190]];
+const pts = spline(ctrl, 60);
+
+const r = rng(9);
+scatter(s, pts, W, H, 80, 4, 150, (p, x, y, rr) => {
+  if (rr() < 0.5) tree(p, x, y, rr, 0.7 + rr());
+  else {
+    const c = ['#E07A3F', '#3F8FD2', '#E3B341', '#4CB28B'][Math.floor(rr() * 4)];
+    el('rect', { x: x + 8, y: y + 12, width: 120, height: 46, rx: 4, fill: 'rgba(0,0,0,.25)' }, p);
+    el('rect', { x, y, width: 120, height: 46, rx: 4, fill: c }, p);
+    for (let k = 1; k < 6; k++) el('line', { x1: x + k * 20, y1: y + 4, x2: x + k * 20, y2: y + 42, stroke: 'rgba(0,0,0,.18)', 'stroke-width': 3 }, p);
+  }
+}, (x, y) => x > 1120 && y < 560);
+
+road(s, pts, { width: 150, asphalt: '#2E333C' });
+startLine(s, pts, 0.02, 150);
+
+// Six echoes chasing the player round the curve — the whole idea in one picture.
+const lead = 0.235;
+for (let lap = 6; lap >= 1; lap--) {
+  echo(s, pts, lead - lap * 0.024, lap, { offset: [-34, 26, -8, 30, -30, 10][lap - 1], trail: 0.05, wobble: 6, scale: 1.25, trailWidth: 26 });
+}
+// Player: bright white with a glow.
+const P = along(pts, lead, -6);
+const glow = el('filter', { id: 'glow', x: '-50%', y: '-50%', width: '200%', height: '200%' }, defs);
+el('feGaussianBlur', { stdDeviation: 14 }, glow);
+el('ellipse', { cx: P.x, cy: P.y, rx: 80, ry: 52, fill: '#FFFFFF', opacity: 0.35, filter: 'url(#glow)' }, s);
+car(s, P.x, P.y, P.a, '#F5F7FA', { scale: 1.45, canopy: '#0E1B2A' });
+
+// Title block.
+panel(s, 1180, 70, 1080, 400, { fill: 'rgba(8,12,18,.62)', r: 36 });
+text(s, 1240, 270, TITLE, { size: 168, weight: 900, spacing: -4, family: 'Inter Display' });
+text(s, 1244, 350, TAGLINE, { size: 46, weight: 600, fill: '#C9D6E3' });
+text(s, 1244, 418, 'Draft them. Dodge them. Use them.', { size: 38, weight: 500, fill: '#8FA6BC' });
+// Lap swatches as a colour legend.
+ECHO.slice(0, 6).forEach((c, i) => {
+  el('rect', { x: 1244 + i * 64, y: 120, width: 48, height: 14, rx: 7, fill: c }, s);
+});
+stamp(s, W, H);
+</script></body>

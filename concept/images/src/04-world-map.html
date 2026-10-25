@@ -1,0 +1,68 @@
+<!doctype html><meta charset="utf-8">
+<body><script src="lib.js"></script><script src="config.js"></script><script src="worlds.js"></script><script>
+const W = 1320, H = 2868;
+const s = svgRoot(W, H, '#1D1B33');
+const r = rng(31);
+// City blocks backdrop.
+for (let i = 0; i < 60; i++) {
+  const x = r() * W, y = 500 + r() * 2000, w = 60 + r() * 90;
+  el('rect', { x, y, width: w, height: w, rx: 8, fill: '#26234A' }, s);
+  el('rect', { x: x + 8, y: y + 8, width: w - 16, height: w - 16, rx: 5, fill: 'none', stroke: ['#43E0FF', '#E84DD1', '#F7E14B'][i % 3], 'stroke-width': 2, opacity: 0.35 }, s);
+}
+
+// Top bar.
+panel(s, 48, 150, 380, 110, { r: 55 });
+star(s, 110, 205, 30, '#F2C94C');
+text(s, 160, 222, '142', { size: 52, weight: 900 });
+panel(s, 460, 150, 400, 110, { r: 55 });
+el('circle', { cx: 520, cy: 205, r: 30, fill: '#F2A93B' }, s);
+text(s, 570, 222, '3,480', { size: 52, weight: 900 });
+panel(s, 1162, 150, 110, 110, { r: 55 });
+[0, 1, 2].forEach(k => el('rect', { x: 1192, y: 182 + k * 18, width: 50, height: 8, rx: 4, fill: '#fff' }, s));
+
+// Daily track card.
+panel(s, 48, 300, 1224, 210, { r: 40, fill: 'rgba(242,169,59,.16)', stroke: 'rgba(242,169,59,.6)' });
+text(s, 100, 375, 'DAILY TRACK · SAT 25 OCT', { size: 28, weight: 800, fill: '#F2A93B', spacing: 2 });
+text(s, 100, 440, 'Same track for everyone today', { size: 40, weight: 800 });
+text(s, 100, 485, 'Your rank: #1,284 of 38,960 (Game Center)', { size: 28, weight: 600, fill: '#C9C4E6' });
+el('rect', { x: 1000, y: 360, width: 220, height: 100, rx: 50, fill: '#F2A93B' }, s);
+text(s, 1110, 425, 'Play', { size: 40, weight: 900, anchor: 'middle', fill: '#1B2430' });
+
+// World banner.
+text(s, 660, 620, 'WORLD 3', { size: 30, weight: 800, anchor: 'middle', fill: '#43E0FF', spacing: 4 });
+text(s, 660, 700, 'Neon City', { size: 84, weight: 900, anchor: 'middle', family: 'Inter Display' });
+text(s, 660, 750, 'Switch pads & gates  ·  29 / 45 ★', { size: 32, weight: 600, anchor: 'middle', fill: '#C9C4E6' });
+
+// Level path (bottom = 3-1, top = 3-15), drawn as a road.
+const nodes = [];
+for (let i = 0; i < 15; i++) {
+  const t = i / 14;
+  nodes.push([660 + Math.sin(i * 0.9) * 380, 2470 - t * 1620]);
+}
+const path = spline(nodes, 20, false);
+road(s, path, { width: 70, closed: false, asphalt: '#2A2A40', kerbB: '#E84DD1' });
+const stars = [3, 3, 2, 3, 3, 3, 3, 1, 3, 2, 3];
+nodes.forEach(([x, y], i) => {
+  const n = i + 1, done = i < 11, current = i === 11, boss = n === 15, rest = n % 5 === 0 && !boss;
+  const rad = boss ? 88 : current ? 80 : rest ? 52 : 64;
+  if (current) el('circle', { cx: x, cy: y, r: rad + 26, fill: 'rgba(242,169,59,.25)' }, s);
+  el('circle', { cx: x, cy: y, r: rad, fill: done ? '#43E0FF' : current ? '#F2A93B' : '#3A3760', stroke: '#fff', 'stroke-width': current ? 8 : 4 }, s);
+  text(s, x, y + (boss ? 4 : 14), boss ? 'BOSS' : '3-' + n, { size: boss ? 34 : rest ? 26 : 34, weight: 900, anchor: 'middle', fill: done || current ? '#111' : '#9C98C4' });
+  if (boss) text(s, x, y + 40, '8 laps', { size: 22, weight: 700, anchor: 'middle', fill: '#9C98C4' });
+  if (rest) text(s, x + rad + 16, y + 10, 'breather', { size: 24, weight: 700, fill: '#9C98C4' });
+  if (done) for (let k = 0; k < 3; k++) star(s, x - 40 + k * 40, y + rad + 26, 16, k < stars[i] ? '#F2C94C' : '#4A4770');
+  if (current) {
+    panel(s, x - 420, y - 60, 300, 120, { r: 30, fill: 'rgba(242,169,59,.95)', stroke: 'none' });
+    text(s, x - 270, y - 8, 'Next up', { size: 28, weight: 700, anchor: 'middle', fill: '#1B2430' });
+    text(s, x - 270, y + 36, '6 laps · 3 pads', { size: 30, weight: 900, anchor: 'middle', fill: '#1B2430' });
+  }
+});
+
+// Star gate to the next world.
+panel(s, 48, 2620, 1224, 140, { r: 40, fill: 'rgba(255,255,255,.07)' });
+el('rect', { x: 100, y: 2655, width: 54, height: 46, rx: 8, fill: '#DDEFF7' }, s);
+el('path', { d: 'M112 2655 v-14 a15 15 0 0 1 30 0 v14', fill: 'none', stroke: '#DDEFF7', 'stroke-width': 7 }, s);
+text(s, 190, 2690, 'Glacier opens at 160 ★', { size: 40, weight: 800 });
+text(s, 1230, 2690, '18 to go', { size: 32, weight: 700, anchor: 'end', fill: '#C9C4E6' });
+stamp(s, W, 120);
+</script></body>

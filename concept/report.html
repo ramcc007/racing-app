@@ -1,0 +1,246 @@
+<title>Echo Lap Concept Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: one reading column (~70ch) with wide breakouts for images and tables; a sticky lap-coloured section bar. */
+:root {
+  --bg: #F3F4F6; --surface: #FFFFFF; --fg: #16191E; --muted: #5A6270; --line: #DDE1E7;
+  --accent: #B86E00; --accent-soft: #FFF1D9; --good: #1F7A4D; --good-soft: #E3F4EA; --warn: #A33A2A;
+  --lap1: #E69F00; --lap2: #56B4E9; --lap3: #009E73; --lap4: #F0E442; --lap5: #0072B2; --lap6: #D55E00;
+  --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111317; --surface: #1A1D23; --fg: #E8EBEF; --muted: #9AA3AF; --line: #2C313A;
+  --accent: #F2B544; --accent-soft: #2E2410; --good: #5BD08D; --good-soft: #13281C; --warn: #F08A76; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #111317; --surface: #1A1D23; --fg: #E8EBEF; --muted: #9AA3AF; --line: #2C313A;
+  --accent: #F2B544; --accent-soft: #2E2410; --good: #5BD08D; --good-soft: #13281C; --warn: #F08A76; color-scheme: dark }
+
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 17px; line-height: 1.6; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px; }
+.col { max-width: 70ch; }
+h1, h2, h3 { font-family: var(--display); font-weight: 900; line-height: 1.02; text-wrap: balance; letter-spacing: .005em; margin: 0; }
+h1 { font-size: clamp(56px, 11vw, 120px); text-transform: uppercase; }
+h2 { font-size: clamp(36px, 5.5vw, 56px); text-transform: uppercase; margin-top: 72px; }
+h3 { font-size: 28px; margin-top: 36px; }
+p { margin: 12px 0; }
+.eyebrow { font-family: var(--mono); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.laps { display: flex; gap: 6px; margin: 18px 0 8px; }
+.laps i { display: block; width: 36px; height: 8px; border-radius: 4px; }
+.lede { font-size: 21px; line-height: 1.5; max-width: 60ch; }
+figure { margin: 24px 0; }
+figure img { display: block; width: 100%; height: auto; border-radius: 14px; border: 1px solid var(--line); }
+figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; }
+.phones { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.phones.two { grid-template-columns: 1.15fr 1fr; align-items: start; }
+@media (max-width: 720px) { .phones { grid-template-columns: repeat(2, minmax(0, 1fr)); } .phones.two { grid-template-columns: 1fr; } }
+
+nav.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 10px max(16px, env(safe-area-inset-left, 0px)); overflow-x: auto; white-space: nowrap; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+nav.bar a { color: var(--fg); text-decoration: none; font-weight: 600; font-size: 14px; margin-right: 18px; padding-bottom: 4px; border-bottom: 3px solid transparent; }
+nav.bar a:nth-child(1) { border-color: var(--lap1); } nav.bar a:nth-child(2) { border-color: var(--lap2); } nav.bar a:nth-child(3) { border-color: var(--lap3); }
+nav.bar a:nth-child(4) { border-color: var(--lap5); } nav.bar a:nth-child(5) { border-color: var(--lap6); }
+nav.bar a:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.decide { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 16px; padding: 22px; margin-top: 32px; }
+.decide h2 { margin-top: 0; font-size: 38px; }
+.tbl { overflow-x: auto; margin: 16px 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; background: var(--surface); }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.win td { background: var(--good-soft); font-weight: 600; }
+.decide .tbl { background: var(--surface); }
+.pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.pill.good { color: var(--good); border-color: var(--good); }
+.pill.warn { color: var(--warn); border-color: var(--warn); }
+
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 16px 0; }
+@media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; min-width: 0; }
+.box h3 { margin-top: 0; font-size: 24px; }
+ol.rank { padding-left: 22px; margin: 8px 0; } ol.rank li { margin: 4px 0; }
+.quad { display: grid; grid-template-columns: 120px repeat(2, minmax(0, 1fr)); gap: 6px; font-size: 15px; margin: 16px 0; }
+.quad > div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; min-width: 0; }
+.quad .h { background: none; border: 0; font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; align-items: end; }
+.quad .gap { border: 2px dashed var(--accent); background: var(--accent-soft); font-weight: 700; }
+@media (max-width: 560px) { .quad { grid-template-columns: 84px repeat(2, minmax(0, 1fr)); font-size: 13px; } }
+.note { font-size: 14px; color: var(--muted); }
+.callout { border-left: 4px solid var(--lap3); padding: 4px 0 4px 16px; margin: 20px 0; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<div class="wrap">
+  <header style="padding-top:40px">
+    <div class="eyebrow">Stage 1 · concept review · 25 Oct 2026 · iPhone + iPad</div>
+    <div class="laps" aria-hidden="true"><i style="background:var(--lap1)"></i><i style="background:var(--lap2)"></i><i style="background:var(--lap3)"></i><i style="background:var(--lap4)"></i><i style="background:var(--lap5)"></i><i style="background:var(--lap6)"></i></div>
+    <h1>Echo Lap</h1>
+    <p class="lede">Every lap you drive stays on the track. Each finished lap becomes an <strong>echo</strong>: a solid car that replays your exact line beside you. Draft your echoes for boost, park one on a switch to hold a shortcut open, and dodge your own old mistakes. By lap 6 you are racing five versions of yourself.</p>
+    <figure><img src="images/01-key-art.png" alt="Key art: a figure-of-eight circuit with a white car leading six coloured echo cars, each with a fading trail." width="2400" height="1350"><figcaption>Key art. All images are drawn by code in the game's own style. Concept, not final art.</figcaption></figure>
+  </header>
+
+  <nav class="bar" aria-label="Sections"><a href="#decide">Decisions</a><a href="#research">Research</a><a href="#twists">Twists</a><a href="#concept">The game</a><a href="#limits">Data limits</a></nav>
+
+  <section class="decide" id="decide">
+    <h2>Your five decisions</h2>
+    <p class="col">Pick these and Stage 2 starts: a version you can play in the iPhone browser, plus every screen designed.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Decision</th><th>Recommendation</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>1. Concept</td><td><strong>Echo Lap</strong><br><span class="note">runner-up: Fold</span></td><td>Best mix of feel, one-thumb play, depth and buildability; answers the top player complaints.</td></tr>
+        <tr><td>2. Name</td><td><strong>Echo Lap</strong><br><span class="note">echolap.com is available</span></td><td>Says what the game is. App Store name check still to do.</td></tr>
+        <tr><td>3. View</td><td><strong>Top-down 2.5D (SpriteKit)</strong></td><td>Faster to build, small download, easy to tune remotely; echoes read best from above.</td></tr>
+        <tr><td>4. Orientation</td><td><strong>Portrait on iPhone</strong>, either way on iPad</td><td>One-handed play is part of the pitch, and few racers are portrait.</td></tr>
+        <tr><td>5. Repo</td><td><strong>Private</strong></td><td>The twist is the product. <strong>The repo is public today</strong>, so nothing from this stage has been pushed yet.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="research">
+    <h2>What the top 10 tell us</h2>
+    <p class="col">33 racing games were ranked by App Store ratings (60%) and lifetime downloads (40%), each on a log scale. Games pulled from the store, and driving sims where racing isn't the point, were left out.</p>
+    <div class="tbl"><table>
+      <thead><tr><th class="num">#</th><th>Game</th><th class="num">Ratings</th><th class="num">Downloads</th><th>Type</th><th>What players say</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>Race Master 3D</td><td class="num">570K</td><td class="num">457M</td><td>Hyper-casual, portrait</td><td>Instant and simple; an ad after every race</td></tr>
+        <tr><td class="num">2</td><td>Asphalt Legends</td><td class="num">1.1M</td><td class="num">100M+</td><td>Licensed 3D arcade</td><td>Stunning; pay-to-win, fuel limits, ads</td></tr>
+        <tr><td class="num">3</td><td>Bike Race</td><td class="num">~1M</td><td class="num">73M iOS</td><td>Side-view bike trials</td><td>Quick levels, flips; to re-check</td></tr>
+        <tr><td class="num">4</td><td>Need for Speed No Limits</td><td class="num">394K</td><td class="num">383M</td><td>Licensed 3D street</td><td>Great visuals; blueprint grind, fuel</td></tr>
+        <tr><td class="num">5</td><td>CSR Racing 2</td><td class="num">882K</td><td class="num">50M+</td><td>Drag timing, no steering</td><td>Car collecting; "bombarded with deals"</td></tr>
+        <tr><td class="num">6</td><td>Asphalt 8: Airborne</td><td class="num">225K</td><td class="num">561M</td><td>3D arcade stunts</td><td>Big jumps; the clean Arcade edition is praised</td></tr>
+        <tr><td class="num">7</td><td>Hill Climb Racing</td><td class="num">135K</td><td class="num">912M</td><td>Side-view physics</td><td>Physics comedy; optional reward ads liked</td></tr>
+        <tr><td class="num">8</td><td>Hill Climb Racing 2</td><td class="num">180K</td><td class="num">426M</td><td>Side-view physics</td><td>"Advertising without end"; drift to paying</td></tr>
+        <tr><td class="num">9</td><td>Rebel Racing</td><td class="num">211K</td><td class="num">50M+</td><td>Licensed 3D road</td><td>Not reached within the search budget</td></tr>
+        <tr><td class="num">10</td><td>Drive Ahead!</td><td class="num">149K</td><td class="num">100M+</td><td>Side-view car combat</td><td>Great for quick games; "fickle physics"</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Ratings are US App Store counts from search snippets where found. "100M+" figures are Google Play floors. Rider and Traffic Rider are within 3 points of #9–10. Real Racing 3 would have ranked but was pulled from the App Store on 18 Dec 2025.</p>
+
+    <div class="grid2">
+      <div class="box"><h3>What players hate</h3>
+        <ol class="rank"><li>Pay-to-win walls</li><li>Fuel and energy timers</li><li>Forced ads</li><li>Online-only games that shut down</li><li>Paid random loot boxes</li><li>Repetitive or short content</li><li>Heat and battery drain</li><li>Tilt-only or fiddly controls</li></ol></div>
+      <div class="box"><h3>What players love</h3>
+        <ol class="rank"><li>Short sessions</li><li>Physics that feel good</li><li>Easy to learn, hard to master</li><li>Complete games with nothing to buy</li><li>Racing ghosts and leaderboards</li><li>Skill over car stats</li><li>Offline, no account</li><li>Vehicles that really differ</li></ol></div>
+    </div>
+
+    <h3>The empty corner</h3>
+    <div class="quad" role="table" aria-label="Where the games sit">
+      <div class="h" role="columnheader"></div><div class="h" role="columnheader">One thumb, short sessions</div><div class="h" role="columnheader">Two hands, longer sessions</div>
+      <div class="h" role="rowheader">Casual</div><div>Race Master 3D, Rider, Hill Climb 1 &amp; 2, Bike Race, Drive Ahead!</div><div>Beach Buggy Racing 2, Mario Kart Tour</div>
+      <div class="h" role="rowheader">Deep</div><div class="gap">Nobody. Echo Lap goes here.</div><div>Asphalt, NFS, CSR2, Rebel Racing, GRID</div>
+    </div>
+    <p class="col">Every one-thumb racer is shallow, and every deep one needs two hands, car licences, big downloads and aggressive selling. The crowded lanes to avoid are licensed 3D supercars, highway traffic weaving, drag timing and above all the side-view hill-climb look, where Apple has rejected lookalikes as copycats.</p>
+  </section>
+
+  <section id="twists">
+    <h2>Six twists, scored</h2>
+    <p class="col">Each idea was checked against existing games first. Nine criteria, 1–5 each.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Twist</th><th>Idea</th><th>Closest existing game</th><th class="num">Score /45</th></tr></thead>
+      <tbody>
+        <tr class="win"><td>Echo Lap</td><td>Finished laps become solid echoes you draft, dodge and park on switches</td><td>Does Not Commute (2015 commute puzzle, echoes as obstacles only); two free jam games</td><td class="num">39</td></tr>
+        <tr><td>Fold</td><td>Fold the paper map to bring a far stretch of road next to you</td><td>None among racers</td><td class="num">35</td></tr>
+        <tr><td>Pulse Track</td><td>Track sections shift on a beat</td><td>Music racers build tracks but don't shift them</td><td class="num">34</td></tr>
+        <tr><td>Track Layer</td><td>Lay road tiles ahead of your car</td><td>Infinity Track (with a train)</td><td class="num">31</td></tr>
+        <tr><td>Gravity Flip</td><td>Flip the world, drive on the ceiling</td><td>Monorace (2010)</td><td class="num">31</td></tr>
+        <tr><td>Ink Line</td><td>Draw your racing line</td><td>DrawRace 1 &amp; 2 (2009, 2011)</td><td class="num">29</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout col"><p><strong>The trade-off.</strong> Echo Lap is the strongest game: top marks for feel, one-thumb play, buildability and depth. Fold is the most original idea, with nothing like it among racers, but it is harder to build and to steer with one thumb. Echo Lap is still first when novelty counts double (42 vs 40). What it adds over Does Not Commute: echoes are tools (slipstream, switches, swaps, thin ice), and it is a full racing game with stars and target times.</p></div>
+  </section>
+
+  <section id="concept">
+    <h2>How Echo Lap plays</h2>
+    <figure><img src="images/08-twist-diagram.png" alt="Six panels: lap 1 is recorded; lap 2 races beside it; slipstream behind an echo fills boost; an echo on a switch pad holds a shortcut gate open; bumping an echo costs 0.8 seconds; lap 6 has five echoes on track." width="2400" height="1500" loading="lazy"></figure>
+
+    <div class="phones two">
+      <figure><img src="images/02-iphone-gameplay.png" alt="iPhone portrait mid-race: lap 4 of 6, timer, gold-time delta, echo strip, player slipstreaming echo 3 while echo 2 sits on a pad holding a shortcut gate open; boost meter at the bottom." width="1320" height="2868" loading="lazy"><figcaption>iPhone, portrait, one thumb</figcaption></figure>
+      <figure><img src="images/03-ipad-gameplay.png" alt="iPad portrait mid-race with a wider view, an echo radar mini-map and lap splits." width="2064" height="2752" loading="lazy"><figcaption>iPad: wider view, echo radar, lap splits</figcaption></figure>
+    </div>
+
+    <h3>Controls</h3>
+    <p class="col">Touch anywhere on the lower half and slide left or right to steer; the car accelerates by itself. Hard steering at speed drifts, with a haptic buzz. Swipe up to boost. From World 5, double-tap to swap places with the echo ahead, once per lap. Tilt and an iPad two-thumb layout are options; touch is always available.</p>
+
+    <h3>Eight worlds, 120 tracks</h3>
+    <figure><img src="images/06-worlds-moodboard.png" alt="Eight world tiles: Harbour, Red Canyon, Neon City, Glacier, Jungle Ruins, Foundry, Sky Port and Orbit Ring, each with its new rule." width="2400" height="1600" loading="lazy"></figure>
+    <p class="col">Each world adds one rule that works with echoes, so the track changes as you race, because your own earlier laps change it. Tracks are generated from a seed and tested by a robot driver using the real physics; its best time sets the gold and silver targets. The daily track comes from a pre-checked list of seeds shipped in the app, so there are no servers.</p>
+
+    <h3>Difficulty curve</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Setting</th><th class="num">Track 1</th><th class="num">30</th><th class="num">60</th><th class="num">90</th><th class="num">120</th></tr></thead>
+      <tbody>
+        <tr><td>Laps</td><td class="num">2</td><td class="num">3–4</td><td class="num">4–5</td><td class="num">5–6</td><td class="num">6–8</td></tr>
+        <tr><td>Lap length (robot pace)</td><td class="num">14 s</td><td class="num">18 s</td><td class="num">23 s</td><td class="num">27 s</td><td class="num">32 s</td></tr>
+        <tr><td>Track width (car widths)</td><td class="num">3.2</td><td class="num">3.0</td><td class="num">2.7</td><td class="num">2.5</td><td class="num">2.2</td></tr>
+        <tr><td>Bump penalty</td><td class="num">soft</td><td class="num">0.6 s</td><td class="num">0.7 s</td><td class="num">0.85 s</td><td class="num">1.0 s</td></tr>
+        <tr><td>Gold = robot time +</td><td class="num">12%</td><td class="num">9%</td><td class="num">6%</td><td class="num">4%</td><td class="num">2%</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Every 5th track is a 2-lap breather; every 15th is a boss track with an extra lap.</p>
+
+    <h3>Rewards: fixed, fair, never random</h3>
+    <div class="phones">
+      <figure><img src="images/04-world-map.png" alt="World map for Neon City with numbered track nodes, stars earned, a boss node, the daily track card and a star gate to Glacier." width="1320" height="2868" loading="lazy"><figcaption>World map and daily track</figcaption></figure>
+      <figure><img src="images/05-results.png" alt="Results screen: 1:12.48, three stars, lap bars coloured by echo, an echo medal, +120 Sparks and progress to the next racer." width="1320" height="2868" loading="lazy"><figcaption>Results: stars, echo medal, Sparks</figcaption></figure>
+      <div class="box" style="align-self:start">
+        <h3>In the game</h3>
+        <p>1–3 stars per track, an optional echo medal, Sparks for cosmetics, 6 racers unlocked by stars, daily goals, a daily-track leaderboard and streaks, a weekly gauntlet, and your best-run ghost.</p>
+        <h3>Never</h3>
+        <p>Energy, timers, paid random rewards, stat upgrades for sale, or ads between races. Offline, no account; privacy label "Data Not Collected".</p>
+      </div>
+    </div>
+    <figure><img src="images/07-vehicle-lineup.png" alt="Six original racers: Pip, Wedge, Dune Hopper, Brick, Needle and Drifter, with speed, grip, acceleration and draft ratings and the star total that unlocks each." width="2400" height="1350" loading="lazy"></figure>
+
+    <h3>Purchases later (designed now, not built)</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Option</th><th>What it is</th><th>Why it isn't pay-to-win</th></tr></thead>
+      <tbody>
+        <tr><td>World packs</td><td>New worlds of 15 tracks and a new rule, one-off price</td><td>Adds content; existing leaderboards untouched</td></tr>
+        <tr><td>Cosmetic sets</td><td>Paint, trail and horn, shown in full before buying</td><td>Looks only</td></tr>
+        <tr><td>Supporter pack</td><td>All base cosmetics and a badge</td><td>Looks only</td></tr>
+        <tr><td>Circuit Pass</td><td>30 days of fixed cosmetic rewards for daily play; free track for all</td><td>No randomness, no speed</td></tr>
+        <tr><td>Tip jar</td><td>Optional thank-you tiers</td><td>Nothing gameplay-related</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Version 1 ships with everything included. Nothing already in the game is ever locked away later.</p>
+
+    <h3>Risks</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Risk</th><th>Plan</th></tr></thead>
+      <tbody>
+        <tr><td>Hard to read with many echoes</td><td>Colour plus lap number on each, older echoes fade, test with 8 early</td></tr>
+        <tr><td>Bumping your own echoes feels unfair</td><td>Soft echoes in World 1, gentle penalties, instant restart, optional assist</td></tr>
+        <tr><td>Compared with Does Not Commute</td><td>Centre the pitch on using echoes in a racing game; a one-page originality note for App Review</td></tr>
+        <tr><td>Steering feel</td><td>Browser prototype first, then tuning rounds on your iPhone via TestFlight</td></tr>
+        <tr><td>Scope of 120 tracks</td><td>Generator and robot driver; only 8 boss tracks tuned by hand</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Name shortlist</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Name</th><th>.com domain</th><th>App Store clash</th></tr></thead>
+      <tbody>
+        <tr class="win"><td>Echo Lap</td><td><span class="pill good">echolap.com available</span></td><td><span class="pill">to check</span></td></tr>
+        <tr><td>Lapback</td><td><span class="pill good">lapback.com available</span></td><td><span class="pill">to check</span></td></tr>
+        <tr><td>Overlap Racer</td><td><span class="pill good">overlapracer.com available</span></td><td><span class="pill">to check</span></td></tr>
+        <tr><td>Afterlap</td><td><span class="pill warn">afterlap.com taken</span> afterlapgame.com available</td><td><span class="pill">to check</span></td></tr>
+        <tr><td>Lap Echoes</td><td><span class="pill good">lapechoes.com available</span></td><td><span class="pill">to check</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Domains checked with GoDaddy on 25 Oct 2026; no prices returned.</p>
+  </section>
+
+  <section id="limits">
+    <h2>How solid is this?</h2>
+    <div class="col">
+      <p>This session's network policy blocked Apple's servers and most websites. Every figure came from web-search snippets, each stored with its source URL in the repo. The 200-search limit per turn ran out before every check was done.</p>
+      <p><strong>Not done yet:</strong> reading 300+ App Store reviews per game (the scripts are ready and need <code>itunes.apple.com</code> allowed), App Store name checks for the shortlist, and re-checking game details marked as prior knowledge, mainly Rebel Racing and Bike Race.</p>
+      <p class="note">Files: research/top10-racing-apps.md · research/data/ · concept/concept-brief.md · concept/images/ · GATE-1.md</p>
+    </div>
+  </section>
+</div>

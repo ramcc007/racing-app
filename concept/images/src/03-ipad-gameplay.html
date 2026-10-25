@@ -1,0 +1,84 @@
+<!doctype html><meta charset="utf-8">
+<body><script src="lib.js"></script><script src="config.js"></script><script>
+// iPad 13" portrait. Same moment as the iPhone shot, but the camera pulls back
+// so you see further ahead, and the spare width carries a mini-map and splits.
+const W = 2064, H = 2752;
+const s = svgRoot(W, H, '#1D1B33');
+
+// Neon City at night.
+const r = rng(5);
+for (let i = 0; i < 90; i++) {
+  const x = r() * W, y = r() * H, w = 70 + r() * 120;
+  el('rect', { x, y, width: w, height: w, rx: 10, fill: '#26234A' }, s);
+  el('rect', { x: x + 10, y: y + 10, width: w - 20, height: w - 20, rx: 6, fill: 'none', stroke: ['#43E0FF', '#E84DD1', '#F7E14B'][i % 3], 'stroke-width': 3, opacity: 0.45 }, s);
+}
+
+const ctrl = [[900, 3000], [880, 2400], [700, 1900], [880, 1400], [1180, 980], [1060, 500], [820, -250]];
+const pts = spline(ctrl, 60, false);
+const sc = spline([[780, 2150], [1100, 1950], [1400, 1600], [1420, 1200], [1220, 960]], 40, false);
+el('path', { d: pathD(sc, false), fill: 'none', stroke: '#E8E4DA', 'stroke-width': 190, 'stroke-linecap': 'round' }, s);
+el('path', { d: pathD(sc, false), fill: 'none', stroke: '#2A2A40', 'stroke-width': 164, 'stroke-linecap': 'round' }, s);
+el('path', { d: pathD(sc, false), fill: 'none', stroke: '#F2A93B', 'stroke-width': 8, 'stroke-dasharray': '30 26' }, s);
+road(s, pts, { width: 270, closed: false, asphalt: '#2A2A40', kerbB: '#E84DD1' });
+
+const gp = sc[92];
+el('rect', { x: gp[0] - 108, y: gp[1] - 16, width: 28, height: 110, rx: 10, fill: '#2FA36B' }, s);
+el('rect', { x: gp[0] + 80, y: gp[1] - 16, width: 28, height: 110, rx: 10, fill: '#2FA36B' }, s);
+const pad = sc[48];
+el('rect', { x: pad[0] - 82, y: pad[1] - 56, width: 164, height: 112, rx: 18, fill: '#2FA36B' }, s);
+car(s, pad[0], pad[1], -100, ECHO[1], { scale: 1.9, opacity: 0.85, label: '2', noShadow: true });
+
+echo(s, pts, 0.47, 3, { offset: -36, trail: 0.06, scale: 1.9, trailWidth: 44, wobble: 4 });
+echo(s, pts, 0.285, 1, { offset: 54, trail: 0.05, scale: 1.9, trailWidth: 44, wobble: 4 });
+const P = along(pts, 0.40, -28);
+for (let k = 0; k < 7; k++) {
+  const q = along(pts, 0.415 + k * 0.006, (k % 2 ? 36 : -90));
+  el('line', { x1: q.x, y1: q.y - 28, x2: q.x, y2: q.y + 28, stroke: '#fff', 'stroke-width': 7, 'stroke-linecap': 'round', opacity: 0.7, transform: `rotate(${q.a + 90} ${q.x} ${q.y})` }, s);
+}
+car(s, P.x, P.y, P.a, '#F5F7FA', { scale: 2.1, canopy: '#0E1B2A' });
+
+// ---------- HUD ----------
+panel(s, 60, 90, 380, 140, { r: 70 });
+text(s, 250, 150, 'LAP', { size: 34, weight: 700, anchor: 'middle', fill: '#9FB2C4' });
+text(s, 250, 208, '4 / 6', { size: 60, weight: 900, anchor: 'middle' });
+panel(s, 480, 90, 700, 140, { r: 70 });
+text(s, 830, 190, '0:41.27', { size: 92, weight: 900, anchor: 'middle', family: 'Inter Display' });
+panel(s, 1220, 90, 380, 140, { r: 70 });
+star(s, 1290, 160, 32, '#F2C94C');
+text(s, 1470, 182, '−0.42', { size: 60, weight: 900, anchor: 'middle', fill: '#5BD08D' });
+
+// Right column: echo radar (mini-map of the whole lap) + lap splits.
+panel(s, 1640, 90, 364, 620, { r: 40 });
+text(s, 1822, 150, 'ECHO RADAR', { size: 26, weight: 800, anchor: 'middle', fill: '#9FB2C4', spacing: 2 });
+const mini = spline([[1700, 260], [1830, 200], [1950, 300], [1930, 470], [1840, 620], [1720, 560], [1690, 420]], 30);
+el('path', { d: pathD(mini), fill: 'none', stroke: '#4A4770', 'stroke-width': 26, 'stroke-linejoin': 'round' }, s);
+el('path', { d: pathD(mini), fill: 'none', stroke: '#2A2A40', 'stroke-width': 16, 'stroke-linejoin': 'round' }, s);
+el('path', { d: `M${mini[95][0]} ${mini[95][1]} L1955 380`, stroke: '#F2A93B', 'stroke-width': 6, 'stroke-dasharray': '8 8' }, s);
+[[0.31, '#F5F7FA', ''], [0.37, ECHO[2], '3'], [0.22, ECHO[0], '1'], [0.52, ECHO[1], '2']].forEach(([f, c, n]) => {
+  const p = along(mini, f);
+  el('circle', { cx: p.x, cy: p.y, r: n ? 16 : 20, fill: c, stroke: n ? 'none' : '#111', 'stroke-width': 4 }, s);
+});
+panel(s, 1640, 740, 364, 520, { r: 40 });
+text(s, 1822, 800, 'SPLITS', { size: 26, weight: 800, anchor: 'middle', fill: '#9FB2C4', spacing: 2 });
+[['1', '13.42', ECHO[0]], ['2', '12.10', ECHO[1]], ['3', '15.88', ECHO[2]], ['4', '…', '#F5F7FA']].forEach(([n, t, c], i) => {
+  const y = 870 + i * 96;
+  el('circle', { cx: 1700, cy: y, r: 26, fill: c }, s);
+  text(s, 1700, y + 10, n, { size: 28, weight: 900, anchor: 'middle', fill: '#111' });
+  text(s, 1950, y + 12, t, { size: 40, weight: 800, anchor: 'end' });
+});
+text(s, 1822, 1240, 'lap 3 parked on pad', { size: 22, weight: 700, anchor: 'middle', fill: '#2FD38A' });
+
+panel(s, 1500, 1680, 504, 150, { r: 30, fill: 'rgba(20,90,60,.92)', stroke: 'rgba(255,255,255,.3)' });
+text(s, 1752, 1742, 'Echo 2 holds the', { size: 38, weight: 800, anchor: 'middle' });
+text(s, 1752, 1794, 'shortcut open ←', { size: 38, weight: 800, anchor: 'middle' });
+
+// Bottom: boost + optional two-thumb layout on iPad.
+panel(s, 60, 2450, 1944, 230, { r: 56, fill: 'rgba(12,14,20,.7)' });
+text(s, 120, 2525, 'BOOST', { size: 36, weight: 900, fill: '#F2A93B', spacing: 2 });
+el('rect', { x: 120, y: 2552, width: 1200, height: 50, rx: 25, fill: 'rgba(255,255,255,.14)' }, s);
+el('rect', { x: 120, y: 2552, width: 915, height: 50, rx: 25, fill: '#F2A93B' }, s);
+text(s, 120, 2650, 'One thumb by default  ·  iPad option: steer left, boost right', { size: 32, weight: 600, fill: '#C9D6E3' });
+el('circle', { cx: 1830, cy: 2565, r: 92, fill: '#F2A93B' }, s);
+el('path', { d: 'M1830 2512 L1872 2580 L1845 2580 L1845 2618 L1815 2618 L1815 2580 L1788 2580 Z', fill: '#1B2430' }, s);
+stamp(s, W, H, true);
+</script></body>

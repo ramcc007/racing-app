@@ -1,0 +1,447 @@
+[
+  {
+    "name": "Rush Rally 3",
+    "ios_app_id": "1437096541",
+    "developer": "Brownmonster Limited",
+    "release_year": 2019,
+    "release_year_source": {"value": "27 March 2019", "source": "https://mwm.ai/fr/apps/rush-rally-3/1437096541", "via": "search snippet", "accessed": "2026-10-25"},
+    "price_model": "premium ($4.99) + IAP",
+    "price_source": {"value": "$4.99 + In-App Purchases (US)", "source": "https://apps.apple.com/us/app/rush-rally-3/id1437096541", "via": "search snippet", "accessed": "2026-10-25"},
+    "genre_tag": "rally sim",
+    "still_live": "yes",
+    "last_major_update": "not found on App Store; App Pricing Lab US page dated 2026-01-21, AppFollow RU page last update March 2026",
+    "us_rating": {"avg": 4.8, "count": 3000, "count_display": "3K", "source": "https://apps.apple.com/app/id1437096541", "via": "search snippet", "snippet_date": "not visible; URL has no /us/ country code, so the storefront is not confirmed", "accessed": "2026-10-25"},
+    "us_rating_alt": [
+      {"avg": 4.8, "count_display": "3.0K reviews", "source": "https://apppricinglab.com/app/apple/1437096541", "source_updated": "2026-01-21", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "global_ios_ratings": [],
+    "global_ios_ratings_note": "not found (no AppGoblin/Mixrank page indexed).",
+    "storefront_ratings_other": [
+      {"storefront": "GB", "count": 1018, "avg": null, "source": "https://apps.appfollow.io/ios/rush-rally-3/1437096541?country=gb", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "RU", "count": 612, "avg": 4.7, "source": "https://apps.appfollow.io/ios/rush-rally-3/1437096541?country=ru", "source_updated": "March 2026", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "SE", "count": 106, "avg": 4.7, "source": "https://apps.appfollow.io/ios/rush-rally-3/1437096541?country=se", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "JP", "count": 1085, "avg": 4.7, "source": "https://apps.apple.com/JP/app/id1437096541", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "downloads": [
+      {"value": "500.0K installs", "scope": "Google Play", "source": "https://www.apppricinglab.com/app/google_play/brownmonster.app.game.rushrally3", "date": "listing last updated 2026-03-11", "via": "search snippet", "accessed": "2026-10-25", "note": "Same page: 4.7 avg, 27.5K Google Play reviews. Gizmodo download page shows an older snapshot of 4.4 avg from 25,143 votes (https://gizmodo.com/download/rush-rally-3)."}
+    ],
+    "notes": "No lifetime downloads figure found. Price sources disagree: App Pricing Lab shows $5.99 (Google Play); Pocket Gamer says $4.99 premium. Steam version: 94% positive of 971 reviews (https://raijin.gg/app/2020860/Rush_Rally_3, search snippet)."
+  },
+  {
+    "name": "CarX Drift Racing 2",
+    "ios_app_id": "1198510863",
+    "developer": "CarX Technologies, LLC",
+    "release_year": null,
+    "release_year_note": "not found",
+    "price_model": "free + IAP",
+    "genre_tag": "drift sim",
+    "still_live": "yes",
+    "last_major_update": "AppFollow US page last updated 2026-08-31; App Pricing Lab shows last update 2025-12-23",
+    "us_rating": {"avg": 4.6, "count": 37000, "count_display": "37K Ratings", "source": "https://apps.apple.com/app/id1198510863", "via": "search snippet", "snippet_date": "not visible; storefront not confirmed (no /us/ in URL)", "accessed": "2026-10-25"},
+    "us_rating_alt": [
+      {"avg": 4.6, "count": 37534, "source": "https://apps.appfollow.io/ios/carx-drift-racing-2/1198510863?country=us", "source_updated": "2026-08-31", "via": "search snippet", "accessed": "2026-10-25"},
+      {"avg": 4.6, "count_display": "37.2K reviews", "source": "https://www.apppricinglab.com/app/apple/1198510863", "source_updated": "2025-12-23", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "global_ios_ratings": [],
+    "global_ios_ratings_note": "not found (no AppGoblin/Mixrank page indexed).",
+    "storefront_ratings_other": [
+      {"storefront": "BR", "count": 2940, "avg": 4.5, "source": "https://apps.appfollow.io/ios/carx-drift-racing-2/1198510863?country=br", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "TW", "count": 1660, "avg": 4.4, "source": "https://apps.appfollow.io/ios/carx-drift-racing-2/1198510863?country=tw", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "NL", "count": 793, "avg": 4.5, "source": "https://apps.appfollow.io/ios/carx-drift-racing-2/1198510863?country=nl", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "GR", "count": 412, "avg": 4.5, "source": "https://apps.appfollow.io/ios/carx-drift-racing-2/1198510863?country=gr", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "downloads": [
+      {"value": "50M+", "scope": "Google Play", "source": "https://play.google.com/store/apps/details?id=com.carxtech.carxdr2&hl=en", "date": "snapshot date not shown", "via": "search snippet", "accessed": "2026-10-25", "note": "A search summary also gave a Google Play rating of 4.4 from about 713K reviews, but the same 713K figure also came up for Rebel Racing, so it may be a mix-up. Low confidence."},
+      {"value": "10M-100M install bucket; 'CarX Highway Racing and CarX Drift Racing 2 ... installed more than 50 million times'", "scope": "Google Play", "source": "https://www.appbrain.com/dev/CarX+Technologies/", "date": "not shown", "via": "search snippet", "accessed": "2026-10-25"},
+      {"value": "over 100 million fans have downloaded CarX series games", "scope": "all platforms, whole CarX series (not this title alone); developer marketing claim", "source": "https://apps.apple.com/app/id1198510863", "date": "not shown", "via": "search snippet", "accessed": "2026-10-25", "note": "QooApp listing instead says 'over 50 000 000 fans' for the series (https://apps.qoo-app.com/en/app/11736)."}
+    ],
+    "notes": "No lifetime downloads figure for this title alone."
+  },
+  {
+    "name": "CarX Street",
+    "ios_app_id": "1458863319",
+    "developer": "CarX Technologies",
+    "release_year": 2022,
+    "release_year_source": {"value": "iOS version released late in 2022, Android February 2023", "source": "https://Racedepartment.com/news/comments/82103/", "via": "search snippet", "accessed": "2026-10-25", "note": "traxion.gg says it went free-to-own on the iOS App Store 'as of 17th November' (year not in snippet): https://traxion.gg/carx-street-now-live-on-ios-devices-steam-release-coming-in-december/"},
+    "price_model": "free + IAP (includes subscription tier)",
+    "genre_tag": "open-world street racing",
+    "still_live": "yes",
+    "last_major_update": "not found",
+    "us_rating": {"avg": 4.6, "count": 137000, "count_display": "137K Ratings", "source": "https://apps.apple.com/app/id1458863319", "via": "search snippet", "snippet_date": "not visible; storefront not confirmed", "accessed": "2026-10-25"},
+    "global_ios_ratings": [],
+    "global_ios_ratings_note": "not found. Marlvel reports 4.6/5 from 750K reviews but does not say if that is iOS-only, US or cross-platform (https://marlvel.ai/apps/com-carxtech-sr, report updated 2026-05-07). Same page puts it at #16 Grossing in US racing.",
+    "storefront_ratings_other": [],
+    "downloads": [
+      {"value": "10M+", "scope": "Google Play", "source": "https://play.google.com/store/apps/details?id=com.carxtech.sr&hl=en", "date": "snapshot about 45 days old per search tool", "via": "search snippet", "accessed": "2026-10-25", "note": "Same listing: 4.6 avg from about 687K reviews."},
+      {"value": "10M-100M install bucket", "scope": "Google Play", "source": "https://www.appbrain.com/dev/CarX+Technologies/", "date": "not shown", "via": "search snippet", "accessed": "2026-10-25"},
+      {"value": "over five million downloads", "scope": "unclear (stated around the Feb 2023 Android launch)", "source": "https://Racedepartment.com/news/comments/82103/", "date": "circa 2023", "via": "search snippet", "accessed": "2026-10-25", "note": "Old figure."}
+    ],
+    "notes": "Other platforms: Steam 71% positive of 19,131 reviews (https://raijin.gg/app/1114150/CarX_Street); PlayStation Store about 3.97/5 from 6.2k ratings (https://store.playstation.com/en-my/concept/10001917). All via search snippet."
+  },
+  {
+    "name": "Mad Skills Motocross 3",
+    "ios_app_id": "1508275130",
+    "developer": "Turborilla AB",
+    "release_year": 2021,
+    "release_year_source": {"value": "global release May 25, 2021", "source": "https://www.gamedeveloper.com/press-release/mad-skills-motocross-3-mobile-game-released-globally-today", "via": "search snippet", "accessed": "2026-10-25"},
+    "price_model": "free + IAP",
+    "genre_tag": "motocross physics (2D side-view)",
+    "still_live": "yes",
+    "last_major_update": "App Pricing Lab last update 2026-03-06; Season 12 launched Nov 2025 per Turborilla press release (https://www.turborilla.com/turborilla-partners-with-sx-global)",
+    "us_rating": {"avg": 4.8, "count": 112000, "count_display": "about 112K ratings", "source": "https://apps.apple.com/US/app/id1508275130", "via": "search snippet", "snippet_date": "not visible", "accessed": "2026-10-25"},
+    "us_rating_alt": [
+      {"avg": 4.8, "count_display": "111.6K reviews", "source": "https://apppricinglab.com/app/apple/1508275130", "source_updated": "2026-03-06", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "global_ios_ratings": [],
+    "global_ios_ratings_note": "not found. Marlvel reports 4.5/5 from 225.1K reviews, which seems to combine stores, not iOS-only (https://marlvel.ai/apps/com-turborilla-bike-racing-madskillsmotocross3, report updated 2026-05-07).",
+    "storefront_ratings_other": [
+      {"storefront": "BB", "count": 44, "avg": 4.9, "source": "https://apps.appfollow.io/ios/mad-skills-motocross-3/1508275130?country=bb", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "downloads": [
+      {"value": "50M+", "scope": "Google Play", "source": "https://play.google.com/store/apps/details?id=com.turborilla.bike.racing.madskillsmotocross3&hl=en_US", "date": "snapshot date not shown", "via": "search snippet", "accessed": "2026-10-25", "note": "Same listing: 4.2 avg, 107K reviews (developer page shows 113k). Marlvel cites an Oct 2025 Google Play snapshot of 4.2 from 109,630 reviews."},
+      {"value": "more than 55 million installs", "scope": "all platforms (iOS + Android), whole Mad Skills franchise at MSM3 launch", "source": "https://www.gamedeveloper.com/press-release/mad-skills-motocross-3-mobile-game-released-globally-today", "date": "2021-05-25", "via": "search snippet", "accessed": "2026-10-25"},
+      {"value": "over 200 million downloads", "scope": "mobile, all Turborilla games (Mad Skills Motocross + Mad Skills BMX franchises)", "source": "https://www.turborilla.com/turborilla-partners-with-sx-global", "date": "November 2025", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "notes": "No lifetime downloads figure for MSM3 alone. Predecessor MSM2: 'more than 60 million downloads across iOS and Android' per a 2021 interview (https://www.motoonline.com/au/industry-mad-skills-motocross-3s-joe-welch/)."
+  },
+  {
+    "name": "Drive Ahead!",
+    "ios_app_id": "964436963",
+    "developer": "Dodreams Fairytale Company Oy (App Store seller); Dodreams Ltd. on Google Play",
+    "release_year": 2015,
+    "release_year_source": {"value": "released 2015-05-14", "source": "https://apppricinglab.com/app/apple/964436963", "via": "search snippet", "accessed": "2026-10-25"},
+    "price_model": "free + IAP (10 IAP items $0.99-$9.99) + ads",
+    "genre_tag": "arcade physics car battle (local/online PvP)",
+    "still_live": "yes",
+    "last_major_update": "App Pricing Lab iOS last update 2026-03-10; Google Play update dated Oct 12, 2026; global App Store listing shows a 'Jurassic Showdown' event version",
+    "us_rating": {"avg": 4.6, "count": 149000, "count_display": "149K Ratings", "source": "https://apps.apple.com/us/app/drive-ahead-pixel-car-fight/id964436963", "via": "search snippet", "snippet_date": "not shown; snippet is from the version that added a Lunar New Year event", "accessed": "2026-10-25"},
+    "us_rating_alt": [
+      {"avg": 4.6, "count_display": "150K Ratings", "source": "https://apps.apple.com/app/id964436963", "note": "storefront-less listing, newer 'Jurassic Showdown' version", "via": "search snippet", "accessed": "2026-10-25"},
+      {"avg": 4.6, "count_display": "149.7K reviews", "source": "https://apppricinglab.com/app/apple/964436963", "source_updated": "2026-03-10", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "global_ios_ratings": [
+      {"count": 187200, "count_display": "187.2K ratings", "avg": 4.60, "source": "https://appgoblin.info/apps/964436963", "source_updated": "store metadata last updated 2026-04-23", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "storefront_ratings_other": [
+      {"storefront": "MX", "count_display": "9.2 k", "avg": 4.6, "source": "https://apps.apple.com/MX/app/id964436963", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "KR", "count": 295, "avg": 4.3, "source": "https://apps.apple.com/KR/app/id964436963", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "downloads": [
+      {"value": "9.4M installs (estimate)", "scope": "iOS", "source": "https://appgoblin.info/apps/964436963", "date": "metadata updated 2026-04-23", "via": "search snippet", "accessed": "2026-10-25", "note": "AppGoblin also estimates about 245.7K MAU and $10K+ monthly revenue."},
+      {"value": "100M+", "scope": "Google Play", "source": "https://play.google.com/store/apps/details?id=com.dodreams.driveahead&hl=en", "date": "listing shows update Oct 12, 2026", "via": "search snippet", "accessed": "2026-10-25", "note": "Same listing: 4.3 avg from about 1.61M reviews."},
+      {"value": "1.7 million App Store installs", "scope": "iOS (in about 3 weeks after launch)", "source": "https://prnewswire.co.uk/news-releases/1-billion-helmets-smashed-in-drive-ahead---global-racing-game-hit-on-ios-505863751.html", "date": "2015-06-02", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "notes": "An unsourced 'over 75 million Android downloads' claim on an lshtm.ac.uk forum post was ignored as unreliable. Title on the store varies by storefront ('Pixel Car Fight', 'Fun Vehicle Fight', 'Multiplayer PvP', 'Retro Car Crash')."
+  },
+  {
+    "name": "Horizon Chase",
+    "ios_app_id": "991018252",
+    "developer": "Aquiris Game Studio S.A. (older listing); US App Store seller is now 'Epic Games Brasil'",
+    "release_year": null,
+    "release_year_note": "not found for iOS. Android reached Google Play in late 2015 (https://www.androidplanet.nl/apps/horizon-chase-android/, https://www.droidgamers.com/news/horizon-chase-is-finally-coming-to-android/).",
+    "price_model": "free + IAP (originally paid; later free to try with a one-time unlock per ifun.de)",
+    "genre_tag": "arcade retro racer",
+    "still_live": "yes",
+    "last_major_update": "App Pricing Lab shows last update 2023-06-07",
+    "us_rating": {"avg": 4.6, "count": 11000, "count_display": "11K Ratings", "source": "https://apps.apple.com/us/app/-/id991018252", "via": "search snippet", "snippet_date": "not visible", "accessed": "2026-10-25"},
+    "us_rating_alt": [
+      {"avg": 4.6, "count_display": "11.0K reviews", "source": "https://apppricinglab.com/app/apple/991018252", "source_updated": "2023-06-07 (app last update per page)", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "global_ios_ratings": [],
+    "global_ios_ratings_note": "not found",
+    "storefront_ratings_other": [
+      {"storefront": "AU", "count": 1159, "avg": 4.5, "source": "https://apps.appfollow.io/ios/horizon-chase/991018252?country=au", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "KR", "count": 219, "avg": 4.1, "source": "https://apps.appfollow.io/ios/horizon-chase/991018252?country=kr", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "NP", "count": 32, "avg": 4.8, "source": "https://apps.appfollow.io/ios/horizon-chase/991018252?country=np", "source_updated": "August 2025", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "downloads": [
+      {"value": "50 million downloads 'since its release'", "scope": "unclear (probably all platforms / the franchise)", "source": "https://toucharcade.com/?p=267244 or https://toucharcade.com/?p=271155 (search summary did not say which of the two)", "date": "not shown", "via": "search snippet", "accessed": "2026-10-25"},
+      {"value": "10.0M installs", "scope": "Google Play", "source": "https://www.apppricinglab.com/app/google_play/com.aquiris.horizonchase", "date": "listing last updated 2025-10-03", "via": "search snippet", "accessed": "2026-10-25", "note": "Same page: 4.0 avg from 308.8K reviews; publisher Epic Games Brasil SA."}
+    ],
+    "notes": "App Pricing Lab says no IAP, but the Apple listing shows 'In-App Purchases'. The listing contradicts App Pricing Lab. Sequel Horizon Chase 2 is on Apple Arcade (separate app). The 50M TouchArcade figure may cover Horizon Chase Turbo on console too."
+  },
+  {
+    "name": "GRID Autosport",
+    "ios_app_id": "1179421849",
+    "developer": "Feral Interactive Ltd",
+    "release_year": 2017,
+    "release_year_source": {"value": "released on the App Store in November 2017", "source": "https://toucharcade.com/2018/07/26/grid-autosport-100k-sales/", "via": "search snippet", "accessed": "2026-10-25", "note": "Also https://macmagazine.com.br/post/2017/11/27/feral-interactive-lanca-grid-autosport-para-ios-com-qualidade-de-console-e-sem-compras-dentro-do-app/"},
+    "price_model": "premium ($9.99 US)",
+    "price_source": {"value": "$9.99 (US listing also shows 'In-App Purchases'); USD 8.49 on Paraguay store", "source": "https://apps.apple.com/app/id1179421849", "via": "search snippet", "accessed": "2026-10-25"},
+    "genre_tag": "console-port circuit racing sim",
+    "still_live": "yes",
+    "last_major_update": "not found; App Pricing Lab ranks it #23 top-paid Games/Racing as of 2026-03-12",
+    "us_rating": {"avg": 4.5, "count": 2800, "count_display": "2.8K Ratings", "source": "https://apps.apple.com/app/id1179421849", "via": "search snippet", "snippet_date": "not shown; storefront not confirmed", "accessed": "2026-10-25"},
+    "global_ios_ratings": [],
+    "global_ios_ratings_note": "not found. App Pricing Lab compare page shows 0 reviews, which looks stale or wrong (https://apppricinglab.com/compare/apple/1179421849/554937499).",
+    "storefront_ratings_other": [
+      {"storefront": "NL", "count": 169, "avg": 4.4, "source": "https://apps.appfollow.io/ios/gridtm-autosport/1179421849?country=nl", "source_updated": "2026-03-24", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "LU", "count": 9, "avg": 4.0, "source": "https://apps.appfollow.io/ios/gridtm-autosport/1179421849?country=lu", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "downloads": [
+      {"value": "100,000 sales", "scope": "iOS (about 8 months after launch)", "source": "https://toucharcade.com/2018/07/26/grid-autosport-100k-sales/", "date": "2018-07-26", "via": "search snippet", "accessed": "2026-10-25", "note": "Cult of Mac calls the same milestone 100,000 downloads (https://www.cultofmac.com/?p=565709)."}
+    ],
+    "notes": "No recent lifetime figure. Google Play installs not found. A separate 'GRID Autosport Custom Edition' listing exists (id 1551356749)."
+  },
+  {
+    "name": "Smashy Road: Wanted",
+    "ios_app_id": "1020119327",
+    "developer": "Bearbit Studios B.V. (App Store); originally credited to RK Games Studio, Netherlands",
+    "release_year": 2015,
+    "release_year_source": {"value": "2015 release", "source": "https://apppricinglab.com/app/apple/1020119327", "via": "search snippet", "accessed": "2026-10-25"},
+    "price_model": "unclear (price not shown in snippets)",
+    "genre_tag": "arcade voxel police-chase driving",
+    "still_live": "yes (listing indexed, but no update since 2021)",
+    "last_major_update": "2021 per App Pricing Lab; Worldsapps references v1.40 dated 2021-11-24",
+    "us_rating": {"avg": 4.1, "count": 11000, "count_display": "11K Ratings", "source": "https://apps.apple.com/app/1020119327", "via": "search snippet", "snippet_date": "not visible (search tool called it the US listing)", "accessed": "2026-10-25"},
+    "us_rating_alt": [
+      {"avg": 4.1, "count_display": "11.5K reviews", "source": "https://apppricinglab.com/app/apple/1020119327", "via": "search snippet", "accessed": "2026-10-25"},
+      {"avg": 4.14, "count_display": "11.4K reviews", "source": "https://worldsapps.com/download-smashy-road-wanted", "source_updated": "older (references v1.40, 2021-11-24)", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "global_ios_ratings": [],
+    "global_ios_ratings_note": "not found. Marlvel shows 4.01 from about 592.5K reviews, which looks like a cross-platform total, not iOS (https://marlvel.ai/apps/com-rkgames-smashywanted, report updated 2026-05-07).",
+    "storefront_ratings_other": [
+      {"storefront": "MX", "count": 229, "avg": 4.2, "source": "https://apps.apple.com/MX/app/id1020119327", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "downloads": [],
+    "downloads_note": "not found. Only qualitative: top non-licensed game by worldwide downloads (iOS + Google Play) in October 2015 (https://news.mynavi.jp/techplus/article/appannie_nowtrending-6/); top-5 game downloads in US/CA/UK/AU into November 2015 (https://wnhub.io/zh/news/other/item-10550). Google Play installs not found.",
+    "notes": "Sequel Smashy Road: Wanted 2 (id 1371501878) is a separate, bigger listing: 4.8 from 105.8K reviews (https://apppricinglab.com/app/apple/1371501878, search snippet)."
+  },
+  {
+    "name": "Rider (Rider – Stunt Bike Racing)",
+    "ios_app_id": "1229618961",
+    "developer": "Ketchapp",
+    "release_year": null,
+    "release_year_note": "not found",
+    "price_model": "free (Google Play listing shows Free; iOS price not shown in snippets)",
+    "genre_tag": "hyper-casual neon stunt-bike (flip) racer",
+    "still_live": "yes",
+    "last_major_update": "App Pricing Lab last update 2026-03-01",
+    "us_rating": {"avg": 4.6, "count": 116000, "count_display": "about 116K ratings", "source": "https://apps.apple.com/app/id1229618961", "via": "search snippet", "snippet_date": "not visible; storefront not confirmed", "accessed": "2026-10-25"},
+    "us_rating_alt": [
+      {"avg": 4.6, "count_display": "112.7K reviews", "source": "https://apppricinglab.com/app/apple/1229618961", "source_updated": "2026-03-01", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "global_ios_ratings": [],
+    "global_ios_ratings_note": "not found",
+    "storefront_ratings_other": [
+      {"storefront": "DE", "count": 52489, "avg": 4.5, "source": "https://apps.apple.com/DE/app/id1229618961", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "CO", "count": 287, "avg": 4.7, "source": "https://apps.apple.com/co/app/rider/id1229618961", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "downloads": [
+      {"value": "more than 150 million downloads worldwide", "scope": "all platforms (no platform breakdown given)", "source": "https://mobidictum.com/rider-worlds-hits-1-million-downloads/", "date": "not shown (article about the Rider Worlds sequel launch)", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "google_play_note": "Google Play installs not found. App Pricing Lab Ketchapp developer page shows Google Play 4.3 avg from 1.5M reviews (https://apppricinglab.com/developer/google_play/Ketchapp).",
+    "notes": "Sequel Rider Worlds (id 6449429925): 4.8 from 71K ratings on its US listing (https://apps.apple.com/us/app/-/id6449429925); 1M downloads in under 10 days (https://mobidictum.com/rider-worlds-hits-1-million-downloads/). All via search snippet."
+  },
+  {
+    "name": "Drag Racing (Creative Mobile) - iOS title 'Drag Racing Classic'",
+    "ios_app_id": "470867961",
+    "developer": "Supercharge Mobile Corp (current App Store seller); originally Creative Mobile",
+    "release_year": null,
+    "release_year_note": "not found",
+    "price_model": "free + IAP",
+    "genre_tag": "drag",
+    "still_live": "yes",
+    "last_major_update": "not found for iOS. Android release notes for v5.0.0/v5.3.0 say the game is 'now part of the Supercharge family' (https://www.apkmirror.com/apk/supercharge-mobile/drag-racing/drag-racing-5-3-0-release)",
+    "us_rating": {"avg": 4.2, "count": 5800, "count_display": "5.8K Ratings", "source": "https://apps.apple.com/app/470867961", "via": "search snippet", "snippet_date": "not visible; storefront not confirmed", "accessed": "2026-10-25"},
+    "us_rating_alt": [
+      {"avg": 4.2, "count_display": "5.8K reviews", "source": "https://apppricinglab.com/app/apple/470867961", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "global_ios_ratings": [
+      {"count": 5500, "count_display": "about 5.5K ratings", "avg": 4.16, "source": "https://appgoblin.info/apps/470867961", "source_updated": "not shown", "via": "search snippet", "accessed": "2026-10-25", "note": "AppGoblin also estimates about 4.2K installs/month."}
+    ],
+    "storefront_ratings_other": [
+      {"storefront": "MX", "count": 581, "avg": 4.2, "source": "https://apps.appfollow.io/ios/drag-racing-classic/470867961?country=mx", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "DO", "count": 48, "avg": 4.2, "source": "https://apps.appfollow.io/ios/drag-racing-classic/470867961?country=do", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "downloads": [
+      {"value": "200 million lifetime installs", "scope": "all platforms, whole Drag Racing franchise (unverified company-profile claim)", "source": "https://app.dealroom.co/companies/creative_mobile", "date": "not shown", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "google_play_note": "Google Play install band for com.creativemobile.DragRacing not found (search budget ran out before this lookup).",
+    "notes": "Mapping check: no iOS listing named plain 'Drag Racing' by Creative Mobile turned up. 'Drag Racing Classic' (470867961) is the iOS listing; Creative Mobile's Android Drag Racing moved to Supercharge Mobile. Please confirm this is the intended app. The iOS rating base (about 5.8K) is tiny next to the 200M franchise claim, which is mostly Android."
+  },
+  {
+    "name": "Rebel Racing",
+    "ios_app_id": "1321463207",
+    "developer": "Hutch Games Ltd",
+    "release_year": 2019,
+    "release_year_source": {"value": "worldwide launch November 11, 2019 after soft launch in 10 territories", "source": "https://giantbomb.com/wiki/Games/Rebel_Racing", "via": "search snippet", "accessed": "2026-10-25"},
+    "price_model": "free + IAP (includes loot boxes)",
+    "genre_tag": "licensed-car arcade circuit racing",
+    "still_live": "yes",
+    "last_major_update": "AppFollow BR page last updated 2026-07-31; game was relaunched/rebooted Oct 2021",
+    "us_rating": {"avg": 4.8, "count": 211000, "count_display": "211K Ratings", "source": "https://apps.apple.com/us/app/-/id1321463207", "via": "search snippet", "snippet_date": "not visible", "accessed": "2026-10-25"},
+    "us_rating_alt": [
+      {"avg": 4.8, "count_display": "210.9K reviews", "source": "https://apppricinglab.com/app/apple/1321463207", "via": "search snippet", "accessed": "2026-10-25"},
+      {"avg": null, "count_display": "210,556+ ratings", "source": "https://game-solver.com/?p=707340", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "global_ios_ratings": [
+      {"count_display": "599K+", "avg": 4.7, "source": "https://spark.mwm.ai/en/apps/rebel-racing/1321463207", "source_updated": "not shown", "via": "search snippet", "accessed": "2026-10-25", "note": "MWM Spark (not AppGoblin/Mixrank/AppFollow). Scope looks like all App Store storefronts but is not confirmed."}
+    ],
+    "storefront_ratings_other": [
+      {"storefront": "JP", "count": 14285, "avg": 4.6, "source": "https://apps.appfollow.io/ios/rebel-racing/1321463207?country=jp", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "BR", "count": 14159, "avg": 4.8, "source": "https://apps.appfollow.io/ios/rebel-racing/1321463207?country=br", "source_updated": "2026-07-31", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "NZ", "count": 2251, "avg": 4.7, "source": "https://apps.appfollow.io/ios/rebel-racing/1321463207?country=nz", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "IL", "count": 1887, "avg": 4.4, "source": "https://apps.appfollow.io/ios/rebel-racing/1321463207?country=il", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "GH", "count": 1498, "avg": 4.5, "source": "https://apps.appfollow.io/ios/rebel-racing/1321463207?country=gh", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "OM", "count": 727, "avg": 4.3, "source": "https://apps.appfollow.io/ios/rebel-racing/1321463207?country=om", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "downloads": [
+      {"value": "50M+", "scope": "Google Play", "source": "https://play.google.com/store/apps/details?id=com.hutchgames.rebelracing&hl=en_GB", "date": "snapshot date not shown", "via": "search snippet", "accessed": "2026-10-25", "note": "Same listings: 4.5 avg from about 713K-750K reviews, depending on snapshot."},
+      {"value": "more than 100,000 downloads", "scope": "Google Play (launch week)", "source": "https://www.pocketgamer.co.uk/rebel-racing/rebel-racing-is-a-new-racer-for-ios-and-android-with-plenty-of-licensed-cars-tha/", "date": "November 2019", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "notes": "No lifetime figure for this title alone. Hutch studio-wide: 'over 350 million mobile players' across titles incl. Rebel Racing, F1 Clash, Top Drives (https://www.mtg.com/press-releases/hutch-games-teams-up-with-nascar-to-unleash-a-new-standalone-mobile-game/)."
+  },
+  {
+    "name": "Car Parking Multiplayer",
+    "ios_app_id": "1374868881",
+    "developer": "App Store privacy section names 'Aidana Kengbeiil'; another snippet credits the listing to 'OGames'; Google Play developer is 'olzhass' (privacy/EULA links point to olzhass.net)",
+    "release_year": 2018,
+    "release_year_source": {"value": "released 2018-04-23", "source": "https://apppricinglab.com/app/apple/1374868881", "via": "search snippet", "accessed": "2026-10-25"},
+    "price_model": "free + IAP (10 IAP items $0.99-$17.99)",
+    "genre_tag": "open-world driving / parking sim (multiplayer)",
+    "still_live": "yes",
+    "last_major_update": "2026-01-17 per App Pricing Lab",
+    "us_rating": {"avg": 4.3, "count": 49000, "count_display": "49K Ratings (later snapshot)", "source": "https://apps.apple.com/app/id1374868881 / https://apps.apple.com/app/1374868881 (search summary did not say which URL held which snapshot)", "via": "search snippet", "snippet_date": "not visible", "accessed": "2026-10-25"},
+    "us_rating_alt": [
+      {"avg": 4.3, "count_display": "43K Ratings (earlier snapshot)", "source": "https://apps.apple.com/app/id1374868881 / https://apps.apple.com/app/1374868881", "via": "search snippet", "accessed": "2026-10-25"},
+      {"avg": 4.3, "count_display": "43.0K reviews", "source": "https://apppricinglab.com/app/apple/1374868881", "via": "search snippet", "accessed": "2026-10-25"},
+      {"avg": 4.4, "count": 59103, "source": "https://adapty.io/paywall-library/car-parking-multiplayer/", "via": "search snippet", "accessed": "2026-10-25", "note": "scope unclear"}
+    ],
+    "global_ios_ratings": [],
+    "global_ios_ratings_note": "not found",
+    "storefront_ratings_other": [
+      {"storefront": "JP", "count": 6922, "avg": 4.2, "source": "https://apps.apple.com/jp/app/car-parking-multiplayer/id1374868881", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "FR", "count_display": "5,9 k", "avg": 4.4, "source": "https://apps.apple.com/FR/app/id1374868881", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "downloads": [
+      {"value": "100M+", "scope": "Google Play", "source": "https://play.google.com/store/apps/details?id=com.olzhas.carparking.multyplayer&hl=en_IN", "date": "snapshot date not shown", "via": "search snippet", "accessed": "2026-10-25", "note": "Same listing: 4.5 avg from about 30.4 lakh (3.04M) reviews."},
+      {"value": "over 100 million installs", "scope": "Google Play", "source": "https://www.appbrain.com/dev/olzhass/", "date": "not shown", "via": "search snippet", "accessed": "2026-10-25"},
+      {"value": "800,000+ monthly downloads (modeled estimate)", "scope": "iOS (App Store listing tracked by Adapty)", "source": "https://adapty.io/paywall-library/car-parking-multiplayer/", "date": "not shown", "via": "search snippet", "accessed": "2026-10-25", "note": "Adapty also estimates about $500K monthly revenue. This is a monthly rate, not a lifetime total."}
+    ],
+    "notes": "Sequel Car Parking Multiplayer 2 (iOS id 6514315118) is separate: 4.4 avg from 3.4K / 2.4K ratings in two US snapshots (https://apps.apple.com/us/app/-/id6514315118); Google Play 10M+ (https://play.google.com/store/apps/details?id=com.olzhas.carparking.multyplayer2&hl=en_US). No lifetime all-platform figure found."
+  },
+  {
+    "name": "Dr. Driving",
+    "ios_app_id": "639191551",
+    "developer": "SUD Inc.",
+    "release_year": null,
+    "release_year_note": "not found",
+    "price_model": "unclear for iOS (not shown in snippets); Android monetizes with IAP + ads (59% IAP / 41% ads per AppGoblin estimate)",
+    "genre_tag": "casual city-driving missions sim",
+    "still_live": "unclear",
+    "last_major_update": "not found; AppGoblin iOS store data last updated April 2023 (SDK analysis 2024-11-27)",
+    "us_rating": {"avg": null, "count": null, "source": null, "via": null, "note": "not found. No apps.apple.com snippet for id 639191551 turned up.", "accessed": "2026-10-25"},
+    "us_rating_alt": [
+      {"avg": 4.3, "count_display": "6.3K reviews", "source": "https://apppricinglab.com/app/apple/639191551", "via": "search snippet", "accessed": "2026-10-25", "note": "storefront presumably US, not confirmed"}
+    ],
+    "global_ios_ratings": [
+      {"count_display": "6.3K ratings", "avg": 4.27, "source": "https://appgoblin.info/apps/639191551", "source_updated": "store data last updated April 2023", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "storefront_ratings_other": [],
+    "downloads": [
+      {"value": "692.8M+ installs", "scope": "Google Play", "source": "https://www.appgoblin.info/apps/com.ansangha.drdriving", "date": "not shown", "via": "search snippet", "accessed": "2026-10-25", "note": "Same AppGoblin page: 6.3M ratings, 4.28 avg, ~5.4M MAU, ~$1M+ monthly revenue, ~1M installs/week. App Pricing Lab shows Google Play 4.4 avg from 6.4M reviews (https://apppricinglab.com/developer/google_play/SUD%20Inc.)."},
+      {"value": "313.4K installs (estimate)", "scope": "iOS", "source": "https://appgoblin.info/apps/639191551", "date": "store data April 2023", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "notes": "Very Android-heavy: about 693M Google Play installs vs about 6.3K iOS ratings. Dr. Driving 2 (iOS id 1189828120) is separate: 4.4 from 2.4K ratings / 4.5 from 2.3K on the US snapshot (https://apps.apple.com/us/app/-/id1189828120)."
+  },
+  {
+    "name": "Hot Wheels Unlimited",
+    "ios_app_id": "1523486249",
+    "developer": "Budge Studios (Mattel licence). NOT Hutch.",
+    "release_year": 2020,
+    "release_year_source": {"value": "released 2020-09-29", "source": "https://apppricinglab.com/app/apple/1523486249", "via": "search snippet", "accessed": "2026-10-25"},
+    "price_model": "free + IAP (subscriptions, from $12.99 US)",
+    "genre_tag": "kids track-builder arcade racing",
+    "still_live": "yes",
+    "last_major_update": "App Pricing Lab last update February 2026 (page dated 2026-02-04); APKMirror lists Android build 2026.3.0",
+    "us_rating": {"avg": 4.4, "count": 140000, "count_display": "140K Ratings", "source": "https://apps.apple.com/app/id1523486249", "via": "search snippet", "snippet_date": "2024-era listing with a (c) 2025 copyright line; may be stale; storefront not confirmed", "accessed": "2026-10-25"},
+    "us_rating_alt": [
+      {"avg": 4.5, "count_display": "124.8K reviews", "source": "https://apppricinglab.com/app/apple/1523486249", "source_updated": "2026-02-04", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "global_ios_ratings": [],
+    "global_ios_ratings_note": "not found. Marlvel shows 4.5/5 from 288.3K reviews, scope unclear (https://marlvel.ai/apps/hot-wheels-unlimited, report updated April 16, 2026).",
+    "storefront_ratings_other": [
+      {"storefront": "AR", "count": 1092, "avg": 4.5, "source": "https://apps.appfollow.io/ios/hot-wheels-unlimited/1523486249?country=ar", "via": "search snippet", "accessed": "2026-10-25"},
+      {"storefront": "LT", "count": 155, "avg": 4.4, "source": "https://apps.appfollow.io/ios/hot-wheels-unlimited/1523486249?country=lt", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "downloads": [
+      {"value": "weekly downloads fell from 17K to 9.8K over Q1 2025", "scope": "iOS, US only (weekly, not lifetime)", "source": "https://sensortower.com/blog/2025-q1-ios-top-5-racing%20games-revenue-us-62fbc03af5dff393904ee927", "date": "Q1 2025", "via": "search snippet", "accessed": "2026-10-25", "note": "Sensor Tower blog page is labelled AI-generated ('AI Insights')."}
+    ],
+    "downloads_note": "Lifetime downloads and Google Play installs not found.",
+    "notes": "Developer mismatch with the brief: Hot Wheels Unlimited is by Budge Studios (https://www.licenseglobal.com/toys-games/mattel-budge-studios-unleash-hot-wheels-unlimited). Hutch made Hot Wheels: Race Off (2016, support ended 2021) and Hot Wheels: Race Off+ (Apple Arcade exclusive, launched 2024-12-05, https://en.wikipedia.org/wiki/Hot_Wheels:_Race_Off%2B). App Pricing Lab files Unlimited under the Entertainment category, but Sensor Tower lists it among the US iOS top-5 racing games for Q1 2025."
+  },
+  {
+    "name": "Moto X3M Bike Race Game",
+    "ios_app_id": "1085088518",
+    "developer": "AceViral.com",
+    "release_year": null,
+    "release_year_note": "not found",
+    "price_model": "unclear (not shown in snippets)",
+    "genre_tag": "2D bike-trial physics",
+    "still_live": "yes",
+    "last_major_update": "not found",
+    "us_rating": {"avg": 4.7, "count": 98000, "count_display": "98K Ratings", "source": "https://apps.apple.com/us/app/-/id1085088518", "via": "search snippet", "snippet_date": "not visible", "accessed": "2026-10-25"},
+    "global_ios_ratings": [],
+    "global_ios_ratings_note": "not found for 1085088518. An older separate listing 'Moto x3m' (id 1001193844) has 461 ratings, 4.63 avg on AppGoblin (https://appgoblin.info/apps/1001193844) and 4.6 from 264 ratings on its US listing (https://apps.apple.com/us/app/-/id1001193844).",
+    "storefront_ratings_other": [
+      {"storefront": "MX", "count_display": "9.8 k", "avg": 4.7, "source": "https://apps.apple.com/MX/app/id1085088518", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "downloads": [],
+    "downloads_note": "not found. Mirror pages showing 4.6 from about 487K reviews describe an Android build on an unofficial mirror (moto-x3m-jogo-de-moto.app.ufrj.br) and were not used.",
+    "notes": "Picked as the top bike-trial title per the brief."
+  },
+  {
+    "name": "Pocket Champs: PVP Racing Games",
+    "ios_app_id": null,
+    "ios_app_id_note": "not found",
+    "developer": "MADBOX",
+    "release_year": null,
+    "price_model": "not found",
+    "genre_tag": "casual PvP racing (progression/merge style)",
+    "still_live": "unclear (in US iOS top-5 racing in Q1 2025; not checked for 2026)",
+    "chart_evidence": {"value": "US iOS top-5 racing, Q1 2025", "source": "https://sensortower.com/blog/2025-q1-ios-top-5-racing%20games-revenue-us-62fbc03af5dff393904ee927", "via": "search snippet", "accessed": "2026-10-25"},
+    "us_rating": {"avg": null, "count": null, "source": null, "via": null, "note": "not found (search budget ran out)", "accessed": "2026-10-25"},
+    "global_ios_ratings": [],
+    "downloads": [
+      {"value": "downloads fell from 49K to 17K over Q1 2025", "scope": "iOS, US only (Sensor Tower period series, not lifetime)", "source": "https://sensortower.com/blog/2025-q1-ios-top-5-racing%20games-revenue-us-62fbc03af5dff393904ee927", "date": "Q1 2025", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "notes": "Extra game (item 16). Also shows up in Sensor Tower's Switzerland Q2 2025 racing list."
+  },
+  {
+    "name": "No Limit Drag Racing 2",
+    "ios_app_id": null,
+    "ios_app_id_note": "not found",
+    "developer": "Sycamore Valley Software",
+    "release_year": null,
+    "price_model": "not found",
+    "genre_tag": "drag",
+    "still_live": "unclear (in US iOS top-5 racing in Q1 2025)",
+    "chart_evidence": {"value": "US iOS top-5 racing, Q1 2025", "source": "https://sensortower.com/blog/2025-q1-ios-top-5-racing%20games-revenue-us-62fbc03af5dff393904ee927", "via": "search snippet", "accessed": "2026-10-25"},
+    "us_rating": {"avg": null, "count": null, "source": null, "via": null, "note": "not found (search budget ran out)", "accessed": "2026-10-25"},
+    "global_ios_ratings": [],
+    "downloads": [
+      {"value": "downloads averaged around 13K (roughly steady through Q1 2025)", "scope": "iOS, US only (Sensor Tower period series, not lifetime)", "source": "https://sensortower.com/blog/2025-q1-ios-top-5-racing%20games-revenue-us-62fbc03af5dff393904ee927", "date": "Q1 2025", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "notes": "Extra game (item 16)."
+  },
+  {
+    "name": "aquapark.io",
+    "ios_app_id": null,
+    "ios_app_id_note": "not found",
+    "developer": "Voodoo",
+    "release_year": null,
+    "price_model": "free (ad-supported hyper-casual); not verified",
+    "genre_tag": "hyper-casual (water-slide race) - NOT VEHICLE RACING",
+    "not_vehicle_racing": true,
+    "still_live": "yes (in US iOS top-5 racing in Q2 and Q3 2025)",
+    "chart_evidence": {"value": "US iOS top-5 racing, Q2 2025 and Q3 2025", "source": "https://sensortower.com/blog/2025-q3-ios-top-5-racing games-units-us-62fbc03af5dff393904ee927 ; https://sensortower.com/blog/2025-q2-ios-top-5-racing games-units-us-62fbc03af5dff393904ee927", "via": "search snippet", "accessed": "2026-10-25"},
+    "us_rating": {"avg": null, "count": null, "source": null, "via": null, "note": "not found (search budget ran out)", "accessed": "2026-10-25"},
+    "global_ios_ratings": [],
+    "downloads": [
+      {"value": "weekly downloads peaked ~53.3K mid-July, fell to 22.7K by end of Q3 2025; WAU peaked 411K, ended ~222K", "scope": "iOS, US only (weekly)", "source": "https://sensortower.com/blog/2025-q3-ios-top-5-racing games-units-us-62fbc03af5dff393904ee927", "date": "Q3 2025", "via": "search snippet", "accessed": "2026-10-25"},
+      {"value": "weekly downloads ~30K-40K, peak 42K end of June; active users rose 257K to 457K then settled ~346K", "scope": "iOS, US only (weekly)", "source": "https://sensortower.com/blog/2025-q2-ios-top-5-racing games-units-us-62fbc03af5dff393904ee927", "date": "Q2 2025", "via": "search snippet", "accessed": "2026-10-25"}
+    ],
+    "notes": "Extra game (item 16), flagged NOT vehicle racing. Sensor Tower pages are labelled AI-generated ('AI Insights')."
+  }
+]
