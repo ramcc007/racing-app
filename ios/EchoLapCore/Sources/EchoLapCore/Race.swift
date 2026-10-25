@@ -18,8 +18,27 @@ public struct RaceStats: Codable, Equatable, Sendable {
     public var jumps = 0
     public var distance = 0.0
     public var offroadSeconds = 0.0
+    /// Drifts started, time spent drifting, and drifts long enough to give a boost on release.
+    public var drifts = 0
+    public var driftSeconds = 0.0
+    public var driftBoosts = 0
+    /// Passes within a whisker of a solid echo without touching it.
+    public var nearMisses = 0
+    /// Seconds spent riding the very edge of the road at speed.
+    public var edgeSeconds = 0.0
 
     public init() {}
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        func get<T: Decodable>(_ key: CodingKeys, _ fallback: T) -> T { (try? c.decodeIfPresent(T.self, forKey: key)) ?? fallback }
+        drafts = get(.drafts, 0); draftSeconds = get(.draftSeconds, 0); bumps = get(.bumps, 0); softTouches = get(.softTouches, 0)
+        boosts = get(.boosts, 0); swaps = get(.swaps, 0); gatePasses = get(.gatePasses, 0); echoGatePasses = get(.echoGatePasses, 0)
+        gateHits = get(.gateHits, 0); iceBreaks = get(.iceBreaks, 0); splashes = get(.splashes, 0); docks = get(.docks, 0)
+        jumps = get(.jumps, 0); distance = get(.distance, 0); offroadSeconds = get(.offroadSeconds, 0)
+        drifts = get(.drifts, 0); driftSeconds = get(.driftSeconds, 0); driftBoosts = get(.driftBoosts, 0)
+        nearMisses = get(.nearMisses, 0); edgeSeconds = get(.edgeSeconds, 0)
+    }
 }
 
 /// Things that happened during a tick, for sound, haptics and on-screen messages.
@@ -47,11 +66,20 @@ public enum RaceEvent: Equatable, Sendable {
     case swapUnavailable
     case jump
     case land
+    /// A drift began; it reached a new tier; it ended with a boost of that tier (0: too short for one).
+    case driftStart
+    case driftTier(Int)
+    case driftBoost(tier: Int)
+    /// Passed a solid echo within a whisker.
+    case nearMiss
+    /// Riding the edge of the road at speed started or stopped.
+    case edgeStart
+    case edgeEnd
 }
 
 /// One recorded lap, replayed in sync with the current lap.
 public struct Echo: Sendable {
-    /// Which lap it came from (1-based).
+    /// Which lap it came from (1-based), or the rung of the echo ladder it stands for.
     public let lap: Int
     /// x, y, heading, flags (1 = docked, 2 = airborne) for every tick of that lap.
     let frames: [Float]
@@ -60,8 +88,21 @@ public struct Echo: Sendable {
     var hint = 0
     var insidePatch: Int?
     var insideSensor = false
+    /// Near-miss tracking: closest approach while nearby, and whether this pass was spoiled by a touch.
+    var closest = Double.infinity
+    var touchedNearby = false
+
+    public init(lap: Int, frames: [Float], hint: Int = 0) {
+        self.lap = lap
+        self.frames = frames
+        self.hint = hint
+    }
 
     public var frameCount: Int { frames.count / 4 }
+    /// The run's length in seconds.
+    public var duration: Double { Double(frameCount) * Physics.dt }
+    /// The raw recording, for saving.
+    public var recording: [Float] { frames }
 
     public func pose(at frame: Int) -> EchoPose? {
         guard frame >= 0, frame < frameCount else { return nil }
@@ -97,8 +138,11 @@ public struct RaceResult: Codable, Equatable, Sendable {
     public let lapTimes: [Double]
     public let lapsCompleted: Int
     public let stats: RaceStats
+    /// How many echoes of the ladder were on the road (the rung this run was raced at).
+    public let echoesOnRoad: Int
 
-    public init(trackID: String, carID: String, finished: Bool, totalTime: Double, lapTimes: [Double], lapsCompleted: Int, stats: RaceStats) {
+    public init(trackID: String, carID: String, finished: Bool, totalTime: Double, lapTimes: [Double], lapsCompleted: Int,
+                stats: RaceStats, echoesOnRoad: Int = 0) {
         self.trackID = trackID
         self.carID = carID
         self.finished = finished
@@ -106,10 +150,23 @@ public struct RaceResult: Codable, Equatable, Sendable {
         self.lapTimes = lapTimes
         self.lapsCompleted = lapsCompleted
         self.stats = stats
+        self.echoesOnRoad = echoesOnRoad
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        trackID = try c.decode(String.self, forKey: .trackID)
+        carID = (try? c.decode(String.self, forKey: .carID)) ?? "pip"
+        finished = (try? c.decode(Bool.self, forKey: .finished)) ?? false
+        totalTime = (try? c.decode(Double.self, forKey: .totalTime)) ?? 0
+        lapTimes = (try? c.decode([Double].self, forKey: .lapTimes)) ?? []
+        lapsCompleted = (try? c.decode(Int.self, forKey: .lapsCompleted)) ?? 0
+        stats = (try? c.decode(RaceStats.self, forKey: .stats)) ?? RaceStats()
+        echoesOnRoad = (try? c.decode(Int.self, forKey: .echoesOnRoad)) ?? 0
     }
 }
 
-/// One race: countdown, laps, echoes and every rule. Call `tick` 120 times per second.
+/// One race: countdown, the sprint, echoes and every rule. Call `tick` 120 times per second.
 public final class Race {
     public enum Phase: Equatable, Sendable { case countdown, racing, finished }
 
@@ -118,9 +175,11 @@ public final class Race {
     public let laps: Int
     /// Survival mode only: bumps left before the run ends.
     public private(set) var livesLeft: Int?
+    /// Echoes that were on the road from the start (the ladder), as opposed to laps added during the race.
+    public let ladderEchoes: Int
 
     public private(set) var phase: Phase = .countdown
-    public private(set) var countdown = 3.0
+    public private(set) var countdown: Double
     public private(set) var car: CarState
     /// Race clock since GO.
     public private(set) var time = 0.0
@@ -131,13 +190,15 @@ public final class Race {
     public private(set) var lapsDone = 0
     public private(set) var lapTimes: [Double] = []
     public private(set) var echoes: [Echo] = []
-    /// 0...1. One boost costs `boostCost`.
+    /// Nitro meter 0...1. One fire costs `boostCost`.
     public private(set) var boostCharge = 0.0
     public private(set) var stats = RaceStats()
     /// Passes recorded on each ice patch; at `iceBreakPasses` it is water.
     public private(set) var iceWear: [Int: Int] = [:]
     public private(set) var gateOpen = false
     public private(set) var drafting = false
+    /// Riding the edge of the road at speed.
+    public private(set) var onEdge = false
     public private(set) var swapUsedThisLap = false
     public private(set) var progress = 0.0
     public private(set) var crossedStart = false
@@ -149,6 +210,14 @@ public final class Race {
 
     public static let boostCost = 0.34
     public static let draftGain = 0.40
+    /// Nitro earned by a near miss, by each second on the edge, and by releasing a drift of each tier.
+    public static let nearMissGain = 0.22
+    public static let edgeGain = 0.10
+    public static let driftGain = [0.0, 0.08, 0.15, 0.25]
+    /// How close a pass must be, centre to centre, to count as a near miss (a car is 22 wide).
+    public static let nearMissDistance = 34.0
+    /// How close to the road edge (from the kerb inwards) counts as riding the edge.
+    public static let edgeBand = 14.0
     public static let iceBreakPasses = 3
     public static let sensorOpenSeconds = 5.0
     public static let gateGraceSeconds = 1.0
@@ -158,28 +227,44 @@ public final class Race {
     public static let runUp = 180.0
 
     private var recording: [Float] = []
+    private var countdownStarted = false
     private var gateGrace = 0.0
     private var sensorOpenUntil = -1.0
     private var holderIsEcho = false
     private var sinceDraft = 10.0
+    private var edgeFor = 0.0
     private var carInsidePatch: Int?
     private var carInsideSensor = false
     private var touchingSoft = false
     private var wasAirborne = false
+    private var wasDrifting = false
+    private var lastDriftTier = 0
     private let startIndex: Int
     private let checkpointS: [Double]
 
-    public init(track: Track, spec: CarSpec, laps: Int? = nil, lives: Int? = nil) {
+    /// `echoes` are earlier runs of this track that race with you from the line (the echo ladder).
+    /// `countdown` is the seconds before GO: short on a quick retry.
+    public init(track: Track, spec: CarSpec, laps: Int? = nil, lives: Int? = nil, echoes: [Echo] = [], countdown: Double = 3) {
         self.track = track
         self.spec = spec
         self.laps = laps ?? track.def.laps
         self.livesLeft = lives
+        self.countdown = max(0.05, countdown)
         startIndex = track.wrap(track.count - Int(Race.runUp / track.step))
         car = CarState(position: track.points[startIndex], heading: track.tangents[startIndex].angle)
         location = track.locate(track.points[startIndex], hint: startIndex)
         progress = track.s(startIndex)
         checkpointS = [0.25, 0.5, 0.75].map { $0 * track.length }
         recording.reserveCapacity(4 * 120 * 40)
+        ladderEchoes = min(echoes.count, Race.maxEchoes)
+        self.echoes = echoes.prefix(Race.maxEchoes).map { e in
+            var echo = e
+            echo.solid = false
+            echo.hint = startIndex
+            echo.insidePatch = nil
+            echo.insideSensor = false
+            return echo
+        }
     }
 
     public var isFinished: Bool { phase == .finished }
@@ -191,29 +276,10 @@ public final class Race {
     public var totalProgress: Double { Double(lapsDone) * track.length + (crossedStart ? progress : progress - track.length) }
     /// True during the untimed run-up to the line.
     public var isRunUp: Bool { phase == .racing && !crossedStart }
+    /// Everything recorded since the line on the current lap (a whole sprint once finished), for saving as a run.
+    public var recordedFrames: [Float] { recording }
 
-    /// How much longer the shortcut gate will stay open as things stand (0 when shut). A parked echo leaves at a known
-    /// moment and a sensor bridge closes on a timer, so the easy-controls assist can tell whether it will get through.
-    public var gateOpenFor: Double {
-        guard let sc = track.shortcut, gateOpen else { return 0 }
-        switch sc.trigger {
-        case .sensor:
-            return max(0, sensorOpenUntil - time)
-        case .pad:
-            if car.docked { return .infinity }
-            let frame = lapTick - 1
-            var longest: Double?
-            for echo in echoes {
-                guard let p = echo.pose(at: frame), p.docked else { continue }
-                var f = frame
-                while let q = echo.pose(at: f + 1), q.docked { f += 1 }
-                longest = max(longest ?? 0, Double(f - frame) * Physics.dt)
-            }
-            return longest.map { $0 + Race.gateGraceSeconds } ?? gateGrace
-        }
-    }
-
-    /// Adds boost charge (the tutorial uses it so the boost lesson always happens).
+    /// Adds nitro (the tutorial uses it so the nitro lesson always happens).
     public func addBoost(_ amount: Double) {
         boostCharge = min(1, boostCharge + max(0, amount))
     }
@@ -223,7 +289,7 @@ public final class Race {
 
     public func result() -> RaceResult {
         RaceResult(trackID: track.def.id, carID: spec.id, finished: phase == .finished && (livesLeft == nil ? lapsDone >= laps : true),
-                   totalTime: time, lapTimes: lapTimes, lapsCompleted: lapsDone, stats: stats)
+                   totalTime: time, lapTimes: lapTimes, lapsCompleted: lapsDone, stats: stats, echoesOnRoad: ladderEchoes)
     }
 
     // MARK: - Tick
@@ -234,7 +300,10 @@ public final class Race {
             return
         case .countdown:
             let before = Int(countdown.rounded(.up))
-            if countdown == 3.0 { events.append(.countdown(3)) }
+            if !countdownStarted {
+                countdownStarted = true
+                events.append(.countdown(before))
+            }
             countdown -= Physics.dt
             let after = Int(countdown.rounded(.up))
             if after < before && after > 0 { events.append(.countdown(after)) }
@@ -312,6 +381,7 @@ public final class Race {
         stats.distance += car.position.distance(to: prevPos)
         if wasAirborne && !car.isAirborne { events.append(.land) }
         wasAirborne = car.isAirborne
+        updateDrift()
 
         updateSurroundings(prevPos: prevPos)
         updateEchoes(poses: poses)
@@ -325,6 +395,32 @@ public final class Race {
         }
 
         updateProgress()
+    }
+
+    // MARK: - Drift: the boost on release, and the tier events as it builds
+
+    private func updateDrift() {
+        if car.drifting {
+            stats.driftSeconds += Physics.dt
+            if !wasDrifting {
+                stats.drifts += 1
+                lastDriftTier = 0
+                events.append(.driftStart)
+            }
+            let tier = car.driftTier
+            if tier > lastDriftTier {
+                lastDriftTier = tier
+                events.append(.driftTier(tier))
+            }
+        }
+        if let tier = car.driftReleased {
+            if tier > 0 {
+                stats.driftBoosts += 1
+                boostCharge = min(1, boostCharge + Race.driftGain[min(tier, 3)])
+            }
+            events.append(.driftBoost(tier: tier))
+        }
+        wasDrifting = car.drifting
     }
 
     // MARK: - Surroundings: road, patches, walls, gate, bays, ramps
@@ -342,6 +438,25 @@ public final class Race {
         let onRoad = loc.distance <= hw + 2
         offroad = !(onRoad || onLane || onBay)
         if offroad && !car.isAirborne { stats.offroadSeconds += Physics.dt }
+
+        // Riding the edge: the outer strip of the road at speed fills the nitro a little. Over the kerb it stops.
+        let riding = onRoad && !onLane && !car.isAirborne && !car.docked && loc.distance > hw - Race.edgeBand
+            && car.forwardSpeed > 0.65 * spec.topSpeed
+        if riding {
+            edgeFor += Physics.dt
+            stats.edgeSeconds += Physics.dt
+            boostCharge = min(1, boostCharge + Race.edgeGain * Physics.dt)
+            if !onEdge && edgeFor >= 0.25 {
+                onEdge = true
+                events.append(.edgeStart)
+            }
+        } else {
+            edgeFor = 0
+            if onEdge {
+                onEdge = false
+                events.append(.edgeEnd)
+            }
+        }
 
         // Soft outer wall: you can run wide, but not wander off into the scenery.
         if !onLane && !onBay && loc.distance > hw + 120 {
@@ -460,17 +575,35 @@ public final class Race {
         var touchedSoftNow = false
         for i in echoes.indices {
             guard let p = poses[i] else { continue }
-            if !echoes[i].solid, car.position.distance(to: p.position) > Physics.carLength * 1.3 { echoes[i].solid = true }
+            let gap = car.position.distance(to: p.position)
+            if !echoes[i].solid, gap > Physics.carLength * 1.3 { echoes[i].solid = true }
             if p.docked { padHeldByEcho = true }
 
-            if !car.docked, !car.isAirborne, !p.airborne,
-               Physics.touching(car.position, car.heading, p.position, p.heading) {
+            let touching = !car.docked && !car.isAirborne && !p.airborne
+                && Physics.touching(car.position, car.heading, p.position, p.heading)
+            if touching {
                 if track.def.softEchoes {
                     car.velocity = car.velocity * (1 - 1.8 * Physics.dt)
                     touchedSoftNow = true
                 } else if echoes[i].solid && car.immuneTime <= 0 {
                     bump(from: p)
                     if phase == .finished { return }
+                }
+            }
+
+            // Near miss: pass a solid echo closer than a car's width, without touching, and pull clear again.
+            if echoes[i].solid && !p.docked && !track.def.softEchoes {
+                if gap < 2 * Race.nearMissDistance {
+                    echoes[i].closest = min(echoes[i].closest, gap)
+                    if touching { echoes[i].touchedNearby = true }
+                } else if echoes[i].closest < .infinity {
+                    if echoes[i].closest < Race.nearMissDistance && !echoes[i].touchedNearby && car.forwardSpeed > 0.5 * spec.topSpeed {
+                        stats.nearMisses += 1
+                        boostCharge = min(1, boostCharge + Race.nearMissGain)
+                        events.append(.nearMiss)
+                    }
+                    echoes[i].closest = .infinity
+                    echoes[i].touchedNearby = false
                 }
             }
 
@@ -508,6 +641,7 @@ public final class Race {
         }
     }
 
+    /// Touching a solid echo: a spin, and the whole nitro meter is lost (risk and reward).
     private func bump(from p: EchoPose) {
         let penalty = (livesLeft != nil ? 0.7 : track.difficulty.bumpPenalty) * spec.bumpFactor
         let away = car.position - p.position
@@ -518,6 +652,7 @@ public final class Race {
         car.immuneTime = penalty + 0.8
         car.boostTime = 0
         car.position += away.normalized * 6
+        boostCharge = 0
         stats.bumps += 1
         events.append(.bump)
         if let lives = livesLeft {
@@ -644,6 +779,8 @@ public final class Race {
             echoes[i].insidePatch = nil
             echoes[i].insideSensor = false
             echoes[i].hint = startIndex
+            echoes[i].closest = .infinity
+            echoes[i].touchedNearby = false
         }
     }
 }

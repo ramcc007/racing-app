@@ -58,21 +58,35 @@ public enum World: Int, CaseIterable, Codable, Sendable, Identifiable, Comparabl
     public var ruleText: String {
         switch self {
         case .harbour:
-            return "Every lap you finish stays on the track as an echo. Tuck in right behind one to fill your boost. Here, echoes are soft: you pass through them."
+            return "Your best runs come back as echoes and race you from the line. Tuck in right behind one to fill your nitro. Here, echoes are soft: you pass through them."
         case .canyon:
-            return "From now on echoes are solid. Touch one and you spin out, so choose lines your next laps can use. Sand slows you down."
+            return "From now on echoes are solid. Touch one and you spin out and lose your nitro. Pass one by a whisker for a near miss and a nitro bonus. Sand slows you down."
         case .neon:
-            return "Park in the green bay and the shortcut gate opens. Your parked echo keeps it open on later laps."
+            return "Park in the green bay and the shortcut gate opens. Park there on one run and your echo holds the gate open on the next."
         case .glacier:
             return "Ice is fast but slippery. Every pass by any car cracks it, and after three passes it breaks into water."
         case .jungle:
-            return "Once a lap, double-tap to swap places with the echo just ahead of you."
+            return "Once a run, double-tap to swap places with the echo just ahead of you."
         case .foundry:
             return "Drive through the sensor bay to lower the bridge on the shortcut for a few seconds. Echoes trigger it too."
         case .skyport:
             return "Crosswinds push you sideways. An echo just ahead of you shelters you from the wind."
         case .orbit:
             return "Ramps launch you into long, low-gravity jumps. You can't steer in the air, but you fly over echoes. Every rule comes back here."
+        }
+    }
+
+    /// The driver whose time is the gold target here. Beat them to shut them up.
+    public var rival: Rival {
+        switch self {
+        case .harbour: return Rival(name: "Skip", shape: "pod", color: 0xF2C94C, taunt: "Keep up if you can.", beaten: "Alright. You can drive.", won: "Told you.")
+        case .canyon: return Rival(name: "Dusty", shape: "buggy", color: 0xE07A3F, taunt: "Eat my dust, rookie.", beaten: "Huh. Didn't see that coming.", won: "Same time tomorrow?")
+        case .neon: return Rival(name: "Volt", shape: "wedge", color: 0x43E0FF, taunt: "Try to keep the lights on.", beaten: "Okay, okay. Lights out.", won: "Too slow for this city.")
+        case .glacier: return Rival(name: "Frost", shape: "hover", color: 0xBFE6F7, taunt: "Hope you like sliding.", beaten: "Cold. Very cold.", won: "Frozen out again.")
+        case .jungle: return Rival(name: "Moss", shape: "buggy", color: 0x5BD08D, taunt: "The jungle eats rookies.", beaten: "Fine. The jungle's yours.", won: "Lost again?")
+        case .foundry: return Rival(name: "Rivet", shape: "brick", color: 0xFF7A1A, taunt: "I don't lose on my own floor.", beaten: "...that's a first.", won: "Back to the furnace.")
+        case .skyport: return Rival(name: "Gale", shape: "needle", color: 0xFFFFFF, taunt: "Mind the wind, newbie.", beaten: "Where did that come from?", won: "Blown away.")
+        case .orbit: return Rival(name: "Nova", shape: "hover", color: 0xB49BFF, taunt: "Nobody beats me up here.", beaten: "Somebody beat me up here.", won: "Still the fastest in orbit.")
         }
     }
 
@@ -113,8 +127,8 @@ public enum World: Int, CaseIterable, Codable, Sendable, Identifiable, Comparabl
     /// The optional per-track challenge ("echo medal") for this world.
     public var medal: Medal {
         switch self {
-        case .harbour: return .draftTrain
-        case .canyon: return .clean
+        case .harbour: return .drifter
+        case .canyon: return .nearMiss
         case .neon: return .gatekeeper
         case .glacier: return .iceDancer
         case .jungle: return .relay
@@ -155,14 +169,26 @@ public enum World: Int, CaseIterable, Codable, Sendable, Identifiable, Comparabl
     }
 }
 
+/// A named driver per world. Their pace is the gold time; the taunts give the player somebody to beat.
+public struct Rival: Hashable, Sendable {
+    public let name: String
+    /// Body shape drawn by the app (one of the racer shapes).
+    public let shape: String
+    public let color: UInt32
+    /// Said on the start line, when you beat them, and when they beat you.
+    public let taunt: String
+    public let beaten: String
+    public let won: String
+}
+
 /// The optional challenge on each track. Earning it once gives Sparks and counts towards achievements.
 public enum Medal: String, Codable, CaseIterable, Sendable {
-    case draftTrain, clean, gatekeeper, iceDancer, relay, bridgeTimer, shelter, echoMaster
+    case drifter, nearMiss, gatekeeper, iceDancer, relay, bridgeTimer, shelter, echoMaster
 
     public var title: String {
         switch self {
-        case .draftTrain: return "Draft train"
-        case .clean: return "Clean run"
+        case .drifter: return "Drifter"
+        case .nearMiss: return "Near miss"
         case .gatekeeper: return "Gatekeeper"
         case .iceDancer: return "Ice dancer"
         case .relay: return "Relay"
@@ -174,54 +200,62 @@ public enum Medal: String, Codable, CaseIterable, Sendable {
 
     public var goal: String {
         switch self {
-        case .draftTrain: return "Slipstream behind your echoes."
-        case .clean: return "Finish without bumping a solid echo."
+        case .drifter: return "Earn drift boosts: hold a drift, then let go."
+        case .nearMiss: return "Pass your echoes by a whisker without touching them."
         case .gatekeeper: return "Drive through the gate while an echo holds it open."
         case .iceDancer: return "Finish without falling through the ice."
-        case .relay: return "Swap places with your echoes."
+        case .relay: return "Swap places with your echo."
         case .bridgeTimer: return "Cross the bridge after an echo lowered it."
         case .shelter: return "Spend time in your echoes' slipstream."
-        case .echoMaster: return "No bumps, plenty of slipstream."
+        case .echoMaster: return "No bumps, near misses and drift boosts."
         }
     }
 
-    /// The number the goal asks for on a track with this many laps (only laps 2+ have echoes to use).
-    public func target(laps: Int) -> Int {
-        let echoLaps = max(1, laps - 1)
+    /// The number the goal asks for.
+    public var target: Int {
         switch self {
-        case .draftTrain: return 1 + 2 * echoLaps
-        case .clean, .iceDancer: return 0
-        case .gatekeeper, .bridgeTimer, .relay: return 2
-        case .shelter: return 3 + 2 * echoLaps
-        case .echoMaster: return 1 + echoLaps
+        case .drifter: return 3
+        case .nearMiss: return 2
+        case .iceDancer: return 0
+        case .gatekeeper, .bridgeTimer, .relay: return 1
+        case .shelter: return 3
+        case .echoMaster: return 2
         }
     }
 
-    public func goal(laps: Int) -> String {
-        let n = target(laps: laps)
+    /// Whether this medal needs echoes on the road (so it can't be earned on the very first run of a track).
+    public var needsEchoes: Bool {
         switch self {
-        case .draftTrain: return "Slipstream behind echoes \(n) times."
-        case .clean: return "Finish without bumping a solid echo."
-        case .gatekeeper: return "Drive through the gate twice while an echo holds it open."
+        case .drifter, .iceDancer: return false
+        default: return true
+        }
+    }
+
+    public var detail: String {
+        let n = target
+        switch self {
+        case .drifter: return "Earn \(n) drift boosts in one run."
+        case .nearMiss: return "\(n) near misses in one run."
+        case .gatekeeper: return "Drive through the gate while an echo holds it open."
         case .iceDancer: return "Finish without falling through the ice."
-        case .relay: return "Swap places with an echo twice."
-        case .bridgeTimer: return "Cross the bridge twice after an echo lowered it."
+        case .relay: return "Swap places with an echo."
+        case .bridgeTimer: return "Cross the bridge after an echo lowered it."
         case .shelter: return "Slipstream for \(n) seconds in total."
-        case .echoMaster: return "Finish with no bumps and \(n) slipstreams."
+        case .echoMaster: return "No bumps, \(n) near misses and \(n) drift boosts."
         }
     }
 
     /// Whether a finished race earned this medal.
-    public func isEarned(by stats: RaceStats, laps: Int) -> Bool {
-        let n = target(laps: laps)
+    public func isEarned(by stats: RaceStats) -> Bool {
+        let n = target
         switch self {
-        case .draftTrain: return stats.drafts >= n
-        case .clean: return stats.bumps == 0
+        case .drifter: return stats.driftBoosts >= n
+        case .nearMiss: return stats.nearMisses >= n
         case .gatekeeper, .bridgeTimer: return stats.echoGatePasses >= n
         case .iceDancer: return stats.splashes == 0
         case .relay: return stats.swaps >= n
         case .shelter: return stats.draftSeconds >= Double(n)
-        case .echoMaster: return stats.bumps == 0 && stats.drafts >= n
+        case .echoMaster: return stats.bumps == 0 && stats.nearMisses >= n && stats.driftBoosts >= n
         }
     }
 }
@@ -268,10 +302,10 @@ public struct TrackDef: Hashable, Codable, Sendable, Identifiable {
     /// Echoes are solid everywhere except World 1 career tracks.
     public var softEchoes: Bool { features.contains(.softEchoes) }
 
-    /// The echo medal for this track: the world's medal, or an easier one on two-lap breathers.
+    /// The echo medal for this track: the world's medal, or the easy one on breathers.
     public var medal: Medal? {
         guard mode == .career else { return nil }
-        if kind == .breather { return softEchoes ? .draftTrain : .clean }
+        if kind == .breather { return .drifter }
         return world.medal
     }
 }
@@ -309,15 +343,8 @@ public enum Catalog {
         return .normal
     }
 
-    /// Laps per the difficulty curve: 2–3 in World 1 up to 6–7 in World 8; breathers 2; bosses one more than usual.
-    static func laps(world: World, slot: Int) -> Int {
-        let low = [2, 3, 4, 4, 4, 5, 5, 6][world.rawValue - 1]
-        switch kind(slot: slot) {
-        case .breather: return 2
-        case .boss: return low + 2
-        case .normal: return slot >= 8 ? low + 1 : low
-        }
-    }
+    /// Every career track is one flying lap: a sprint of about 20 to 45 seconds. Bosses are longer laps, not more laps.
+    static func laps(world: World, slot: Int) -> Int { 1 }
 
     static func careerTrack(world: World, slot: Int) -> TrackDef {
         let id = "\(world.rawValue)-\(slot)"
@@ -337,7 +364,7 @@ public enum Catalog {
         var rng = SeededRandom(seed: stableHash("echolap.daily." + day.string))
         let world: World = [.harbour, .canyon, .neon][rng.int(3)]
         let features: Set<Feature> = world == .harbour ? [] : world.primaryFeatures
-        return TrackDef(id: "daily-" + day.string, world: world, slot: 0, index: 18 + rng.int(28), kind: .normal, laps: 3,
+        return TrackDef(id: "daily-" + day.string, world: world, slot: 0, index: 18 + rng.int(28), kind: .normal, laps: 1,
                         seed: rng.next(), name: "Daily track", features: features, mode: .daily)
     }
 
@@ -348,7 +375,7 @@ public enum Catalog {
             let world = World(rawValue: 1 + rng.int(4))!
             let features: Set<Feature> = world == .harbour ? [] : world.primaryFeatures
             return TrackDef(id: "weekly-\(week.string)-\(n)", world: world, slot: 0, index: 25 + rng.int(36), kind: .normal,
-                            laps: 3, seed: rng.next(), name: "Gauntlet \(n) of 3", features: features, mode: .weekly)
+                            laps: 1, seed: rng.next(), name: "Gauntlet \(n) of 3", features: features, mode: .weekly)
         }
     }
 

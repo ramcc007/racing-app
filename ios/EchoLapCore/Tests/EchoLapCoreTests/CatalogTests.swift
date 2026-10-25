@@ -21,19 +21,14 @@ final class CatalogTests: XCTestCase {
         XCTAssertEqual(Catalog.previous(of: Catalog.track(id: "2-1")!)?.id, "1-15")
     }
 
-    func testLapsFollowTheCurve() {
-        for def in Catalog.career {
-            switch def.kind {
-            case .breather: XCTAssertEqual(def.laps, 2, def.id)
-            case .boss: XCTAssertGreaterThanOrEqual(def.laps, 4, def.id)
-            case .normal: XCTAssertTrue((2...7).contains(def.laps), def.id)
-            }
-        }
-        XCTAssertEqual(Catalog.track(id: "1-1")!.laps, 2)
-        XCTAssertEqual(Catalog.track(id: "8-15")!.laps, 8)
-        // Laps never drop from one world's normal tracks to the next.
-        let normalsByWorld = World.allCases.map { w in Catalog.tracks(in: w).filter { $0.kind == .normal }.map(\.laps).min()! }
-        XCTAssertEqual(normalsByWorld, normalsByWorld.sorted())
+    func testEveryCareerTrackIsOneSprint() {
+        for def in Catalog.career { XCTAssertEqual(def.laps, 1, def.id) }
+        // Bosses are longer sprints, breathers shorter.
+        let d1 = Difficulty.of(Catalog.track(id: "3-1")!), boss = Difficulty.of(Catalog.track(id: "3-15")!), rest = Difficulty.of(Catalog.track(id: "3-5")!)
+        XCTAssertGreaterThan(boss.lapLength, d1.lapLength * 1.2)
+        XCTAssertLessThan(rest.lapLength, d1.lapLength)
+        XCTAssertEqual(Difficulty.of(Catalog.track(id: "1-1")!).lapLength / Difficulty.assumedLapSpeed, 20, accuracy: 0.01)
+        XCTAssertGreaterThan(Difficulty.of(Catalog.track(id: "8-14")!).lapLength / Difficulty.assumedLapSpeed, 38)
     }
 
     func testFeaturesPerWorldAndSlot() {
@@ -44,22 +39,28 @@ final class CatalogTests: XCTestCase {
         }
     }
 
-    func testMedalsAreAlwaysPossible() {
+    func testMedalsMatchTheirWorldsAndSkills() {
         for def in Catalog.career {
             guard let medal = def.medal else { XCTFail("\(def.id) has no medal"); continue }
-            let echoLaps = def.laps - 1
-            switch medal {
-            case .gatekeeper, .bridgeTimer:
-                XCTAssertGreaterThanOrEqual(echoLaps, medal.target(laps: def.laps) + 1,
-                                            "\(def.id): need laps after parking to pass the gate twice")
-            case .relay:
-                XCTAssertGreaterThanOrEqual(echoLaps, medal.target(laps: def.laps), "\(def.id): one swap per lap with echoes")
-            default: break
-            }
             if def.kind == .breather {
-                XCTAssertTrue([Medal.clean, .draftTrain].contains(medal), "\(def.id): breathers have an easy medal")
+                XCTAssertEqual(medal, .drifter, "\(def.id): breathers have the easy medal")
+            } else {
+                XCTAssertEqual(medal, def.world.medal, def.id)
             }
+            XCTAssertFalse(medal.detail.isEmpty)
         }
+        var s = RaceStats()
+        XCTAssertFalse(Medal.drifter.isEarned(by: s))
+        s.driftBoosts = 3
+        XCTAssertTrue(Medal.drifter.isEarned(by: s))
+        s.nearMisses = 2
+        XCTAssertTrue(Medal.nearMiss.isEarned(by: s))
+        XCTAssertTrue(Medal.echoMaster.isEarned(by: s))
+        s.bumps = 1
+        XCTAssertFalse(Medal.echoMaster.isEarned(by: s))
+        XCTAssertTrue(Medal.iceDancer.isEarned(by: s))
+        XCTAssertFalse(Medal.drifter.needsEchoes)
+        XCTAssertTrue(Medal.nearMiss.needsEchoes)
     }
 
     func testNoOtherGameNamesInPlayerFacingText() {
@@ -73,6 +74,9 @@ final class CatalogTests: XCTestCase {
         texts += Cars.all.flatMap { [$0.name, $0.role] }
         texts += Cosmetics.all.map(\.name)
         texts += Achievement.all.flatMap { [$0.title, $0.detail] }
+        texts += World.allCases.flatMap { [$0.rival.name, $0.rival.taunt, $0.rival.beaten, $0.rival.won] }
+        texts += DailyGoal.Kind.allCases.map { DailyGoal(kind: $0, target: 3).title }
+        XCTAssertEqual(Set(World.allCases.map(\.rival.name)).count, 8, "every rival has their own name")
         for text in texts {
             for word in banned { XCTAssertFalse(text.lowercased().contains(word), "\"\(text)\" contains \"\(word)\"") }
         }
@@ -123,10 +127,10 @@ final class CatalogTests: XCTestCase {
             XCTAssertGreaterThanOrEqual(d.roadWidth, 2.3 * Physics.carWidth, "\(def.id): always room to pass an echo")
         }
         let first = Difficulty.of(Catalog.career[0]), last = Difficulty.of(Catalog.career[119])
-        XCTAssertEqual(first.goldSlack, 0.12, accuracy: 1e-9)
-        XCTAssertEqual(last.goldSlack, 0.02, accuracy: 1e-9)
-        XCTAssertEqual(first.silverSlack, 0.25, accuracy: 1e-9)
-        XCTAssertEqual(last.silverSlack, 0.08, accuracy: 1e-9)
+        XCTAssertEqual(first.goldSlack, 0.10, accuracy: 1e-9)
+        XCTAssertEqual(last.goldSlack, 0.05, accuracy: 1e-9)
+        XCTAssertEqual(first.silverSlack, 0.22, accuracy: 1e-9)
+        XCTAssertEqual(last.silverSlack, 0.12, accuracy: 1e-9)
     }
 
     func testEconomyAndCosmetics() {

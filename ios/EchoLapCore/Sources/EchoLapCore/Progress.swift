@@ -1,20 +1,38 @@
 import Foundation
 
-/// Best result on one track.
+/// Best result on one track, and how far up its echo ladder you are.
 public struct TrackRecord: Codable, Equatable, Sendable {
+    public static let topRung = SavedRun.ladderSize
+
     public var bestTime: Double
     public var stars: Int
     public var medal: Bool
     public var bestLapTimes: [Double]
     public var plays: Int
+    /// Echo ladder: how many of your own best runs race you on this track (0...5). Every new best climbs one rung.
+    public var rung: Int
 
-    public init(bestTime: Double, stars: Int, medal: Bool, bestLapTimes: [Double], plays: Int) {
+    public init(bestTime: Double, stars: Int, medal: Bool, bestLapTimes: [Double], plays: Int, rung: Int = 0) {
         self.bestTime = bestTime
         self.stars = stars
         self.medal = medal
         self.bestLapTimes = bestLapTimes
         self.plays = plays
+        self.rung = rung
     }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        bestTime = try c.decode(Double.self, forKey: .bestTime)
+        stars = clamp((try? c.decode(Int.self, forKey: .stars)) ?? 1, 1, 3)
+        medal = (try? c.decode(Bool.self, forKey: .medal)) ?? false
+        bestLapTimes = (try? c.decode([Double].self, forKey: .bestLapTimes)) ?? []
+        plays = max(1, (try? c.decode(Int.self, forKey: .plays)) ?? 1)
+        rung = clamp((try? c.decode(Int.self, forKey: .rung)) ?? 0, 0, TrackRecord.topRung)
+    }
+
+    /// The top of the ladder with gold: nothing left to beat here.
+    public var mastered: Bool { rung >= TrackRecord.topRung && stars >= 3 }
 }
 
 public struct DailyRecord: Codable, Equatable, Sendable {
@@ -42,6 +60,9 @@ public struct LifetimeStats: Codable, Equatable, Sendable {
     public var jumps = 0
     public var distance = 0.0
     public var golds = 0
+    public var drifts = 0
+    public var driftBoosts = 0
+    public var nearMisses = 0
 
     public init() {}
 
@@ -60,17 +81,16 @@ public struct LifetimeStats: Codable, Equatable, Sendable {
         jumps = (try? c.decodeIfPresent(Int.self, forKey: .jumps)) ?? 0
         distance = (try? c.decodeIfPresent(Double.self, forKey: .distance)) ?? 0
         golds = (try? c.decodeIfPresent(Int.self, forKey: .golds)) ?? 0
+        drifts = (try? c.decodeIfPresent(Int.self, forKey: .drifts)) ?? 0
+        driftBoosts = (try? c.decodeIfPresent(Int.self, forKey: .driftBoosts)) ?? 0
+        nearMisses = (try? c.decodeIfPresent(Int.self, forKey: .nearMisses)) ?? 0
     }
 }
 
 /// Player choices. Stored with progress so they survive reinstalls via the same save.
 public struct GameSettings: Codable, Equatable, Sendable {
     public enum Camera: String, Codable, CaseIterable, Sendable { case follow, fixed }
-    /// Easy: the car drives and steers itself; hold a side of the screen to move across the road (AssistDriver).
-    /// Pro: hold to drive, slide to steer.
-    public enum Controls: String, Codable, CaseIterable, Sendable { case easy, pro }
-    public var controls: Controls = .easy
-    /// Show the glowing guide line and direction arrows on the road.
+    /// Show the direction arrows painted on the road.
     public var showGuide = true
     public var sound = true
     public var haptics = true
@@ -79,9 +99,8 @@ public struct GameSettings: Codable, Equatable, Sendable {
     /// Follow: the track turns so you always drive up the screen. Fixed: north stays up (easier for motion sickness).
     public var camera: Camera = .follow
     public var boostButtonOnLeft = false
-    public var showGhost = true
     public var showHints = true
-    /// Extra calm mode on top of the system Reduce Motion setting: no camera shake, no speed lines.
+    /// Extra calm mode on top of the system Reduce Motion setting: no camera shake, no speed lines, no slow motion.
     public var calmEffects = false
     public var tiltSteering = false
 
@@ -89,14 +108,12 @@ public struct GameSettings: Codable, Equatable, Sendable {
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        controls = (try? c.decodeIfPresent(Controls.self, forKey: .controls)) ?? .easy
         showGuide = (try? c.decodeIfPresent(Bool.self, forKey: .showGuide)) ?? true
         sound = (try? c.decodeIfPresent(Bool.self, forKey: .sound)) ?? true
         haptics = (try? c.decodeIfPresent(Bool.self, forKey: .haptics)) ?? true
         steeringSensitivity = clamp((try? c.decodeIfPresent(Double.self, forKey: .steeringSensitivity)) ?? 1, 0.6, 1.6)
         camera = (try? c.decodeIfPresent(Camera.self, forKey: .camera)) ?? .follow
         boostButtonOnLeft = (try? c.decodeIfPresent(Bool.self, forKey: .boostButtonOnLeft)) ?? false
-        showGhost = (try? c.decodeIfPresent(Bool.self, forKey: .showGhost)) ?? true
         showHints = (try? c.decodeIfPresent(Bool.self, forKey: .showHints)) ?? true
         calmEffects = (try? c.decodeIfPresent(Bool.self, forKey: .calmEffects)) ?? false
         tiltSteering = (try? c.decodeIfPresent(Bool.self, forKey: .tiltSteering)) ?? false
@@ -117,6 +134,10 @@ public struct RewardSummary: Equatable, Sendable {
     public var previousBest: Double?
     public var medalEarned = false
     public var medalIsNew = false
+    /// Echo ladder: the rung before and after this run, and whether the track was just mastered.
+    public var rungBefore = 0
+    public var rungAfter = 0
+    public var mastered = false
     public var lines: [RewardLine] = []
     public var xpGained = 0
     public var levelBefore = 1
@@ -132,6 +153,7 @@ public struct RewardSummary: Equatable, Sendable {
 
     public var totalSparks: Int { lines.reduce(0) { $0 + $1.sparks } }
     public var leveledUp: Bool { levelAfter > levelBefore }
+    public var climbedRung: Bool { rungAfter > rungBefore }
 
     public init() {}
 }
@@ -204,6 +226,12 @@ public struct PlayerProgress: Codable, Equatable, Sendable {
 
     public var totalStars: Int { tracks.reduce(0) { $0 + (Catalog.track(id: $1.key) != nil ? $1.value.stars : 0) } }
     public var medalCount: Int { tracks.reduce(0) { $0 + (Catalog.track(id: $1.key) != nil && $1.value.medal ? 1 : 0) } }
+    /// Career tracks at the top of their echo ladder with gold.
+    public var masteredCount: Int { tracks.reduce(0) { $0 + (Catalog.track(id: $1.key) != nil && $1.value.mastered ? 1 : 0) } }
+    /// Echoes to put on the road for a track: your rung there, capped by the runs you have saved.
+    public func ladderCount(for trackID: String, savedRuns: Int) -> Int {
+        min(tracks[trackID]?.rung ?? 0, savedRuns, TrackRecord.topRung)
+    }
     public var level: Int { Economy.level(forXP: xp) }
 
     public func stars(in world: World) -> Int {
@@ -306,6 +334,9 @@ public struct PlayerProgress: Codable, Equatable, Sendable {
         stats.splashes += result.stats.splashes
         stats.jumps += result.stats.jumps
         stats.distance += result.stats.distance
+        stats.drifts += result.stats.drifts
+        stats.driftBoosts += result.stats.driftBoosts
+        stats.nearMisses += result.stats.nearMisses
 
         var xpGain = 0
         var medalThisRace = false
@@ -323,24 +354,35 @@ public struct PlayerProgress: Codable, Equatable, Sendable {
             summary.stars = stars
             summary.previousStars = old?.stars ?? 0
             summary.previousBest = old?.bestTime
-            let medal = def.medal?.isEarned(by: result.stats, laps: def.laps) ?? false
+            let medal = def.medal?.isEarned(by: result.stats) ?? false
             medalThisRace = medal
             summary.medalEarned = medal
             summary.medalIsNew = medal && !(old?.medal ?? false)
             let better = old == nil || result.totalTime < old!.bestTime
             summary.newBest = better
-            tracks[def.id] = TrackRecord(
+            // The echo ladder: every new best puts one more of your runs on the road, up to the top rung.
+            let rungBefore = old?.rung ?? 0
+            let rungAfter = better ? min(TrackRecord.topRung, rungBefore + 1) : rungBefore
+            summary.rungBefore = rungBefore
+            summary.rungAfter = rungAfter
+            let record = TrackRecord(
                 bestTime: better ? result.totalTime : old!.bestTime,
                 stars: max(stars, old?.stars ?? 0),
                 medal: medal || (old?.medal ?? false),
                 bestLapTimes: better ? result.lapTimes : old!.bestLapTimes,
-                plays: (old?.plays ?? 0) + 1)
+                plays: (old?.plays ?? 0) + 1,
+                rung: rungAfter)
+            tracks[def.id] = record
+            summary.mastered = record.mastered && !(old?.mastered ?? false)
             if stars == 3 && (old?.stars ?? 0) < 3 { stats.golds += 1 }
             let starGain = Economy.starSparks[max(stars, summary.previousStars)] - Economy.starSparks[summary.previousStars]
             if starGain > 0 { summary.lines.append(RewardLine(title: "\(max(stars, summary.previousStars)) stars", sparks: starGain)) }
             if summary.medalIsNew { summary.lines.append(RewardLine(title: "Echo medal: \(def.medal!.title)", sparks: Economy.medalSparks)) }
+            if rungAfter > rungBefore { summary.lines.append(RewardLine(title: "Echo ladder: rung \(rungAfter)", sparks: Economy.rungSparks)) }
+            if summary.mastered { summary.lines.append(RewardLine(title: "Track mastered", sparks: Economy.masteredSparks)) }
             if summary.lines.isEmpty { summary.lines.append(RewardLine(title: "Finish", sparks: Economy.replaySparks)) }
             xpGain += Economy.finishXP + Economy.starXP * stars + (medal ? Economy.medalXP : 0)
+                + (rungAfter > rungBefore ? Economy.rungXP : 0) + (summary.mastered ? Economy.masteredXP : 0)
 
         case .daily:
             guard result.finished else {
@@ -400,7 +442,8 @@ public struct PlayerProgress: Codable, Equatable, Sendable {
         // Daily goals.
         var g = goals(for: day)
         for i in g.goals.indices where !g.claimed[i] {
-            g.progress[i] = min(g.goals[i].target, g.progress[i] + g.goals[i].progress(from: result, mode: def.mode, stars: starsThisRace, medal: medalThisRace))
+            g.progress[i] = min(g.goals[i].target, g.progress[i] + g.goals[i].progress(from: result, mode: def.mode, stars: starsThisRace, medal: medalThisRace,
+                                                                                        rungs: summary.rungAfter - summary.rungBefore))
             if g.isDone(i) {
                 g.claimed[i] = true
                 summary.goalsCompleted.append(g.goals[i])

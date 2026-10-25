@@ -5,6 +5,9 @@ public enum Economy {
     /// Sparks for reaching each star level on a track for the first time (1★, 2★, 3★): 20, then +15, then +15.
     public static let starSparks = [0, 20, 35, 50]
     public static let medalSparks = 40
+    /// Each rung climbed on a track's echo ladder (a new best with more echoes on the road), and mastering a track.
+    public static let rungSparks = 15
+    public static let masteredSparks = 60
     /// Any finish that earns nothing new still pays a little.
     public static let replaySparks = 10
     public static let dailyFirstFinishSparks = 60
@@ -23,12 +26,15 @@ public enum Economy {
     public static let finishXP = 40
     public static let starXP = 15
     public static let medalXP = 25
+    public static let rungXP = 10
+    public static let masteredXP = 60
     public static let dailyXP = 30
     public static let survivalLapXP = 10
     public static let unfinishedXP = 10
 
     /// Total XP needed to reach a driver level: 30 × L × (L − 1). Level 2 at 60 XP, level 10 at 2,700, level 50 at 73,500.
-    /// A full career (all gold, all medals) lands around level 21; dailies, the gauntlet and Survival carry you further.
+    /// A full career (all gold, all medals) lands in the low twenties; mastering every ladder, dailies, the gauntlet
+    /// and Survival carry you further.
     public static func xpForLevel(_ level: Int) -> Int { 30 * level * (level - 1) }
 
     public static func level(forXP xp: Int) -> Int {

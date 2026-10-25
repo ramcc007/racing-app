@@ -98,22 +98,46 @@ final class ProgressTests: XCTestCase {
         let def = Catalog.track(id: "1-1")!
         var s = p.record(result("1-1", time: 75), def: def, targets: targets(), day: day)   // 1 star
         XCTAssertEqual(s.lines.first, RewardLine(title: "1 stars", sparks: 20))
+        XCTAssertTrue(s.lines.contains(RewardLine(title: "Echo ladder: rung 1", sparks: Economy.rungSparks)), "a first finish is a new best")
+        XCTAssertEqual(p.tracks["1-1"]?.rung, 1)
         s = p.record(result("1-1", time: 71), def: def, targets: targets(), day: day)       // 2 stars
         XCTAssertEqual(s.lines.first, RewardLine(title: "2 stars", sparks: 15))
         var stats = RaceStats()
-        stats.drafts = 10
-        s = p.record(result("1-1", time: 65, laps: 2, stats: stats), def: def, targets: targets(), day: day)   // 3 stars + medal
+        stats.driftBoosts = 10
+        s = p.record(result("1-1", time: 65, laps: 1, stats: stats), def: def, targets: targets(), day: day)   // 3 stars + medal
         XCTAssertEqual(s.stars, 3)
         XCTAssertTrue(s.medalIsNew)
         XCTAssertTrue(s.lines.contains(RewardLine(title: "3 stars", sparks: 15)))
-        XCTAssertTrue(s.lines.contains(RewardLine(title: "Echo medal: Draft train", sparks: Economy.medalSparks)))
-        s = p.record(result("1-1", time: 64, laps: 2, stats: stats), def: def, targets: targets(), day: day)
+        XCTAssertTrue(s.lines.contains(RewardLine(title: "Echo medal: Drifter", sparks: Economy.medalSparks)))
+        s = p.record(result("1-1", time: 70, laps: 1, stats: stats), def: def, targets: targets(), day: day)
         XCTAssertFalse(s.medalIsNew)
+        XCTAssertFalse(s.climbedRung, "not a new best")
         XCTAssertEqual(s.lines.first, RewardLine(title: "Finish", sparks: Economy.replaySparks), "nothing new: a small finish reward")
         XCTAssertEqual(p.tracks["1-1"]?.plays, 4)
-        XCTAssertEqual(p.tracks["1-1"]?.bestTime, 64)
+        XCTAssertEqual(p.tracks["1-1"]?.bestTime, 65)
         XCTAssertEqual(p.tracks["1-1"]?.stars, 3)
+        XCTAssertEqual(p.tracks["1-1"]?.rung, 3)
         XCTAssertEqual(p.stats.golds, 1)
+    }
+
+    func testEchoLadderClimbsOnEveryNewBestAndMastersAtFiveWithGold() {
+        var p = PlayerProgress()
+        let def = Catalog.track(id: "1-1")!
+        var time = 80.0
+        var summaries: [RewardSummary] = []
+        for _ in 0..<7 {
+            time -= 3
+            summaries.append(p.record(result("1-1", time: time), def: def, targets: targets(), day: day))
+        }
+        XCTAssertEqual(summaries.map(\.rungAfter), [1, 2, 3, 4, 5, 5, 5], "one rung per new best, capped at the top")
+        XCTAssertEqual(summaries.filter(\.mastered).count, 1, "mastered once: five rungs and gold (59 s beats 66)")
+        XCTAssertTrue(p.tracks["1-1"]!.mastered)
+        XCTAssertEqual(p.masteredCount, 1)
+        XCTAssertTrue(summaries.contains { $0.lines.contains(RewardLine(title: "Track mastered", sparks: Economy.masteredSparks)) })
+        XCTAssertEqual(p.ladderCount(for: "1-1", savedRuns: 3), 3, "never more echoes than saved runs")
+        XCTAssertEqual(p.ladderCount(for: "1-1", savedRuns: 9), 5)
+        XCTAssertEqual(p.ladderCount(for: "2-1", savedRuns: 9), 0)
+        XCTAssertTrue(p.achievements.contains("mastered1"))
     }
 
     func testSlowerRunKeepsTheBestTime() {
@@ -141,7 +165,7 @@ final class ProgressTests: XCTestCase {
         var p = PlayerProgress()
         let def = Catalog.track(id: "1-1")!
         let s = p.record(result("1-1", time: 60), def: def, targets: targets(), day: day)
-        let expectedXP = Economy.finishXP + 3 * Economy.starXP
+        let expectedXP = Economy.finishXP + 3 * Economy.starXP + Economy.rungXP
         XCTAssertEqual(s.xpGained, expectedXP)
         XCTAssertEqual(p.xp, expectedXP)
         XCTAssertEqual(Economy.level(forXP: 59), 1)
@@ -221,7 +245,7 @@ final class ProgressTests: XCTestCase {
         XCTAssertEqual(Set(GoalState.make(for: day, unlocked: worlds).goals.map(\.kind)).count, 3, "three different goals")
         for k in 0..<60 {
             let g = GoalState.make(for: day.adding(days: k), unlocked: worlds)
-            XCTAssertFalse(g.goals.contains { [.swaps, .echoGate, .jumps, .cleanRace].contains($0.kind) },
+            XCTAssertFalse(g.goals.contains { [.swaps, .echoGate, .jumps, .cleanRace, .nearMisses].contains($0.kind) },
                            "only rules the player has unlocked")
         }
     }
@@ -229,10 +253,11 @@ final class ProgressTests: XCTestCase {
     func testGoalsCompleteOncePlusBonus() {
         var p = PlayerProgress()
         p.goals = GoalState(day: day.string, goals: [DailyGoal(kind: .finishRaces, target: 2), DailyGoal(kind: .useBoosts, target: 3),
-                                                     DailyGoal(kind: .completeLaps, target: 4)],
+                                                     DailyGoal(kind: .driftBoosts, target: 4)],
                             progress: [0, 0, 0], claimed: [false, false, false], bonusClaimed: false)
         var stats = RaceStats()
         stats.boosts = 2
+        stats.driftBoosts = 2
         let def = Catalog.track(id: "1-1")!
         var s = p.record(result("1-1", time: 60, laps: 2, stats: stats), def: def, targets: targets(), day: day)
         XCTAssertTrue(s.goalsCompleted.isEmpty)

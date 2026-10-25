@@ -1,19 +1,20 @@
 import Foundation
 
-/// What the player (or the robot) asks the car to do this tick.
+/// What the player (or the robot) asks the car to do this tick. The car always accelerates by itself: the thumb
+/// steers, pulls down to brake, and flicks up to fire the nitro.
 public struct ControlInput: Equatable, Sendable {
-    /// Thumb down: accelerate. Thumb up: coast and slow down.
-    public var throttle: Bool
-    /// -1 (full left) ... 1 (full right). Positive turns towards the car's left in world terms is handled by Physics.
+    /// -1 (full left) ... 1 (full right). Hold past the drift point at speed and the car drifts.
     public var steer: Double
-    /// One-shot: spend boost, or leave the pad bay.
+    /// Pull the thumb down (or the robot before a hairpin): slow down hard.
+    public var brake: Bool
+    /// One-shot: fire the nitro meter, or leave the pad bay.
     public var boost: Bool
     /// One-shot: relay swap with the echo ahead (relay tracks only).
     public var swap: Bool
 
-    public init(throttle: Bool = false, steer: Double = 0, boost: Bool = false, swap: Bool = false) {
-        self.throttle = throttle
+    public init(steer: Double = 0, brake: Bool = false, boost: Bool = false, swap: Bool = false) {
         self.steer = steer
+        self.brake = brake
         self.boost = boost
         self.swap = swap
     }
@@ -41,7 +42,12 @@ public struct CarState: Equatable, Codable, Sendable {
     public var airTime: Double = 0
     public var docked = false
     public var undockCooldown: Double = 0
+    /// Sliding through a corner: tighter turn, less grip, a little speed bled away, and a boost on release.
     public var drifting = false
+    /// Seconds spent in the current drift (the tier of the boost it will give on release).
+    public var driftTime: Double = 0
+    /// Set for exactly one step when a drift ended: the tier of boost it gave (0 if it was too short).
+    public var driftReleased: Int?
     public var surface: Surface = .asphalt
 
     public init(position: Vec2, heading: Double) {
@@ -56,6 +62,8 @@ public struct CarState: Equatable, Codable, Sendable {
     public var speed: Double { velocity.length }
     public var isAirborne: Bool { airTime > 0 }
     public var isSpinning: Bool { spinTime > 0 }
+    /// 0 (no boost yet), 1, 2 or 3: the boost the current drift would give if released now.
+    public var driftTier: Int { Physics.driftTier(for: driftTime) }
 }
 
 /// Arcade top-down car model. Deterministic: the same inputs always give the same path, which is what lets echoes replay exactly.
@@ -64,13 +72,38 @@ public enum Physics {
     public static let carWidth = 22.0
     /// Fixed simulation step: 120 per second on every device.
     public static let dt = 1.0 / 120.0
-    /// Slowdown with the thumb lifted, units per second².
-    public static let coast = 170.0
+    /// Braking, units per second².
+    public static let brake = 420.0
+    /// Nitro: duration of one fire and the top-speed multiplier while it lasts.
     public static let boostDuration = 1.1
     public static let boostTopSpeed = 1.3
     public static let draftTopSpeed = 1.05
     /// Speed below which steering fades out (you can't turn a parked car).
     static let steerFadeSpeed = 90.0
+
+    // Drift. Entering needs real steering at real speed; leaving needs the thumb back near the middle (hysteresis).
+    public static let driftEnterSteer = 0.6
+    public static let driftExitSteer = 0.3
+    public static let driftEnterSpeed = 0.5
+    public static let driftExitSpeed = 0.3
+    /// Turn rate multiplier while drifting.
+    public static let driftTurn = 1.6
+    /// Grip and scrub multipliers while drifting: the tail steps out and the slide costs a little speed.
+    public static let driftGrip = 0.55
+    public static let driftScrub = 0.3
+    /// Extra speed bled per second while drifting (so a long drift is also how you slow for a hairpin).
+    public static let driftDrag = 30.0
+    /// Share of the killed sideways slide that comes back as forward speed, cornering normally and drifting.
+    public static let redirect = 0.9
+    public static let driftRedirect = 0.8
+    /// Hold a drift this long for a tier 1, 2 or 3 boost on release.
+    public static let driftTiers = [0.4, 0.9, 1.5]
+    /// Seconds of boost each tier gives.
+    public static let driftBoostSeconds = [0.0, 0.35, 0.6, 0.9]
+
+    public static func driftTier(for seconds: Double) -> Int {
+        driftTiers.filter { seconds >= $0 }.count
+    }
 
     /// Turn rate available at a given forward speed.
     public static func turnRate(speed: Double, spec: CarSpec) -> Double {
@@ -78,10 +111,18 @@ public enum Physics {
         return spec.steer * (1 - 0.35 * min(1, s / spec.topSpeed)) * min(1, s / steerFadeSpeed)
     }
 
-    /// Fastest speed at which the car can still hold a corner of radius r (used by the robot to brake in time).
+    /// Fastest speed at which the car can still hold a corner of radius r without drifting.
     public static func cornerSpeed(radius r: Double, spec: CarSpec) -> Double {
         // v / turnRate(v) <= r  with  turnRate(v) = steer * (1 - 0.35 v / vmax)  for v above the fade speed.
         let v = r * spec.steer / (1 + 0.35 * r * spec.steer / spec.topSpeed)
+        return max(v, steerFadeSpeed)
+    }
+
+    /// Fastest speed for a corner of radius r when drifting through it. The slide widens the real path, so this
+    /// credits only part of the extra turn rate.
+    public static func driftCornerSpeed(radius r: Double, spec: CarSpec) -> Double {
+        let steer = spec.steer * (1 + (driftTurn - 1) * 0.6)
+        let v = r * steer / (1 + 0.35 * r * steer / spec.topSpeed)
         return max(v, steerFadeSpeed)
     }
 
@@ -98,10 +139,11 @@ public enum Physics {
         car.immuneTime = max(0, car.immuneTime - dt)
         car.undockCooldown = max(0, car.undockCooldown - dt)
         car.surface = env.surface
+        car.driftReleased = nil
 
         if car.docked {
             car.velocity = .zero
-            car.drifting = false
+            endDrift(&car)
             return
         }
         if car.airTime > 0 {
@@ -109,7 +151,7 @@ public enum Physics {
             car.airTime = max(0, car.airTime - dt)
             car.velocity = car.velocity * exp(-0.15 * dt)
             car.position += car.velocity * dt
-            car.drifting = false
+            endDrift(&car)
             return
         }
 
@@ -118,13 +160,24 @@ public enum Physics {
         car.steer += (target - car.steer) * min(1, 14 * dt)
 
         let speedBefore = car.forwardSpeed
+        // Drift state, with hysteresis so it never flickers mid-corner.
+        if spinning {
+            endDrift(&car)
+        } else if car.drifting {
+            if abs(car.steer) < driftExitSteer || speedBefore < driftExitSpeed * spec.topSpeed { endDrift(&car) }
+        } else if abs(car.steer) >= driftEnterSteer && speedBefore >= driftEnterSpeed * spec.topSpeed {
+            car.drifting = true
+            car.driftTime = 0
+        }
+        if car.drifting { car.driftTime += dt }
+
         if spinning {
             car.heading += car.spinRate * dt
             car.spinRate *= exp(-2.5 * dt)
             car.spinTime = max(0, car.spinTime - dt)
         } else {
             // Positive steer turns right (clockwise on screen with y up, i.e. heading decreases).
-            car.heading -= car.steer * turnRate(speed: speedBefore, spec: spec) * dt
+            car.heading -= car.steer * turnRate(speed: speedBefore, spec: spec) * (car.drifting ? driftTurn : 1) * dt
         }
         car.heading = wrapAngle(car.heading)
 
@@ -134,6 +187,7 @@ public enum Physics {
 
         var top = spec.topSpeed
         var grip = spec.grip
+        var scrub = spec.scrub
         switch env.surface {
         case .asphalt: break
         case .sand:
@@ -154,23 +208,42 @@ public enum Physics {
         if boosting { top *= boostTopSpeed }
         let accel = spec.accel * (boosting ? 1.6 : 1)
 
-        if input.throttle && !spinning {
-            if vf < top { vf += accel * (1 - max(0, vf) / top) * dt }
-        } else {
-            let drop = min(abs(vf), coast * dt)
+        if input.brake && !spinning {
+            let drop = min(abs(vf), brake * dt)
             vf -= vf > 0 ? drop : -drop
+        } else if !spinning {
+            if vf < top { vf += accel * (1 - max(0, vf) / top) * dt }
         }
         if vf > top { vf -= (vf - top) * min(1, 2.5 * dt) }
 
-        let hard = abs(car.steer) > 0.75 && max(0, vf) > 0.7 * spec.topSpeed
-        if hard { grip *= 0.42 }
+        if car.drifting {
+            grip *= driftGrip
+            scrub *= driftScrub
+            vf -= min(vf, driftDrag * dt)
+        }
+        // The tyres kill the sideways slide; most of that speed is turned into forward speed (arcade cornering
+        // keeps you fast), the rest is lost to the scrub.
+        let vrBefore = vr
         vr *= exp(-grip * dt)
-        vf -= spec.scrub * abs(vr) * dt
+        if vf > 0 && !spinning {
+            let recovered = (vrBefore * vrBefore - vr * vr) * (car.drifting ? driftRedirect : redirect)
+            vf = (vf * vf + max(0, recovered)).squareRoot()
+        }
+        vf -= scrub * abs(vr) * dt
         if spinning { vf *= exp(-1.5 * dt) }
 
         car.velocity = fwd * vf + right * vr + env.wind * dt
         car.position += car.velocity * dt
-        car.drifting = abs(vr) > 45
+    }
+
+    /// Ends a drift: the boost it earned starts now, and the step reports the tier.
+    private static func endDrift(_ car: inout CarState) {
+        guard car.drifting else { return }
+        car.drifting = false
+        let tier = driftTier(for: car.driftTime)
+        car.driftReleased = tier
+        if tier > 0 { car.boostTime = max(car.boostTime, driftBoostSeconds[tier]) }
+        car.driftTime = 0
     }
 
     /// Two circles along the body: front and back. Used for car-to-car contact.

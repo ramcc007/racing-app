@@ -64,7 +64,7 @@ enum TestTracks {
 
     /// Ticks the race with a fixed input until the predicate holds or the tick limit runs out.
     @discardableResult
-    static func run(_ race: Race, ticks: Int, input: ControlInput = ControlInput(throttle: true),
+    static func run(_ race: Race, ticks: Int, input: ControlInput = ControlInput(),
                     until stop: (Race) -> Bool = { _ in false }) -> [RaceEvent] {
         var all: [RaceEvent] = []
         for _ in 0..<ticks {
@@ -77,11 +77,11 @@ enum TestTracks {
     }
 
     /// Steering that follows the circle (positive steer turns right; an anticlockwise circle needs left = negative).
-    static func followCircle(_ race: Race, throttle: Bool = true) -> ControlInput {
+    static func followCircle(_ race: Race, brake: Bool = false) -> ControlInput {
         let car = race.car
         let tangentAngle = car.position.angle + .pi / 2
         let radial = car.position.length - race.track.points[0].length
         let diff = wrapAngle(tangentAngle - car.heading)
-        return ControlInput(throttle: throttle, steer: clamp(-diff * 3 - radial * 0.02, -1, 1))
+        return ControlInput(steer: clamp(-diff * 3 - radial * 0.02, -1, 1), brake: brake)
     }
 }

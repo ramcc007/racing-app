@@ -85,7 +85,7 @@ final class RaceTests: XCTestCase {
         let race = Race(track: TestTracks.circle(), spec: Cars.pip)
         race.testingStart(at: 5)
         race.testingSetCar { $0.heading += .pi; $0.position = race.track.points[5] }
-        TestTracks.run(race, ticks: 240, input: ControlInput(throttle: true))
+        TestTracks.run(race, ticks: 240, input: ControlInput())
         XCTAssertEqual(race.lapsDone, 0)
     }
 
@@ -96,10 +96,10 @@ final class RaceTests: XCTestCase {
         let race = Race(track: track, spec: Cars.pip)
         race.testingStart(at: 100, speed: 0)
         race.testingInsertEcho(TestTracks.parkedEcho(at: track.points[100], heading: track.tangents[100].angle))
-        TestTracks.run(race, ticks: 5, input: ControlInput(throttle: false))
+        TestTracks.run(race, ticks: 5, input: ControlInput(brake: true))
         XCTAssertFalse(race.echoes[0].solid, "overlapping at the start: not solid")
         XCTAssertEqual(race.stats.bumps, 0)
-        TestTracks.run(race, ticks: 200, input: ControlInput(throttle: true)) { r in r.echoes[0].solid }
+        TestTracks.run(race, ticks: 200, input: ControlInput()) { r in r.echoes[0].solid }
         XCTAssertTrue(race.echoes[0].solid)
     }
 
@@ -110,7 +110,7 @@ final class RaceTests: XCTestCase {
         var echo = TestTracks.parkedEcho(at: track.points[112], heading: track.tangents[112].angle)
         echo.solid = true
         race.testingInsertEcho(echo)
-        let events = TestTracks.run(race, ticks: 60, input: ControlInput(throttle: true))
+        let events = TestTracks.run(race, ticks: 60, input: ControlInput())
         XCTAssertEqual(events.filter { $0 == .bump }.count, 1, "immunity stops a double bump")
         XCTAssertEqual(race.stats.bumps, 1)
         XCTAssertGreaterThan(race.car.immuneTime, 0)
@@ -124,7 +124,7 @@ final class RaceTests: XCTestCase {
         var echo = TestTracks.parkedEcho(at: track.points[112], heading: track.tangents[112].angle)
         echo.solid = true
         race.testingInsertEcho(echo)
-        let events = TestTracks.run(race, ticks: 60, input: ControlInput(throttle: true))
+        let events = TestTracks.run(race, ticks: 60, input: ControlInput())
         XCTAssertFalse(events.contains(.bump))
         XCTAssertTrue(events.contains(.softTouch))
         XCTAssertEqual(race.stats.softTouches, 1)
@@ -158,7 +158,7 @@ final class RaceTests: XCTestCase {
         race.testingInsertEcho(TestTracks.movingEcho(on: track, startIndex: 200 + 10, speed: 300))
         var events: [RaceEvent] = []
         for _ in 0..<240 {
-            race.tick(TestTracks.followCircle(race, throttle: race.car.forwardSpeed < 300))
+            race.tick(TestTracks.followCircle(race, brake: race.car.forwardSpeed > 300))
             events += race.events
             race.events.removeAll()
         }
@@ -166,17 +166,126 @@ final class RaceTests: XCTestCase {
         XCTAssertGreaterThan(race.stats.draftSeconds, 1)
         XCTAssertGreaterThan(race.boostCharge, 0.34)
         let before = race.boostCharge
-        race.tick(ControlInput(throttle: true, boost: true))
+        race.tick(ControlInput(boost: true))
         XCTAssertTrue(race.events.contains(.boost))
         XCTAssertEqual(race.boostCharge, before - Race.boostCost, accuracy: 0.01)
         XCTAssertEqual(race.car.boostTime, Physics.boostDuration, accuracy: 0.02)
         XCTAssertEqual(race.stats.boosts, 1)
     }
 
+    func testBumpingASolidEchoEmptiesTheNitro() {
+        let track = TestTracks.circle()
+        let race = Race(track: track, spec: Cars.pip)
+        race.testingStart(at: 100, speed: 250)
+        race.testingSetBoost(0.9)
+        var echo = TestTracks.parkedEcho(at: track.points[112], heading: track.tangents[112].angle)
+        echo.solid = true
+        race.testingInsertEcho(echo)
+        TestTracks.run(race, ticks: 60)
+        XCTAssertEqual(race.stats.bumps, 1)
+        XCTAssertLessThan(race.boostCharge, 0.05, "risk: a touch costs the whole meter")
+    }
+
+    func testPassingASolidEchoByAWhiskerIsANearMiss() {
+        let track = TestTracks.circle()
+        let race = Race(track: track, spec: Cars.pip)
+        // A parked echo one car width to the inside of the centreline; drive past on the centreline, just clear of it.
+        let i = 112
+        race.testingStart(at: 100, speed: 300, lateral: 0)
+        var echo = TestTracks.parkedEcho(at: track.points[i] + track.normal(i) * 26, heading: track.tangents[i].angle)
+        echo.solid = true
+        race.testingInsertEcho(echo)
+        let before = race.boostCharge
+        let events = TestTracks.run(race, ticks: 90, input: ControlInput(steer: 0)) { r in r.stats.nearMisses > 0 || r.stats.bumps > 0 }
+        XCTAssertEqual(race.stats.bumps, 0, "no contact")
+        XCTAssertTrue(events.contains(.nearMiss))
+        XCTAssertEqual(race.stats.nearMisses, 1)
+        XCTAssertEqual(race.boostCharge, before + Race.nearMissGain, accuracy: 0.02)
+    }
+
+    func testPassingWideIsNotANearMiss() {
+        let track = TestTracks.circle(halfWidth: 60)
+        let race = Race(track: track, spec: Cars.pip)
+        let i = 112
+        race.testingStart(at: 100, speed: 300)
+        var echo = TestTracks.parkedEcho(at: track.points[i] + track.normal(i) * 48, heading: track.tangents[i].angle)
+        echo.solid = true
+        race.testingInsertEcho(echo)
+        TestTracks.run(race, ticks: 90, input: ControlInput(steer: 0))
+        XCTAssertEqual(race.stats.nearMisses, 0)
+    }
+
+    func testRidingTheEdgeFillsTheNitroSlowly() {
+        let track = TestTracks.circle(halfWidth: 40)
+        let race = Race(track: track, spec: Cars.pip)
+        // Start on the outer edge of the road (the left normal points inwards on an anticlockwise circle).
+        race.testingStart(at: 10, speed: 320, lateral: -30)
+        var events: [RaceEvent] = []
+        for _ in 0..<240 {
+            let car = race.car
+            // Hold a line 30 units outside the centre: a gentle follow controller aimed at the outer edge.
+            let tangentAngle = car.position.angle + .pi / 2
+            let radial = car.position.length - (race.track.points[0].length + 30)
+            let diff = wrapAngle(tangentAngle - car.heading)
+            race.tick(ControlInput(steer: clamp(-diff * 5 - radial * 0.05, -0.55, 0.55)))
+            events += race.events
+            race.events.removeAll()
+        }
+        XCTAssertTrue(events.contains(.edgeStart))
+        XCTAssertGreaterThan(race.stats.edgeSeconds, 1.0)
+        XCTAssertGreaterThan(race.boostCharge, 0.08)
+        XCTAssertLessThan(race.stats.offroadSeconds, 0.3)
+    }
+
+    func testEchoesFromEarlierRunsRaceFromTheLine() {
+        let track = TestTracks.circle(def: TestTracks.def(laps: 1))
+        // Record one run.
+        let first = Race(track: track, spec: Cars.pip, laps: 1)
+        while !first.isFinished && first.time < 60 { first.tick(TestTracks.followCircle(first)); first.events.removeAll() }
+        XCTAssertTrue(first.isFinished)
+        let run = SavedRun(race: first)
+        XCTAssertEqual(run.frameCount, first.recordedFrames.count / 4)
+        XCTAssertEqual(run.floats(), first.recordedFrames)
+        // Race it.
+        let second = Race(track: track, spec: Cars.pip, laps: 1, echoes: SavedRun.ladder([run], count: 1), countdown: 1)
+        XCTAssertEqual(second.ladderEchoes, 1)
+        XCTAssertEqual(second.echoes[0].lap, 1)
+        var seenEchoOnRoad = false
+        while !second.isFinished && second.time < 60 {
+            second.tick(TestTracks.followCircle(second))
+            second.events.removeAll()
+            if second.crossedStart, second.echoPoses()[0] != nil { seenEchoOnRoad = true }
+        }
+        XCTAssertTrue(seenEchoOnRoad)
+        XCTAssertEqual(second.result().echoesOnRoad, 1)
+        XCTAssertEqual(second.time, first.time, accuracy: 0.05, "the same driving takes the same time")
+    }
+
+    func testShortCountdownForQuickRetries() {
+        let race = Race(track: TestTracks.circle(), spec: Cars.pip, countdown: 1)
+        let events = TestTracks.run(race, ticks: 121)
+        XCTAssertEqual(events, [.countdown(1), .go])
+    }
+
+    func testDriftingGivesABoostAndFillsTheNitro() {
+        let track = TestTracks.circle(radius: 220, halfWidth: 60)
+        let race = Race(track: track, spec: Cars.pip)
+        race.testingStart(at: 10, speed: 330)
+        var events: [RaceEvent] = []
+        for _ in 0..<(120 * 3) {
+            race.tick(TestTracks.followCircle(race))
+            events += race.events
+            race.events.removeAll()
+        }
+        XCTAssertTrue(events.contains(.driftStart), "a tight circle at speed is a drift")
+        XCTAssertGreaterThan(race.stats.driftSeconds, 0.3)
+        XCTAssertGreaterThan(race.stats.drifts, 0)
+    }
+
     func testBoostWithoutChargeDoesNothing() {
         let race = Race(track: TestTracks.circle(), spec: Cars.pip)
         race.testingStart(at: 10, speed: 200)
-        race.tick(ControlInput(throttle: true, boost: true))
+        race.tick(ControlInput(boost: true))
         XCTAssertTrue(race.events.contains(.boostEmpty))
         XCTAssertEqual(race.car.boostTime, 0)
     }
@@ -187,7 +296,7 @@ final class RaceTests: XCTestCase {
             let race = Race(track: track, spec: spec)
             race.testingStart(at: 200, speed: 300)
             race.testingInsertEcho(TestTracks.movingEcho(on: track, startIndex: 210, speed: 300))
-            for _ in 0..<120 { race.tick(TestTracks.followCircle(race, throttle: race.car.forwardSpeed < 300)); race.events.removeAll() }
+            for _ in 0..<120 { race.tick(TestTracks.followCircle(race, brake: race.car.forwardSpeed > 300)); race.events.removeAll() }
             return race.boostCharge
         }
         XCTAssertGreaterThan(charge(Cars.needle), charge(Cars.pip) * 1.3)
@@ -201,19 +310,19 @@ final class RaceTests: XCTestCase {
         let race = Race(track: track, spec: Cars.pip)
         race.testingStart(at: pad.index - 6)
         race.testingSetCar { $0.position = pad.center + Vec2(3, 0); $0.velocity = .zero }
-        var events = TestTracks.run(race, ticks: 2, input: ControlInput(throttle: false))
+        var events = TestTracks.run(race, ticks: 2, input: ControlInput(brake: true))
         XCTAssertTrue(race.car.docked)
         XCTAssertTrue(events.contains(.dock))
         XCTAssertTrue(events.contains(.gateOpened))
         XCTAssertTrue(race.gateOpen)
-        events = TestTracks.run(race, ticks: 240, input: ControlInput(throttle: true))
+        events = TestTracks.run(race, ticks: 240, input: ControlInput())
         XCTAssertTrue(race.car.docked, "stays parked until you choose to leave")
-        race.tick(ControlInput(throttle: true, boost: true))
+        race.tick(ControlInput(boost: true))
         XCTAssertTrue(race.events.contains(.undock))
         XCTAssertFalse(race.car.docked)
         XCTAssertGreaterThan(race.car.speed, 100)
         race.events.removeAll()
-        events = TestTracks.run(race, ticks: 130, input: ControlInput(throttle: true))
+        events = TestTracks.run(race, ticks: 130, input: ControlInput())
         XCTAssertTrue(events.contains(.gateClosed), "closes about a second after the bay empties")
         XCTAssertFalse(race.gateOpen)
     }
@@ -265,13 +374,13 @@ final class RaceTests: XCTestCase {
         let race = Race(track: track, spec: Cars.pip)
         race.testingStart(at: sensor.index - 6)
         race.testingSetCar { $0.position = sensor.center; $0.velocity = .zero }
-        TestTracks.run(race, ticks: 2, input: ControlInput(throttle: false))
+        TestTracks.run(race, ticks: 2, input: ControlInput(brake: true))
         XCTAssertTrue(race.gateOpen)
         XCTAssertFalse(race.car.docked, "sensors never park you")
-        TestTracks.run(race, ticks: Int(4.8 * 120), input: ControlInput(throttle: false))
+        TestTracks.run(race, ticks: Int(4.8 * 120), input: ControlInput(brake: true))
         XCTAssertTrue(race.gateOpen)
         race.testingSetCar { $0.position = sensor.center + Vec2(0, 200) }
-        TestTracks.run(race, ticks: 60, input: ControlInput(throttle: false))
+        TestTracks.run(race, ticks: 60, input: ControlInput(brake: true))
         XCTAssertFalse(race.gateOpen)
     }
 
@@ -323,12 +432,12 @@ final class RaceTests: XCTestCase {
         race.testingInsertEcho(TestTracks.movingEcho(on: track, startIndex: 130, speed: 250))
         TestTracks.run(race, ticks: 1, input: TestTracks.followCircle(race))
         let before = race.progress
-        race.tick(ControlInput(throttle: true, swap: true))
+        race.tick(ControlInput(swap: true))
         XCTAssertTrue(race.events.contains(.swap))
         XCTAssertGreaterThan(race.progress - before, Physics.carLength)
         XCTAssertEqual(race.stats.swaps, 1)
         race.events.removeAll()
-        race.tick(ControlInput(throttle: true, swap: true))
+        race.tick(ControlInput(swap: true))
         XCTAssertTrue(race.events.contains(.swapUnavailable), "only once a lap")
     }
 
@@ -337,7 +446,7 @@ final class RaceTests: XCTestCase {
         let race = Race(track: track, spec: Cars.pip)
         race.testingStart(at: 100, speed: 250)
         race.testingInsertEcho(TestTracks.movingEcho(on: track, startIndex: 130, speed: 250))
-        race.tick(ControlInput(throttle: true, swap: true))
+        race.tick(ControlInput(swap: true))
         XCTAssertTrue(race.events.contains(.swapUnavailable))
     }
 
@@ -360,7 +469,7 @@ final class RaceTests: XCTestCase {
         let track = TestTracks.circle(def: TestTracks.def(features: [.jumps]), jumps: [jump])
         let race = Race(track: track, spec: Cars.pip)
         race.testingStart(at: 117, speed: 100)
-        TestTracks.run(race, ticks: 60, input: ControlInput(throttle: false))
+        TestTracks.run(race, ticks: 60, input: ControlInput(brake: true))
         XCTAssertEqual(race.stats.jumps, 0)
     }
 
@@ -374,7 +483,7 @@ final class RaceTests: XCTestCase {
             let race = Race(track: t, spec: Cars.pip)
             race.testingStart(at: 140, speed: 250)
             if sheltered { race.testingInsertEcho(TestTracks.movingEcho(on: t, startIndex: 142 + 6, speed: 250)) }
-            TestTracks.run(race, ticks: 30, input: ControlInput(throttle: false))
+            TestTracks.run(race, ticks: 30, input: ControlInput(brake: true))
             return race.car.position
         }
         // Sideways drift caused by the wind = windy end position minus the calm one.
@@ -399,7 +508,7 @@ final class RaceTests: XCTestCase {
         let race = Race(track: track, spec: Cars.pip)
         race.testingStart(at: 0, speed: 300)
         // Drive straight off the circle for three seconds.
-        TestTracks.run(race, ticks: 360, input: ControlInput(throttle: true, steer: 0))
+        TestTracks.run(race, ticks: 360, input: ControlInput(steer: 0))
         XCTAssertTrue(race.offroad)
         XCTAssertGreaterThan(race.stats.offroadSeconds, 0.5)
         let loc = track.locate(race.car.position)
@@ -417,7 +526,7 @@ final class RaceTests: XCTestCase {
             car.heading = out.angle
             car.velocity = .zero
         }
-        for _ in 0..<(120 * 4) { race.tick(ControlInput(throttle: true, steer: 0)) }
+        for _ in 0..<(120 * 4) { race.tick(ControlInput(steer: 0)) }
         XCTAssertLessThan(race.location.distance, track.halfWidth + 125, "the car drove away from the wall")
         XCTAssertGreaterThan(race.car.forwardSpeed, 60, "the car is moving again")
     }

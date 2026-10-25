@@ -23,12 +23,13 @@ final class CareerSimulationTests: XCTestCase {
                 var stats = RaceStats()
                 if withMedals {
                     stats.drafts = 99; stats.draftSeconds = 99; stats.echoGatePasses = 9; stats.swaps = 9
+                    stats.driftBoosts = 9; stats.nearMisses = 9
                 } else {
                     stats.bumps = 1; stats.splashes = 1
                 }
                 let laps = Array(repeating: time / Double(def.laps), count: def.laps)
                 let r = RaceResult(trackID: def.id, carID: "pip", finished: true, totalTime: time, lapTimes: laps,
-                                   lapsCompleted: def.laps, stats: stats)
+                                   lapsCompleted: def.laps, stats: stats, echoesOnRoad: 1)
                 summaries.append(p.record(r, def: def, targets: t, day: day))
                 progressMade = true
             }

@@ -1,8 +1,9 @@
 import Foundation
 
 /// The robot driver: proves every track can be finished and sets the gold and silver times.
-/// It drives the real physics with a pure-pursuit line follower, avoids sand and ice, never boosts, never drafts and
-/// never relay-swaps, so a good player always has tools the robot doesn't use.
+/// It drives the real physics with a pure-pursuit line follower, brakes for hairpins and drifts through corners the
+/// way the controls invite, but never fires the nitro, never hunts near misses and never relay-swaps, so a good
+/// player always has tools the robot doesn't use.
 public struct RobotPlan: Equatable, Sendable, Codable {
     /// Laps (0-based) on which the robot visits the bay: parks on the pad, or drives through the sensor.
     public var bayLaps: Set<Int> = []
@@ -134,7 +135,7 @@ public final class RobotDriver {
     }
 
     public func input(for race: Race) -> ControlInput {
-        guard race.phase == .racing else { return ControlInput(throttle: true) }
+        guard race.phase == .racing else { return ControlInput() }
         let car = race.car
         let lap = race.crossedStart ? race.lapsDone : 0
         if lap != lastLap {
@@ -146,9 +147,9 @@ public final class RobotDriver {
             bayVisitedThisLap = true
             if parkedFor >= plan.padHold {
                 parkedFor = 0
-                return ControlInput(throttle: true, boost: true)
+                return ControlInput(boost: true)
             }
-            return ControlInput(throttle: false)
+            return ControlInput()
         }
         if let bay = track.bays.first, car.position.distance(to: bay.center) < bay.radius { bayVisitedThisLap = true }
 
@@ -168,25 +169,28 @@ public final class RobotDriver {
         let look = 38 + 0.26 * speed
         let target = route.points[(routeIndex + Int(look / route.step)) % route.count]
         let diff = wrapAngle((target - car.position).angle - car.heading)
-        var steer = clamp(-diff * 2.8, -1, 1)
+        // While drifting the car turns faster, so the same error needs less lock (and the lock stays past the exit
+        // point, which keeps the drift going through the corner).
+        var steer = clamp(-diff * (car.drifting ? 2.0 : 2.8), -1, 1)
         if weave > 0 {
             steer = clamp(steer + weave * sin(race.lapTime * 1.7 + Double(lap) * 2.3) * (0.6 + 0.4 * sin(Double(lap) * 1.1)), -1, 1)
         }
 
-        let brakeDistance = speed * speed / (2 * Physics.coast) + 60
+        let brakeDistance = speed * speed / (2 * Physics.brake) + 50
         var tightest = Double.infinity
         for k in 0...(Int(brakeDistance / route.step) + 1) {
             tightest = min(tightest, route.radii[(routeIndex + k) % route.count])
         }
-        let allowed = Physics.cornerSpeed(radius: tightest, spec: spec) * 0.93
+        // The robot takes corners as a drifting player would: faster than grip alone allows.
+        let allowed = Physics.driftCornerSpeed(radius: tightest, spec: spec) * 0.95
         // Never ram a closed gate: stop short of it and wait for it to open.
         if key & 2 != 0, let sc = track.shortcut, !race.gateOpen {
             let toGate = sc.gateCenter - car.position
             if toGate.dot(car.forward) > 0, toGate.length < brakeDistance + 40 {
-                return ControlInput(throttle: false, steer: steer)
+                return ControlInput(steer: steer, brake: true)
             }
         }
-        return ControlInput(throttle: speed < allowed, steer: steer)
+        return ControlInput(steer: steer, brake: speed > allowed)
     }
 }
 

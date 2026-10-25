@@ -85,27 +85,24 @@ final class FormatTests: XCTestCase {
     }
 }
 
-final class GhostTests: XCTestCase {
-    func testGhostRecordsAndInterpolates() {
-        let track = TestTracks.circle(def: TestTracks.def(laps: 1))
-        let race = Race(track: track, spec: Cars.pip, laps: 1)
-        var recorder = GhostRecorder()
-        var samples: [(Double, Vec2)] = []
-        while !race.isFinished && race.time < 40 {
-            race.tick(TestTracks.followCircle(race))
-            race.events.removeAll()
-            recorder.capture(race)
-            if race.crossedStart && race.time > 0 && Int(race.time * 120) % 37 == 0 { samples.append((race.time, race.car.position)) }
+final class SavedRunTests: XCTestCase {
+    func testSavedRunRoundTripsAndKeepsTheBestFive() throws {
+        let frames: [Float] = (0..<400).map { Float($0) * 0.5 }
+        let run = SavedRun(trackID: "1-1", carID: "pip", totalTime: 31.25, frames: frames)
+        XCTAssertEqual(run.frameCount, 100)
+        XCTAssertEqual(run.floats(), frames)
+        let data = try JSONEncoder().encode(run)
+        let back = try JSONDecoder().decode(SavedRun.self, from: data)
+        XCTAssertEqual(back, run)
+        XCTAssertEqual(back.echo(rung: 2).lap, 2)
+        XCTAssertEqual(back.echo(rung: 2).frameCount, 100)
+        var runs: [SavedRun] = []
+        for t in [40.0, 35, 50, 30, 45, 33, 60] {
+            runs = SavedRun.keepBest(runs, adding: SavedRun(trackID: "1-1", carID: "pip", totalTime: t, frames: frames))
         }
-        let ghost = recorder.ghost(trackID: "test", totalTime: race.time)
-        XCTAssertEqual(Double(ghost.frameCount), race.time / Ghost.interval, accuracy: 2, "30 frames a second")
-        for (t, p) in samples where t < race.time - 0.1 {
-            let pose = ghost.pose(at: t)!
-            XCTAssertLessThan(pose.position.distance(to: p), 4, "interpolated within a few units at t=\(t)")
-        }
-        XCTAssertNil(ghost.pose(at: race.time + 5))
-        let data = try! JSONEncoder().encode(ghost)
-        XCTAssertEqual(try! JSONDecoder().decode(Ghost.self, from: data), ghost)
+        XCTAssertEqual(runs.map(\.totalTime), [30, 33, 35, 40, 45])
+        XCTAssertEqual(SavedRun.ladder(runs, count: 2).map(\.lap), [1, 2])
+        XCTAssertEqual(SavedRun.ladder(runs, count: 9).count, 5)
     }
 }
 
