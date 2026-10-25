@@ -115,6 +115,7 @@ struct RaceHUD: View {
         let hud = controller.hud
         let step = controller.tutorialStep
         let teaching = step == .steerRight || step == .steerLeft
+        let showingCard = teaching || step == .boost
         ZStack {
             // Easy controls: show the two halves of the screen at the start of every race (and while the tutorial
             // teaches them), so nobody has to guess.
@@ -166,18 +167,12 @@ struct RaceHUD: View {
                         .allowsHitTesting(false)
                         .accessibilityIdentifier("wrongWay")
                 }
-                Spacer()
-                if (hud.countdown != nil || (hud.runUp && controller.tutorialStep == nil)) && !teaching {
-                    GoalPanel(goal: controller.goal, def: controller.request.def, easy: controller.usesEasyControls)
-                        .allowsHitTesting(false)
-                        .transition(.opacity)
-                }
                 if let step, step != .drive, step != .done {
                     TutorialCard(step: step)
                         .allowsHitTesting(false)
                         .transition(.scale(scale: 0.9).combined(with: .opacity))
                 }
-                if let hint = controller.hint {
+                if let hint = controller.hint, !showingCard {
                     Text(hint)
                         .font(Theme.rounded(.callout, .semibold))
                         .multilineTextAlignment(.center)
@@ -188,6 +183,12 @@ struct RaceHUD: View {
                         .transition(.opacity)
                         .accessibilityIdentifier("hint")
                 }
+                if (hud.countdown != nil || (hud.runUp && controller.tutorialStep == nil)) && !teaching {
+                    GoalPanel(goal: controller.goal, def: controller.request.def, easy: controller.usesEasyControls)
+                        .allowsHitTesting(false)
+                        .transition(.opacity)
+                }
+                Spacer()
                 if hasGate || hud.docked {
                     StatusPill(open: hud.gateOpen, docked: hud.docked).allowsHitTesting(false)
                 }
@@ -257,7 +258,7 @@ struct SideZones: View {
     private func zone(side: Int, icon: String, text: String) -> some View {
         let lit = highlight == side
         return ZStack(alignment: side < 0 ? .bottomLeading : .bottomTrailing) {
-            Rectangle().fill(Color.white.opacity(lit ? 0.16 : 0.0))
+            Rectangle().fill(Color.white.opacity(lit ? 0.22 : 0.0))
             VStack(spacing: 6) {
                 Image(systemName: icon).font(.system(size: lit ? 44 : 30, weight: .black))
                 Text(text).font(Theme.rounded(lit ? .headline : .footnote, .heavy))
