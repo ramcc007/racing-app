@@ -11,7 +11,7 @@ Stage 1 summary · 25 Oct 2026 · details in `research/top10-racing-apps.md` and
 | Orientation | **Portrait** on iPhone (iPad either way) |
 | Repo | **Public** (free Mac build minutes; the idea is visible) |
 
-Stage 2 (browser prototype + screen designs) has started: see `prototype/`.
+Stage 2 went straight to the iOS app (owner, 25 Oct 2026): see `ios/` and `docs/OWNER_STEPS.md`.
 
 ## What we learned
 - **Top 10 iPhone racing games** (by ratings and downloads): Race Master 3D, Asphalt Legends, Bike Race, Need for Speed No Limits, CSR Racing 2, Asphalt 8, Hill Climb Racing, Hill Climb Racing 2, Rebel Racing, Drive Ahead!.

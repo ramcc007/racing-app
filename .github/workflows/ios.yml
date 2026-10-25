@@ -19,9 +19,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  core:
+    name: Game logic tests
     runs-on: macos-latest
-    timeout-minutes: 75
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -37,6 +38,28 @@ jobs:
         run: |
           set -o pipefail
           swift test -c release 2>&1 | tee "$RUNNER_TEMP/core-tests.log"
+
+      - name: Keep the log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-tests-log
+          path: ${{ runner.temp }}/core-tests.log
+          if-no-files-found: ignore
+
+  app:
+    name: App build, UI tests and screenshots
+    runs-on: macos-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select the newest installed Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_*.app 2>/dev/null | grep -v -i beta | sort -V | tail -1)
+          [ -n "$XC" ] && sudo xcode-select -s "$XC"
+          xcodebuild -version
+          swift --version
 
       - name: Generate the Xcode project
         working-directory: ios
@@ -120,7 +143,6 @@ jobs:
         with:
           name: ios-logs
           path: |
-            ${{ runner.temp }}/core-tests.log
             ${{ runner.temp }}/app-build.log
             ${{ runner.temp }}/ui-tests.log
             ${{ runner.temp }}/screenshots.log

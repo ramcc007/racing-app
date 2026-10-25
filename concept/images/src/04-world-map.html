@@ -13,7 +13,7 @@ for (let i = 0; i < 60; i++) {
 // Top bar.
 panel(s, 48, 150, 380, 110, { r: 55 });
 star(s, 110, 205, 30, '#F2C94C');
-text(s, 160, 222, '142', { size: 52, weight: 900 });
+text(s, 160, 222, '79', { size: 52, weight: 900 });
 panel(s, 460, 150, 400, 110, { r: 55 });
 el('circle', { cx: 520, cy: 205, r: 30, fill: '#F2A93B' }, s);
 text(s, 570, 222, '3,480', { size: 52, weight: 900 });
@@ -48,13 +48,13 @@ nodes.forEach(([x, y], i) => {
   if (current) el('circle', { cx: x, cy: y, r: rad + 26, fill: 'rgba(242,169,59,.25)' }, s);
   el('circle', { cx: x, cy: y, r: rad, fill: done ? '#43E0FF' : current ? '#F2A93B' : '#3A3760', stroke: '#fff', 'stroke-width': current ? 8 : 4 }, s);
   text(s, x, y + (boss ? 4 : 14), boss ? 'BOSS' : '3-' + n, { size: boss ? 34 : rest ? 26 : 34, weight: 900, anchor: 'middle', fill: done || current ? '#111' : '#9C98C4' });
-  if (boss) text(s, x, y + 40, '8 laps', { size: 22, weight: 700, anchor: 'middle', fill: '#9C98C4' });
+  if (boss) text(s, x, y + 40, '6 laps', { size: 22, weight: 700, anchor: 'middle', fill: '#9C98C4' });
   if (rest) text(s, x + rad + 16, y + 10, 'breather', { size: 24, weight: 700, fill: '#9C98C4' });
   if (done) for (let k = 0; k < 3; k++) star(s, x - 40 + k * 40, y + rad + 26, 16, k < stars[i] ? '#F2C94C' : '#4A4770');
   if (current) {
     panel(s, x - 420, y - 60, 300, 120, { r: 30, fill: 'rgba(242,169,59,.95)', stroke: 'none' });
     text(s, x - 270, y - 8, 'Next up', { size: 28, weight: 700, anchor: 'middle', fill: '#1B2430' });
-    text(s, x - 270, y + 36, '6 laps · 3 pads', { size: 30, weight: 900, anchor: 'middle', fill: '#1B2430' });
+    text(s, x - 270, y + 36, '5 laps · 1 pad', { size: 30, weight: 900, anchor: 'middle', fill: '#1B2430' });
   }
 });
 
@@ -62,7 +62,7 @@ nodes.forEach(([x, y], i) => {
 panel(s, 48, 2620, 1224, 140, { r: 40, fill: 'rgba(255,255,255,.07)' });
 el('rect', { x: 100, y: 2655, width: 54, height: 46, rx: 8, fill: '#DDEFF7' }, s);
 el('path', { d: 'M112 2655 v-14 a15 15 0 0 1 30 0 v14', fill: 'none', stroke: '#DDEFF7', 'stroke-width': 7 }, s);
-text(s, 190, 2690, 'Glacier opens at 160 ★', { size: 40, weight: 800 });
-text(s, 1230, 2690, '18 to go', { size: 32, weight: 700, anchor: 'end', fill: '#C9C4E6' });
+text(s, 190, 2690, 'Glacier opens at 80 ★', { size: 40, weight: 800 });
+text(s, 1230, 2690, '1 to go', { size: 32, weight: 700, anchor: 'end', fill: '#C9C4E6' });
 stamp(s, W, 120);
 </script></body>
