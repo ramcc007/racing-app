@@ -24,6 +24,23 @@ public struct Targets: Codable, Equatable, Sendable {
         return lerp(paceTime[lo], paceTime[hi], t) * (1 + goldSlack)
     }
 
+    /// How far the gold pace has raced at a race time (the inverse of `goldPaceTime`), for the gold rival car.
+    /// Nil before the gold pace has started.
+    public func goldProgress(atTime t: Double, goldSlack: Double) -> Double? {
+        guard let first = paceTime.first, let last = paceTime.last else { return nil }
+        let k = 1 + goldSlack
+        if t < first * k { return nil }
+        if t >= last * k { return paceProgress[paceProgress.count - 1] }
+        var lo = 0, hi = paceTime.count - 1
+        while hi - lo > 1 {
+            let mid = (lo + hi) / 2
+            if paceTime[mid] * k <= t { lo = mid } else { hi = mid }
+        }
+        let span = (paceTime[hi] - paceTime[lo]) * k
+        let f = span > 1e-9 ? (t - paceTime[lo] * k) / span : 0
+        return lerp(paceProgress[lo], paceProgress[hi], f)
+    }
+
     /// Stars for a finishing time: 1 for finishing, 2 for silver, 3 for gold.
     public func stars(for time: Double) -> Int {
         time <= gold + 1e-9 ? 3 : (time <= silver + 1e-9 ? 2 : 1)

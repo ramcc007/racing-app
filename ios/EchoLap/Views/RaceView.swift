@@ -113,7 +113,16 @@ struct RaceHUD: View {
 
     var body: some View {
         let hud = controller.hud
+        let step = controller.tutorialStep
+        let teaching = step == .steerRight || step == .steerLeft
         ZStack {
+            // Easy controls: show the two halves of the screen at the start of every race (and while the tutorial
+            // teaches them), so nobody has to guess.
+            if controller.usesEasyControls && (hud.countdown != nil || hud.runUp || teaching) {
+                SideZones(highlight: step == .steerRight ? 1 : (step == .steerLeft ? -1 : 0))
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+            }
             VStack(spacing: 10) {
                 HStack(alignment: .top, spacing: 10) {
                     Button {
@@ -148,7 +157,26 @@ struct RaceHUD: View {
                     ToastPill(toast: toast).allowsHitTesting(false)
                         .transition(.move(edge: .top).combined(with: .opacity))
                 }
+                if hud.wrongWay {
+                    Label("Wrong way! Turn around", systemImage: "arrow.uturn.backward")
+                        .font(Theme.rounded(.title3, .black))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 18).padding(.vertical, 10)
+                        .background(Theme.bad, in: Capsule())
+                        .allowsHitTesting(false)
+                        .accessibilityIdentifier("wrongWay")
+                }
                 Spacer()
+                if (hud.countdown != nil || (hud.runUp && controller.tutorialStep == nil)) && !teaching {
+                    GoalPanel(goal: controller.goal, def: controller.request.def, easy: controller.usesEasyControls)
+                        .allowsHitTesting(false)
+                        .transition(.opacity)
+                }
+                if let step, step != .drive, step != .done {
+                    TutorialCard(step: step)
+                        .allowsHitTesting(false)
+                        .transition(.scale(scale: 0.9).combined(with: .opacity))
+                }
                 if let hint = controller.hint {
                     Text(hint)
                         .font(Theme.rounded(.callout, .semibold))
@@ -170,6 +198,8 @@ struct RaceHUD: View {
             .padding(.bottom, 10)
             .animation(.easeOut(duration: 0.2), value: controller.toast)
             .animation(.easeOut(duration: 0.25), value: controller.hint)
+            .animation(.spring(duration: 0.3), value: controller.tutorialStep)
+            .animation(.easeOut(duration: 0.3), value: hud.runUp)
 
             if let n = hud.countdown {
                 Text("\(n)")
@@ -181,6 +211,100 @@ struct RaceHUD: View {
                     .allowsHitTesting(false)
                     .accessibilityLabel("Starting in \(n)")
             }
+        }
+    }
+}
+
+/// What this race is for, shown before the start.
+struct GoalPanel: View {
+    let goal: String
+    let def: TrackDef
+    let easy: Bool
+
+    var body: some View {
+        VStack(spacing: 6) {
+            Text(def.mode == .career ? "\(def.label) \u{00B7} \(def.name)" : def.name)
+                .font(Theme.rounded(.subheadline, .bold)).foregroundStyle(.white.opacity(0.8))
+            Text(goal)
+                .font(Theme.rounded(.title3, .heavy)).foregroundStyle(.white)
+                .multilineTextAlignment(.center)
+            Text(easy ? "Your car drives itself. Hold left or right to move across the road. Follow the arrows."
+                      : "Hold anywhere to drive, slide to steer. Follow the arrows.")
+                .font(Theme.rounded(.footnote, .semibold)).foregroundStyle(.white.opacity(0.75))
+                .multilineTextAlignment(.center)
+        }
+        .padding(.horizontal, 18).padding(.vertical, 14)
+        .solidCard(cornerRadius: 20, fill: Color.black.opacity(0.72))
+        .frame(maxWidth: 460)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("goalPanel")
+    }
+}
+
+/// The two halves of the screen for easy controls, with the side the tutorial wants lit up.
+struct SideZones: View {
+    let highlight: Int   // -1 left, 1 right, 0 both quiet
+
+    var body: some View {
+        HStack(spacing: 0) {
+            zone(side: -1, icon: "chevron.left.2", text: "Hold left")
+            zone(side: 1, icon: "chevron.right.2", text: "Hold right")
+        }
+        .ignoresSafeArea()
+        .accessibilityHidden(true)
+    }
+
+    private func zone(side: Int, icon: String, text: String) -> some View {
+        let lit = highlight == side
+        return ZStack(alignment: side < 0 ? .bottomLeading : .bottomTrailing) {
+            Rectangle().fill(Color.white.opacity(lit ? 0.16 : 0.0))
+            VStack(spacing: 6) {
+                Image(systemName: icon).font(.system(size: lit ? 44 : 30, weight: .black))
+                Text(text).font(Theme.rounded(lit ? .headline : .footnote, .heavy))
+            }
+            .foregroundStyle(.white.opacity(lit ? 1 : 0.6))
+            .padding(.horizontal, 26)
+            .padding(.bottom, 150)
+            .symbolEffect(.pulse, isActive: lit)
+        }
+        .overlay(alignment: side < 0 ? .trailing : .leading) {
+            if highlight == 0 { Rectangle().fill(Color.white.opacity(0.18)).frame(width: 1).padding(.vertical, 140) }
+        }
+    }
+}
+
+/// A tutorial step that waits for the player to do it.
+struct TutorialCard: View {
+    let step: RaceController.TutorialStep
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text(title).font(Theme.rounded(.title2, .black)).foregroundStyle(.white)
+            Text(detail).font(Theme.rounded(.callout, .semibold)).foregroundStyle(.white.opacity(0.85))
+                .multilineTextAlignment(.center)
+        }
+        .padding(.horizontal, 20).padding(.vertical, 16)
+        .solidCard(cornerRadius: 22, fill: Theme.accent.opacity(0.92))
+        .frame(maxWidth: 440)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("tutorialCard")
+    }
+
+    private var title: String {
+        switch step {
+        case .steerRight: return "Hold the RIGHT side"
+        case .steerLeft: return "Now hold the LEFT side"
+        case .boost: return "Boost is full: swipe up!"
+        default: return ""
+        }
+    }
+
+    private var detail: String {
+        switch step {
+        case .steerRight: return "Your car drives and brakes by itself. You choose where it goes on the road."
+        case .steerLeft: return "Move across the road to slipstream your echoes or dodge them."
+        case .boost: return "Flick your thumb up anywhere, or tap BOOST, for a burst of speed."
+        default: return ""
         }
     }
 }
@@ -197,8 +321,8 @@ struct TimingPanel: View {
                 .font(Theme.timer(30))
                 .foregroundStyle(.white)
             if let delta = hud.delta {
-                Text(TimeFormat.delta(delta))
-                    .font(Theme.rounded(.subheadline, .heavy)).monospacedDigit()
+                Text(String(format: delta <= 0 ? "%.2f s ahead of gold" : "%.2f s behind gold", abs(delta)))
+                    .font(Theme.rounded(.caption, .heavy)).monospacedDigit()
                     .foregroundStyle(delta <= 0 ? Theme.good : Theme.bad)
             } else if hud.runUp && hud.countdown == nil {
                 Text("Timing starts at the line").font(Theme.rounded(.caption2, .bold)).foregroundStyle(.white.opacity(0.8))
@@ -210,7 +334,7 @@ struct TimingPanel: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(hud.laps > 0 ? "Lap \(min(hud.lap, hud.laps)) of \(hud.laps), \(TimeFormat.spoken(hud.time))"
                             : "Lap \(hud.lap), \(TimeFormat.spoken(hud.time))")
-        .accessibilityValue(hud.delta.map { $0 <= 0 ? "ahead of gold pace" : "behind gold pace" } ?? "")
+        .accessibilityValue(hud.delta.map { $0 <= 0 ? "ahead of the gold car" : "behind the gold car" } ?? "")
         .accessibilityIdentifier("timing")
     }
 }

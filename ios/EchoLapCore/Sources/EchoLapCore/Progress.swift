@@ -66,6 +66,12 @@ public struct LifetimeStats: Codable, Equatable, Sendable {
 /// Player choices. Stored with progress so they survive reinstalls via the same save.
 public struct GameSettings: Codable, Equatable, Sendable {
     public enum Camera: String, Codable, CaseIterable, Sendable { case follow, fixed }
+    /// Easy: the car drives and steers itself; hold a side of the screen to move across the road (AssistDriver).
+    /// Pro: hold to drive, slide to steer.
+    public enum Controls: String, Codable, CaseIterable, Sendable { case easy, pro }
+    public var controls: Controls = .easy
+    /// Show the glowing guide line and direction arrows on the road.
+    public var showGuide = true
     public var sound = true
     public var haptics = true
     /// Thumb distance for full steering lock is divided by this (0.6 = gentle, 1.6 = twitchy).
@@ -83,6 +89,8 @@ public struct GameSettings: Codable, Equatable, Sendable {
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
+        controls = (try? c.decodeIfPresent(Controls.self, forKey: .controls)) ?? .easy
+        showGuide = (try? c.decodeIfPresent(Bool.self, forKey: .showGuide)) ?? true
         sound = (try? c.decodeIfPresent(Bool.self, forKey: .sound)) ?? true
         haptics = (try? c.decodeIfPresent(Bool.self, forKey: .haptics)) ?? true
         steeringSensitivity = clamp((try? c.decodeIfPresent(Double.self, forKey: .steeringSensitivity)) ?? 1, 0.6, 1.6)

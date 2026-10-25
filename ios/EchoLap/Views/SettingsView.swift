@@ -17,6 +17,13 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section {
+                Picker("Controls", selection: binding(\.controls)) {
+                    Text("Easy").tag(GameSettings.Controls.easy)
+                    Text("Pro").tag(GameSettings.Controls.pro)
+                }
+                .pickerStyle(.segmented)
+                .accessibilityIdentifier("controlsPicker")
+                if app.progress.settings.controls == .pro {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Text("Steering sensitivity")
@@ -32,6 +39,7 @@ struct SettingsView: View {
                     }
                     .accessibilityIdentifier("sensitivity")
                 }
+                }
                 Toggle("Tilt to steer", isOn: binding(\.tiltSteering))
                 Toggle("Boost button on the left", isOn: binding(\.boostButtonOnLeft))
                 Picker("Camera", selection: binding(\.camera)) {
@@ -41,10 +49,13 @@ struct SettingsView: View {
             } header: {
                 Text("Controls")
             } footer: {
-                Text("Hold anywhere to drive and slide your thumb to steer. Swipe up or tap the boost button to boost. With tilt on, tilting steers instead of sliding. Game controllers work too.")
+                Text(app.progress.settings.controls == .easy
+                     ? "Easy: the car drives and brakes by itself. Hold the left or right side of the screen to move across the road; steer towards the bay or an open shortcut to take it. Swipe up or tap BOOST to boost."
+                     : "Pro: hold anywhere to drive and slide your thumb to steer. Lift to slow down. Swipe up or tap BOOST to boost. Game controllers work with both.")
             }
 
             Section {
+                Toggle("Guide line and arrows", isOn: binding(\.showGuide))
                 Toggle("Best-run ghost", isOn: binding(\.showGhost))
                 Toggle("Coaching hints", isOn: binding(\.showHints))
                 Toggle("Calm effects", isOn: binding(\.calmEffects))
@@ -117,8 +128,9 @@ struct HowToPlayView: View {
     var body: some View {
         List {
             Section("Driving") {
-                row("hand.point.up.left.fill", "Hold to drive", "Touch and hold anywhere. Lift your thumb to slow down.")
-                row("arrow.left.and.right", "Slide to steer", "Slide left or right from where you first touched.")
+                row("car.fill", "Easy controls (default)", "The car drives and brakes by itself. Hold the left or right side of the screen to move across the road. Steer towards the bay or an open shortcut to take it.")
+                row("arrow.up.forward", "Follow the arrows", "Arrows on the road and a glowing line show the way round.")
+                row("hand.point.up.left.fill", "Pro controls", "Choose Pro in Settings: hold anywhere to drive, slide to steer, lift to slow down.")
                 row("bolt.fill", "Boost", "Swipe up, tap with a second finger or press the boost button. A boost costs the marked part of the meter.")
                 row("gamecontroller.fill", "Controllers", "Left stick steers, A or right trigger drives, B boosts, X swaps.")
             }
@@ -129,7 +141,7 @@ struct HowToPlayView: View {
                 row("person.fill.viewfinder", "Ghost", "Your best run on a track races with you as a white ghost. It never blocks you.")
             }
             Section("Stars and rewards") {
-                row("star.fill", "Stars", "1 star for finishing, 2 for beating silver, 3 for beating gold. Stars open worlds and racers.")
+                row("star.fill", "Stars", "1 star for finishing, 2 for beating the silver time, 3 for finishing ahead of the gold car. Stars open worlds and racers.")
                 row("medal.fill", "Medals", "Each track has a medal goal that uses your echoes.")
                 row("sparkle", "Sparks", "Earned from stars, medals, daily goals and streaks. Spend them on styles in the garage.")
                 row("chevron.up.2", "Level", "Every race earns XP. Each new level pays 100 Sparks.")

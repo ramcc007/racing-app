@@ -192,6 +192,32 @@ public final class Race {
     /// True during the untimed run-up to the line.
     public var isRunUp: Bool { phase == .racing && !crossedStart }
 
+    /// How much longer the shortcut gate will stay open as things stand (0 when shut). A parked echo leaves at a known
+    /// moment and a sensor bridge closes on a timer, so the easy-controls assist can tell whether it will get through.
+    public var gateOpenFor: Double {
+        guard let sc = track.shortcut, gateOpen else { return 0 }
+        switch sc.trigger {
+        case .sensor:
+            return max(0, sensorOpenUntil - time)
+        case .pad:
+            if car.docked { return .infinity }
+            let frame = lapTick - 1
+            var longest: Double?
+            for echo in echoes {
+                guard let p = echo.pose(at: frame), p.docked else { continue }
+                var f = frame
+                while let q = echo.pose(at: f + 1), q.docked { f += 1 }
+                longest = max(longest ?? 0, Double(f - frame) * Physics.dt)
+            }
+            return longest.map { $0 + Race.gateGraceSeconds } ?? gateGrace
+        }
+    }
+
+    /// Adds boost charge (the tutorial uses it so the boost lesson always happens).
+    public func addBoost(_ amount: Double) {
+        boostCharge = min(1, boostCharge + max(0, amount))
+    }
+
     /// Where each echo is right now (nil once it has finished its lap).
     public func echoPoses() -> [EchoPose?] { echoes.map { $0.pose(at: lapTick - 1) } }
 
@@ -324,6 +350,13 @@ public final class Race {
             let out = car.velocity.dot(n)
             if out > 0 { car.velocity -= n * out }
             car.velocity = car.velocity * 0.98
+            // Pinned nose-first against the wall a car can't steer (no speed, no turning): swing it round to face
+            // along the road so it can always drive on.
+            if car.forward.dot(n) > 0.2 {
+                let want = track.tangents[loc.index].angle
+                let diff = wrapAngle(want - car.heading)
+                car.heading += max(-2.5 * Physics.dt, min(2.5 * Physics.dt, diff))
+            }
         }
 
         // Surface and thin ice. Ice wears when a car leaves it; driving onto broken ice is a splash.

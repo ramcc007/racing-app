@@ -19,6 +19,10 @@ final class GameScene: SKScene {
     private var draftLines: SKNode!
     private var echoNodes: [Int: (car: SKSpriteNode, label: SKLabelNode, trail: SKShapeNode)] = [:]
     private var ghostNode: SKSpriteNode?
+    private var rivalNode: SKSpriteNode?
+    private var guide: SKShapeNode?
+    /// Easy controls: fingers down on the left or right half of the screen, and where each one started.
+    private var sideTouches: [UITouch: (side: Double, start: CGPoint, time: TimeInterval)] = [:]
     private var skids: [SKShapeNode] = []
     private var skidIndex = 0
     private var lastTime: TimeInterval?
@@ -110,6 +114,33 @@ final class GameScene: SKScene {
             world.addChild(g)
             ghostNode = g
         }
+        if controller.request.def.mode == .career && !controller.isDemo {
+            // The gold car: drives the racing line at exactly the gold pace. Finish ahead of it for three stars.
+            let r = SKSpriteNode(texture: CarArt.texture(shape: "pod", body: UIColor(hex: 0xF2C94C), stripe: UIColor(hex: 0xFFF3C4), in: view),
+                                 size: CarArt.spriteSize)
+            r.alpha = 0.55
+            r.zPosition = 13
+            let tag = SKLabelNode(text: "GOLD")
+            tag.fontName = "AvenirNext-Heavy"
+            tag.fontSize = 13
+            tag.fontColor = UIColor(hex: 0xF2C94C)
+            tag.verticalAlignmentMode = .center
+            tag.name = "tag"
+            r.addChild(tag)
+            r.isHidden = true
+            world.addChild(r)
+            rivalNode = r
+        }
+        if settings.showGuide && !controller.isDemo {
+            addDirectionArrows()
+            let g = SKShapeNode()
+            g.strokeColor = UIColor.white.withAlphaComponent(0.55)
+            g.lineWidth = 7
+            g.lineCap = .round
+            g.zPosition = -9.5
+            world.addChild(g)
+            guide = g
+        }
         for _ in 0..<160 {
             let s = SKShapeNode(rectOf: CGSize(width: 9, height: 4), cornerRadius: 2)
             s.fillColor = UIColor.black.withAlphaComponent(0.28)
@@ -174,6 +205,15 @@ final class GameScene: SKScene {
         }
 
         syncEchoes()
+        syncGuide()
+        if let rivalNode, let pose = controller.goldRivalPose {
+            rivalNode.isHidden = false
+            rivalNode.position = CGPoint(x: pose.position.x, y: pose.position.y)
+            rivalNode.zRotation = CGFloat(pose.heading)
+            rivalNode.childNode(withName: "tag")?.zRotation = camAngle - CGFloat(pose.heading)
+        } else {
+            rivalNode?.isHidden = true
+        }
         if let ghostNode, let pose = controller.ghost?.pose(at: race.time), race.crossedStart {
             ghostNode.isHidden = false
             ghostNode.position = CGPoint(x: pose.position.x, y: pose.position.y)
@@ -206,6 +246,54 @@ final class GameScene: SKScene {
             celebrated = true
             celebrate(at: player.position)
         }
+    }
+
+    /// White chevrons painted on the road, pointing the way round.
+    private func addDirectionArrows() {
+        let track = controller.built.track
+        let spacing = 240.0
+        let every = max(1, Int(spacing / track.step))
+        let path = CGMutablePath()
+        path.move(to: CGPoint(x: -9, y: 13)); path.addLine(to: CGPoint(x: 9, y: 0)); path.addLine(to: CGPoint(x: -9, y: -13))
+        for i in stride(from: every / 2, to: track.count, by: every) {
+            let p = track.points[i]
+            let lateral = controller.racingLine.lateral[i]
+            let c = p + track.normal(i) * (lateral * 0.5)
+            let arrow = SKShapeNode(path: path)
+            arrow.strokeColor = UIColor.white.withAlphaComponent(0.42)
+            arrow.lineWidth = 5
+            arrow.lineCap = .round
+            arrow.lineJoin = .round
+            arrow.position = CGPoint(x: c.x, y: c.y)
+            arrow.zRotation = CGFloat(track.tangents[i].angle)
+            arrow.zPosition = -11.8
+            world.addChild(arrow)
+        }
+    }
+
+    /// The glowing line just ahead of the car: where the car is going to drive (easy controls) or the racing line (pro).
+    private func syncGuide() {
+        guard let guide else { return }
+        let race = controller.race
+        if race.isFinished || race.phase == .countdown && race.countdown > 2.5 || race.car.docked
+            || (controller.assist?.mode ?? .line) != .line {
+            guide.isHidden = true
+            return
+        }
+        guide.isHidden = false
+        let track = race.track
+        let start = race.location.index
+        let skip = max(1, Int(26 / track.step))
+        var points: [CGPoint] = []
+        for k in stride(from: Int(60 / track.step), through: Int(420 / track.step), by: skip) {
+            let i = track.wrap(start + k)
+            let lat = controller.assist?.lateral(at: i) ?? controller.racingLine.lateral[i]
+            let v = track.points[i] + track.normal(i) * lat
+            points.append(CGPoint(x: v.x, y: v.y))
+        }
+        let path = CGMutablePath()
+        path.addLines(between: points)
+        guide.path = path.copy(dashingWithPhase: CGFloat(race.time * 60).truncatingRemainder(dividingBy: 30), lengths: [14, 16])
     }
 
     private func syncEchoes() {
@@ -340,6 +428,14 @@ final class GameScene: SKScene {
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let view else { return }
+        if controller.usesEasyControls {
+            for touch in touches {
+                let p = touch.location(in: view)
+                sideTouches[touch] = (p.x < view.bounds.midX ? -1 : 1, p, touch.timestamp)
+            }
+            updateEasySteer()
+            return
+        }
         for touch in touches {
             let p = touch.location(in: view)
             if steerTouch == nil {
@@ -357,7 +453,26 @@ final class GameScene: SKScene {
         }
     }
 
+    /// Easy controls: hold the left or right half to move across the road; both at once cancel out.
+    private func updateEasySteer() {
+        let sum = sideTouches.values.reduce(0) { $0 + $1.side }
+        controller.touchSteered(clamp(sum, -1, 1))
+    }
+
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if controller.usesEasyControls, let view {
+            for touch in touches {
+                guard let start = sideTouches[touch] else { continue }
+                let p = touch.location(in: view)
+                // A quick upward flick boosts (or leaves the bay); that finger then stops steering.
+                if start.start.y - p.y > 55 && touch.timestamp - start.time < 0.35 {
+                    controller.requestBoost()
+                    sideTouches[touch] = nil
+                }
+            }
+            updateEasySteer()
+            return
+        }
         guard let view, let touch = steerTouch, touches.contains(touch) else { return }
         let p = touch.location(in: view)
         var dx = p.x - anchorX
@@ -380,6 +495,11 @@ final class GameScene: SKScene {
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if controller.usesEasyControls {
+            for touch in touches { sideTouches[touch] = nil }
+            updateEasySteer()
+            return
+        }
         guard let view, let touch = steerTouch, touches.contains(touch) else { return }
         let p = touch.location(in: view)
         let moved = hypot(p.x - touchStart.0.x, p.y - touchStart.0.y)
@@ -389,6 +509,7 @@ final class GameScene: SKScene {
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        sideTouches.removeAll()
         steerTouch = nil
         controller.touchEnded()
     }

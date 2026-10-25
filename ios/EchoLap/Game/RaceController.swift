@@ -29,6 +29,13 @@ final class RaceController: ObservableObject {
         var runUp = true
         var speed = 0.0
         var swapAvailable = false
+        /// Driving the wrong way round (shown as a big warning).
+        var wrongWay = false
+    }
+
+    /// The first race teaches by doing: each step waits until the player has done it once.
+    enum TutorialStep: Equatable {
+        case steerRight, steerLeft, drive, boost, done
     }
 
     struct Toast: Equatable, Identifiable {
@@ -51,6 +58,7 @@ final class RaceController: ObservableObject {
     @Published private(set) var hint: String?
     @Published private(set) var isPaused = false
     @Published private(set) var outcome: Outcome?
+    @Published private(set) var tutorialStep: TutorialStep?
 
     let request: RaceRequest
     let built: BuiltTrack
@@ -58,6 +66,13 @@ final class RaceController: ObservableObject {
     let spec: CarSpec
     let ghost: Ghost?
     let isDemo: Bool
+    /// The line drawn on the road and driven by the gold rival.
+    let racingLine: RacingLine
+    /// Easy controls (the default): the car drives itself and the player moves across the road.
+    private(set) var assist: AssistDriver?
+    var usesEasyControls: Bool { assist != nil && autopilot == nil }
+    /// What this race asks of the player, shown before the start.
+    let goal: String
     private weak var app: AppModel?
     private var settings: GameSettings
     private var recorder = GhostRecorder()
@@ -69,6 +84,7 @@ final class RaceController: ObservableObject {
     private var toastTask: Task<Void, Never>?
     private var hintTask: Task<Void, Never>?
     private var shownHints: Set<String> = []
+    private var tutorialHeld = 0.0
     /// Set for one frame when a bump happens (the scene shakes the camera).
     private(set) var shakeRequested = false
 
@@ -91,6 +107,14 @@ final class RaceController: ObservableObject {
         race = Race(track: built.track, spec: spec, laps: demo ? Int.max : (request.def.mode == .survival ? Int.max : request.def.laps),
                     lives: lives)
         ghost = demo || !progress.settings.showGhost ? nil : app?.ghost(for: request.def.id)
+        racingLine = RacingLine(track: built.track)
+        if !demo && progress.settings.controls == .easy { assist = AssistDriver(track: built.track, spec: spec) }
+        switch request.def.mode {
+        case .career: goal = "Beat the gold car: \(TimeFormat.race(built.targets.gold)) for \u{2605}\u{2605}\u{2605}"
+        case .daily: goal = "Same track for everyone today. Set your best time."
+        case .weekly: goal = "Three tracks back to back. Your total time counts."
+        case .survival: goal = "Laps never end. Dodge your echoes: three bumps and you're out."
+        }
         if demo {
             let driver = RobotDriver(track: built.track, plan: built.targets.plan)
             driver.weave = 0.35
@@ -98,7 +122,7 @@ final class RaceController: ObservableObject {
         }
         #if DEBUG
         let args = ProcessInfo.processInfo.arguments
-        if !demo && (args.contains("-EchoUITest") || args.contains("-EchoAutopilot") || args.contains("-EchoScene")) {
+        if !demo && !args.contains("-EchoManual") && (args.contains("-EchoUITest") || args.contains("-EchoAutopilot") || args.contains("-EchoScene")) {
             let driver = RobotDriver(track: built.track, plan: built.targets.plan, spec: spec)
             driver.weave = args.contains("-EchoUITest") ? 0 : 0.3
             autopilot = driver
@@ -111,7 +135,13 @@ final class RaceController: ObservableObject {
             motion.deviceMotionUpdateInterval = 1.0 / 60
             motion.startDeviceMotionUpdates()
         }
-        if request.kind == .tutorial { showHint("Hold anywhere and slide left or right to steer.", key: "steer", seconds: 6) }
+        if request.kind == .tutorial {
+            if usesEasyControls {
+                tutorialStep = .steerRight
+            } else if autopilot == nil {
+                showHint("Hold anywhere to drive and slide left or right to steer.", key: "steer", seconds: 6)
+            }
+        }
         publishHUD()
     }
 
@@ -130,7 +160,7 @@ final class RaceController: ObservableObject {
             SoundEngine.shared.updateEngine(speed: 0, boosting: false, running: false)
             return
         }
-        accumulator += min(elapsed, 0.1) * Double(ticksPerStep)
+        accumulator += min(elapsed, 0.1) * Double(ticksPerStep) * tutorialTimeScale(elapsed)
         while accumulator >= Physics.dt && outcome == nil {
             accumulator -= Physics.dt
             race.tick(currentInput())
@@ -157,7 +187,7 @@ final class RaceController: ObservableObject {
         }
         var steer = touchSteer
         var throttle = touching
-        if settings.tiltSteering, let gravity = motion.deviceMotion?.gravity {
+        if settings.tiltSteering, let gravity = motion.deviceMotion?.gravity, !(usesEasyControls && touchSteer != 0) {
             steer = clamp(gravity.x * 2.6, -1, 1)
         }
         if let pad = GCController.current?.extendedGamepad {
@@ -170,10 +200,50 @@ final class RaceController: ObservableObject {
             if pad.buttonX.isPressed && !controllerSwapHeld { pendingSwap = true }
             controllerSwapHeld = pad.buttonX.isPressed
         }
-        let input = ControlInput(throttle: throttle, steer: steer, boost: pendingBoost, swap: pendingSwap)
+        let input: ControlInput
+        if let assist {
+            input = assist.input(for: race, steer: steer, boost: pendingBoost, swap: pendingSwap)
+        } else {
+            input = ControlInput(throttle: throttle, steer: steer, boost: pendingBoost, swap: pendingSwap)
+        }
         pendingBoost = false
         pendingSwap = false
         return input
+    }
+
+    // MARK: - Tutorial
+
+    /// Slows the race while a tutorial step waits for the player, and moves the tutorial on when they've done it.
+    private func tutorialTimeScale(_ elapsed: Double) -> Double {
+        guard let step = tutorialStep, step != .done else { return 1 }
+        switch step {
+        case .steerRight, .steerLeft:
+            guard race.phase == .racing else { return 1 }   // the countdown runs normally; the lesson starts at GO
+            let wanted: Double = step == .steerRight ? 1 : -1
+            tutorialHeld = touchSteer * wanted > 0.5 ? tutorialHeld + min(elapsed, 0.1) : 0
+            if tutorialHeld >= 0.45 {
+                tutorialHeld = 0
+                Haptics.success()
+                Sound.play(.unlock, volume: 0.5)
+                tutorialStep = step == .steerRight ? .steerLeft : .drive
+                if tutorialStep == .drive {
+                    showHint("That's all the steering there is. Follow the arrows to the line and finish 2 laps.", key: "follow", seconds: 5)
+                }
+            }
+            return 0.35
+        case .drive:
+            // On lap 2 the echo's slipstream fills the boost; make sure the lesson happens even if it didn't.
+            if race.lapsDone >= 1 && race.lapTime > 3 && race.boostCharge < Race.boostCost { race.addBoost(Race.boostCost - race.boostCharge) }
+            if race.boostCharge >= Race.boostCost && race.lapsDone >= 1 {
+                tutorialStep = .boost
+                Haptics.medium()
+            }
+            return 1
+        case .boost:
+            return 0.15
+        case .done:
+            return 1
+        }
     }
 
     private var controllerBoostHeld = false
@@ -230,7 +300,7 @@ final class RaceController: ObservableObject {
                 Sound.play(.go)
                 Haptics.medium()
                 hud.countdown = nil
-                if request.kind == .tutorial {
+                if request.kind == .tutorial && !usesEasyControls && autopilot == nil {
                     showHint("Lift your thumb to slow down before tight corners.", key: "lift", seconds: 5, delay: 3)
                 }
             case .lap(let n, let t):
@@ -265,6 +335,10 @@ final class RaceController: ObservableObject {
             case .boost:
                 Sound.play(.boost)
                 Haptics.rigid()
+                if tutorialStep == .boost {
+                    tutorialStep = .done
+                    showHint("Boost! Every echo you slipstream fills it again.", key: "boosted", seconds: 4)
+                }
             case .boostEmpty:
                 Sound.play(.boostEmpty, volume: 0.6)
                 showHint("Boost is empty. Slipstream right behind an echo to fill it.", key: "empty", seconds: 4)
@@ -309,7 +383,7 @@ final class RaceController: ObservableObject {
                 finish()
             }
         }
-        if request.kind == .tutorial, race.boostCharge >= Race.boostCost, !shownHints.contains("boost") {
+        if request.kind == .tutorial, !usesEasyControls, race.boostCharge >= Race.boostCost, !shownHints.contains("boost") {
             showHint("Boost ready! Swipe up anywhere.", key: "boost", seconds: 5)
         }
     }
@@ -325,6 +399,16 @@ final class RaceController: ObservableObject {
         hint = nil
         outcome = Outcome(result: result, summary: summary, targets: request.def.mode == .career ? built.targets : nil,
                           isTutorial: request.kind == .tutorial)
+    }
+
+    // MARK: - Gold rival
+
+    /// Where the gold car is: it drives the racing line at exactly the gold pace, so finishing ahead of it means 3 stars.
+    var goldRivalPose: (position: Vec2, heading: Double)? {
+        guard request.def.mode == .career, race.crossedStart, outcome == nil,
+              let progress = built.targets.goldProgress(atTime: race.time, goldSlack: difficulty.goldSlack),
+              progress < Double(race.laps) * race.track.length else { return nil }
+        return racingLine.pose(atProgress: progress)
     }
 
     // MARK: - HUD
@@ -343,6 +427,9 @@ final class RaceController: ObservableObject {
         h.runUp = race.isRunUp
         h.speed = max(0, race.car.forwardSpeed) / spec.topSpeed
         h.swapAvailable = request.def.features.contains(.relay) && !race.swapUsedThisLap && race.crossedStart
+        let car = race.car
+        h.wrongWay = race.phase == .racing && !car.docked && !car.isSpinning && car.forwardSpeed > 40
+            && car.forward.dot(race.track.tangents[race.location.index]) < -0.3
         if request.def.mode == .career, race.crossedStart,
            let pace = built.targets.goldPaceTime(atProgress: race.totalProgress, goldSlack: difficulty.goldSlack) {
             h.delta = race.time - pace

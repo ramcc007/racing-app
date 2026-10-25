@@ -405,4 +405,20 @@ final class RaceTests: XCTestCase {
         let loc = track.locate(race.car.position)
         XCTAssertLessThanOrEqual(loc.distance, track.halfWidth + 120.5, "the soft wall keeps you near the track")
     }
+
+    func testCarPinnedNoseFirstAgainstTheOuterWallTurnsBackOntoTheRoad() {
+        let track = TestTracks.circle()
+        let race = Race(track: track, spec: Cars.pip)
+        race.testingStart(at: 10)
+        let i = 10
+        let out = track.normal(i) * -1   // anticlockwise circle: the left normal points inwards, so this is outwards
+        race.testingSetCar { car in
+            car.position = track.points[i] + out * (track.halfWidth + 125)
+            car.heading = out.angle
+            car.velocity = .zero
+        }
+        for _ in 0..<(120 * 4) { race.tick(ControlInput(throttle: true, steer: 0)) }
+        XCTAssertLessThan(race.location.distance, track.halfWidth + 125, "the car drove away from the wall")
+        XCTAssertGreaterThan(race.car.forwardSpeed, 60, "the car is moving again")
+    }
 }

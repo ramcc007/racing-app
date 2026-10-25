@@ -115,14 +115,23 @@ struct ResultsView: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("\(stars) of 3 stars")
             if let targets = outcome.targets {
-                if stars < 3 {
-                    let goal = stars == 2 ? targets.gold : targets.silver
-                    Text("\(stars == 2 ? "Gold" : "Silver"): beat \(TimeFormat.race(goal)) (\(TimeFormat.delta(result.totalTime - goal)) away)")
-                        .font(Theme.rounded(.footnote, .bold)).foregroundStyle(Theme.muted)
-                        .multilineTextAlignment(.center)
-                } else {
-                    Text("Gold time \(TimeFormat.race(targets.gold))").font(Theme.rounded(.footnote, .bold)).foregroundStyle(Theme.muted)
+                let gap = result.totalTime - targets.gold
+                VStack(spacing: 4) {
+                    Label(gap <= 0 ? String(format: "You beat the gold car by %.2f s", -gap)
+                                   : String(format: "The gold car finished %.2f s ahead", gap),
+                          systemImage: gap <= 0 ? "flag.checkered" : "car.side.fill")
+                        .font(Theme.rounded(.subheadline, .heavy))
+                        .foregroundStyle(gap <= 0 ? Theme.gold : Theme.text)
+                    if stars < 3 {
+                        Text(stars == 2 ? "Finish ahead of it for 3 stars: \(TimeFormat.race(targets.gold))"
+                                        : "Silver: \(TimeFormat.race(targets.silver)) \u{00B7} Gold: \(TimeFormat.race(targets.gold))")
+                            .font(Theme.rounded(.footnote, .bold)).foregroundStyle(Theme.muted)
+                        Text("Tip: slipstream your echoes to fill BOOST, and take the shortcut when its gate is open.")
+                            .font(Theme.rounded(.caption, .medium)).foregroundStyle(Theme.muted)
+                    }
                 }
+                .multilineTextAlignment(.center)
+                .accessibilityElement(children: .combine)
             }
         }
         .padding(.vertical, 4)
