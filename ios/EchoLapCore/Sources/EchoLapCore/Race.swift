@@ -217,7 +217,7 @@ public final class Race {
     /// Nitro earned by a near miss, by each second on the edge, and by releasing a drift of each tier.
     public static let nearMissGain = 0.22
     public static let edgeGain = 0.10
-    public static let driftGain = [0.0, 0.08, 0.15, 0.25]
+    public static let driftGain = [0.0, 0.06, 0.14, 0.25]
     /// How close a pass must be, centre to centre, to count as a near miss (a car is 22 wide).
     public static let nearMissDistance = 34.0
     /// How close to the road edge (from the kerb inwards) counts as riding the edge.

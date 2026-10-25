@@ -53,7 +53,8 @@ final class PhysicsTests: XCTestCase {
         XCTAssertEqual(released, 2)
         XCTAssertFalse(car.drifting)
         XCTAssertGreaterThan(car.boostTime, 0.4, "the boost is running")
-        XCTAssertEqual(Physics.driftTier(for: 0.3), 0)
+        XCTAssertEqual(Physics.driftTier(for: 0.2), 0)
+        XCTAssertEqual(Physics.driftTier(for: 0.3), 1)
         XCTAssertEqual(Physics.driftTier(for: 1.6), 3)
     }
 

@@ -97,9 +97,9 @@ public enum Physics {
     public static let redirect = 0.9
     public static let driftRedirect = 0.8
     /// Hold a drift this long for a tier 1, 2 or 3 boost on release.
-    public static let driftTiers = [0.4, 0.9, 1.5]
+    public static let driftTiers = [0.25, 0.8, 1.4]
     /// Seconds of boost each tier gives.
-    public static let driftBoostSeconds = [0.0, 0.5, 0.9, 1.3]
+    public static let driftBoostSeconds = [0.0, 0.4, 0.9, 1.3]
 
     public static func driftTier(for seconds: Double) -> Int {
         driftTiers.filter { seconds >= $0 }.count
